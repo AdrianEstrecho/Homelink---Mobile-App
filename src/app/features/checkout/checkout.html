@@ -1,0 +1,133 @@
+@if (confirmedOrder()) {
+  <app-order-details-modal
+    [order]="confirmedOrder()!"
+    [justConfirmed]="true"
+    [person]="billedTo()"
+    personLabel="Billed To"
+    (closed)="goToOrders()"
+  />
+} @else if (pendingOrder()) {
+  <app-order-details-modal
+    [order]="pendingOrder()!"
+    [previewing]="true"
+    [confirmLoading]="placingOrder()"
+    [error]="error()"
+    [person]="billedTo()"
+    personLabel="Billed To"
+    (confirmed)="handleConfirmOrder()"
+    (closed)="editOrder()"
+  />
+} @else if (items().length === 0) {
+  <div class="max-w-2xl mx-auto px-4 py-24 text-center">
+    <svg lucideShoppingBag class="w-16 h-16 text-gray-300 mx-auto mb-4"></svg>
+    <h2 class="font-display text-2xl font-bold text-brand-ink mb-2">Your cart is empty</h2>
+    <p class="text-gray-500 mb-6">Add some products before checking out.</p>
+    <a routerLink="/products" class="btn-primary">Browse Products</a>
+  </div>
+} @else {
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10 md:py-14">
+    <p class="eyebrow mb-3">Final Step</p>
+    <h1 class="section-title mb-8">Checkout</h1>
+
+    <form (submit)="$event.preventDefault(); handleReview()" class="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8 items-start">
+      <div class="space-y-6">
+        <section class="card p-6">
+          <app-address-picker [stepNumber]="1" title="Shipping Address" />
+        </section>
+
+        <section class="card p-6">
+          <app-payment-method-picker [stepNumber]="2" />
+        </section>
+
+        <section class="card p-6">
+          <h2 class="flex items-center gap-2.5 text-sm font-semibold text-brand-ink mb-5">
+            <span class="w-6 h-6 rounded-full bg-brand-navy text-white text-xs font-bold flex items-center justify-center shrink-0">3</span>
+            Promo Code
+          </h2>
+          @if (holidayPromo()) {
+            <p class="flex items-center gap-1.5 text-sm text-brand-teal font-medium mb-4">
+              <svg lucideSparkles class="w-4 h-4"></svg> {{ holidayPromo()!.label }} automatically applied
+            </p>
+          }
+          @if (appliedPromo(); as promo) {
+            <div class="flex items-center justify-between px-4 py-3 rounded-lg bg-green-50 border border-green-200">
+              <span class="flex items-center gap-2 text-sm font-semibold text-green-700"><svg lucideCheck class="w-4 h-4"></svg> {{ promo.code }} applied</span>
+              <button type="button" (click)="removePromo()" class="text-green-700 hover:text-green-900"><svg lucideX class="w-4 h-4"></svg></button>
+            </div>
+          } @else {
+            <div class="flex gap-2">
+              <input type="text" [ngModel]="promoInput()" (ngModelChange)="onPromoInput($event)" name="promoInput" placeholder="e.g. HOMELINK10" class="input-field flex-1" />
+              <button type="button" (click)="applyPromo()" [disabled]="applyingPromo() || !promoInput().trim()" class="btn-secondary px-5 text-sm disabled:opacity-50">
+                {{ applyingPromo() ? 'Checking...' : 'Apply' }}
+              </button>
+            </div>
+          }
+          @if (promoError()) {
+            <p class="text-red-600 text-sm mt-2">{{ promoError() }}</p>
+          }
+          @if (!appliedPromo()) {
+            <p class="text-xs text-gray-400 mt-2">Try: HOMELINK10, SAVE500, NEWHOME20</p>
+          }
+        </section>
+
+        @if (error()) {
+          <p class="text-red-600 text-sm">{{ error() }}</p>
+        }
+      </div>
+
+      <div class="lg:sticky lg:top-24">
+        <div class="card p-6">
+          <h2 class="text-xs font-semibold uppercase tracking-[0.14em] text-gray-400 mb-4">Order Summary</h2>
+
+          <div class="space-y-3 max-h-64 overflow-y-auto pr-1 -mr-1 mb-4">
+            @for (i of items(); track i.productId) {
+              <div class="flex items-center gap-3">
+                <img [src]="i.image" [alt]="i.name" class="w-12 h-12 rounded-lg object-cover shrink-0 bg-gray-100" />
+                <div class="min-w-0 flex-1">
+                  <p class="text-sm font-medium text-brand-ink truncate">{{ i.name }}</p>
+                  <p class="text-xs text-gray-400">Qty {{ i.quantity }}</p>
+                </div>
+                <span class="text-sm font-semibold text-brand-ink shrink-0">{{ i.price * i.quantity | homelinkPrice }}</span>
+              </div>
+            }
+          </div>
+
+          <div class="space-y-2 text-sm border-t border-gray-100 pt-4">
+            <div class="flex justify-between text-gray-500"><span>Subtotal</span><span>{{ subtotal() | homelinkPrice }}</span></div>
+            @if (holidayAmt() > 0) {
+              <div class="flex justify-between text-green-600"><span>{{ holidayPromo()!.label }}</span><span>-{{ holidayAmt() | homelinkPrice }}</span></div>
+            }
+            @if (voucherAmt() > 0) {
+              <div class="flex justify-between text-green-600"><span>Promo ({{ appliedPromo()!.code }})</span><span>-{{ voucherAmt() | homelinkPrice }}</span></div>
+            }
+          </div>
+
+          <div class="flex justify-between items-center font-bold text-lg mt-3 pt-3 border-t border-gray-200">
+            <span class="text-brand-ink">Total</span>
+            <span class="text-brand-navy">{{ orderTotal() | homelinkPrice }}</span>
+          </div>
+
+          <button type="submit" class="btn-primary w-full py-3 mt-5">
+            Place Order — {{ orderTotal() | homelinkPrice }}
+          </button>
+          <p class="text-center text-xs text-gray-400 mt-3">Payments are processed securely. We never store your card details.</p>
+
+          <div class="grid grid-cols-3 gap-2 mt-5 pt-5 border-t border-gray-100 text-center">
+            <div>
+              <svg lucideLock class="w-4 h-4 text-brand-teal mx-auto mb-1"></svg>
+              <p class="text-[11px] text-gray-400 leading-tight">Secure Checkout</p>
+            </div>
+            <div>
+              <svg lucideShieldCheck class="w-4 h-4 text-brand-teal mx-auto mb-1"></svg>
+              <p class="text-[11px] text-gray-400 leading-tight">Buyer Protection</p>
+            </div>
+            <div>
+              <svg lucideTruck class="w-4 h-4 text-brand-teal mx-auto mb-1"></svg>
+              <p class="text-[11px] text-gray-400 leading-tight">Fast Delivery</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+}

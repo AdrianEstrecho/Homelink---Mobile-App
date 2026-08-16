@@ -1,0 +1,25 @@
+@if (state() === 'succeeded' && order()) {
+  <app-order-details-modal [order]="order()!" [justConfirmed]="true" [person]="billedTo()" personLabel="Billed To" (closed)="goToOrders()" />
+} @else {
+  <div class="max-w-md mx-auto px-4 py-24 text-center">
+    @if (state() === 'processing') {
+      <svg lucideLoaderCircle class="w-12 h-12 text-brand-teal mx-auto mb-4 animate-spin"></svg>
+      <h2 class="font-display text-xl font-bold text-brand-ink mb-2">Confirming your payment…</h2>
+      <p class="text-gray-500">This usually only takes a few seconds. Please don't close this page.</p>
+    }
+
+    @if (state() === 'failed') {
+      <svg lucideCircleX class="w-12 h-12 text-red-500 mx-auto mb-4"></svg>
+      <h2 class="font-display text-xl font-bold text-brand-ink mb-2">Payment didn't go through</h2>
+      <p class="text-gray-500 mb-6">{{ errorMsg() || "We couldn't confirm this payment. Your cart is still saved — you can try again." }}</p>
+      <a routerLink="/checkout" class="btn-primary">Back to Checkout</a>
+    }
+
+    @if (state() === 'timeout') {
+      <svg lucideLoaderCircle class="w-12 h-12 text-gray-300 mx-auto mb-4"></svg>
+      <h2 class="font-display text-xl font-bold text-brand-ink mb-2">Taking longer than expected</h2>
+      <p class="text-gray-500 mb-6">We'll email you a confirmation once it's through, or you can check your order history in a moment.</p>
+      <a routerLink="/orders" class="btn-primary">View Order History</a>
+    }
+  </div>
+}

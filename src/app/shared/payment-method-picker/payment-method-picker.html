@@ -1,0 +1,83 @@
+<div>
+  <h2 class="flex items-center gap-2.5 text-sm font-semibold text-brand-ink mb-5">
+    <span class="w-6 h-6 rounded-full bg-brand-navy text-white text-xs font-bold flex items-center justify-center shrink-0">{{ stepNumber() }}</span>
+    Payment Method
+  </h2>
+  <div class="grid sm:grid-cols-3 gap-3">
+    @for (m of paymentMethods; track m.value) {
+      <label class="flex flex-col items-center text-center gap-1.5 p-4 rounded-xl border cursor-pointer transition" [class]="method() === m.value ? 'border-brand-orange bg-brand-orange/5' : 'border-gray-200 hover:border-gray-300'">
+        <input type="radio" name="payment" class="sr-only" [checked]="method() === m.value" (change)="method.set(m.value)" />
+        @switch (m.icon) {
+          @case ('card') { <svg lucideCreditCard class="w-6 h-6 mb-1" [class]="method() === m.value ? 'text-brand-orange' : 'text-gray-400'"></svg> }
+          @case ('gcash') { <svg lucideSmartphone class="w-6 h-6 mb-1" [class]="method() === m.value ? 'text-brand-orange' : 'text-gray-400'"></svg> }
+          @case ('bank') { <svg lucideLandmark class="w-6 h-6 mb-1" [class]="method() === m.value ? 'text-brand-orange' : 'text-gray-400'"></svg> }
+        }
+        <span class="text-sm font-semibold text-brand-ink">{{ m.label }}</span>
+        <span class="text-xs text-gray-400">{{ m.description }}</span>
+      </label>
+    }
+  </div>
+
+  @if (method() === 'card') {
+    <div class="mt-5 pt-5 border-t border-gray-100 space-y-4">
+      <div>
+        <label class="block text-sm font-medium mb-1.5 text-gray-700">Card Number</label>
+        <input [ngModel]="cardForm().cardNumber" (ngModelChange)="updateCard('cardNumber', $event)" placeholder="1234 5678 9012 3456" class="input-field" inputmode="numeric" />
+      </div>
+      <div class="grid grid-cols-3 gap-4">
+        <div>
+          <label class="block text-sm font-medium mb-1.5 text-gray-700">Month</label>
+          <app-select [value]="cardForm().expMonth" (valueChange)="updateCard('expMonth', $event)" placeholder="MM" [options]="monthOptions" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1.5 text-gray-700">Year</label>
+          <app-select [value]="cardForm().expYear" (valueChange)="updateCard('expYear', $event)" placeholder="YYYY" [options]="yearOptions" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1.5 text-gray-700">CVC</label>
+          <input [ngModel]="cardForm().cvc" (ngModelChange)="onCvcInput($event)" placeholder="123" maxlength="4" class="input-field" inputmode="numeric" />
+        </div>
+      </div>
+      @if (cardError()) {
+        <p class="text-red-600 text-sm">{{ cardError() }}</p>
+      }
+      <p class="flex items-center gap-1.5 text-xs text-gray-500">
+        <svg lucideShieldCheck class="w-3.5 h-3.5 text-brand-teal"></svg> Your card details go directly and securely to PayMongo, our payment processor — HomeLink never sees or stores your card number or CVC.
+      </p>
+    </div>
+  }
+
+  @if (method() === 'gcash') {
+    <div class="mt-5 pt-5 border-t border-gray-100">
+      <label class="block text-sm font-medium mb-1.5 text-gray-700">GCash Mobile Number</label>
+      <input [ngModel]="gcashNumber()" (ngModelChange)="onGcashInput($event)" placeholder="09171234567" inputmode="numeric" class="input-field max-w-xs" />
+      @if (gcashError()) {
+        <p class="text-red-600 text-sm mt-1.5">{{ gcashError() }}</p>
+      }
+      <p class="text-xs text-gray-400 mt-2">You'll be redirected to GCash to authorize this payment.</p>
+    </div>
+  }
+
+  @if (method() === 'bank') {
+    <div class="mt-5 pt-5 border-t border-gray-100">
+      <div class="p-4 rounded-xl bg-gray-50 border border-gray-100 space-y-2.5">
+        <div class="flex justify-between text-sm"><span class="text-gray-500">Bank</span><span class="font-medium text-brand-ink">{{ bankDetails.bank }}</span></div>
+        <div class="flex justify-between text-sm"><span class="text-gray-500">Account Name</span><span class="font-medium text-brand-ink">{{ bankDetails.accountName }}</span></div>
+        <div class="flex justify-between items-center text-sm">
+          <span class="text-gray-500">Account Number</span>
+          <span class="flex items-center gap-2">
+            <span class="font-medium text-brand-ink">{{ bankDetails.accountNumber }}</span>
+            <button type="button" (click)="copyBank()" title="Copy account number" class="text-gray-400 hover:text-brand-teal transition">
+              @if (bankCopied()) {
+                <svg lucideCheck class="w-3.5 h-3.5 text-green-600"></svg>
+              } @else {
+                <svg lucideCopy class="w-3.5 h-3.5"></svg>
+              }
+            </button>
+          </span>
+        </div>
+      </div>
+      <p class="text-xs text-gray-400 mt-2">Please use your reference number as the payment reference.</p>
+    </div>
+  }
+</div>

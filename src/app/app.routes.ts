@@ -48,6 +48,17 @@ export const routes: Routes = [
     canActivate: [roleGuard(['customer'])],
   },
   {
+    path: 'checkout',
+    loadComponent: () => import('./features/checkout/checkout').then((m) => m.Checkout),
+    canActivate: [roleGuard(['customer'])],
+  },
+  {
+    path: 'checkout/return',
+    loadComponent: () =>
+      import('./features/checkout/checkout-return/checkout-return').then((m) => m.CheckoutReturn),
+    canActivate: [roleGuard(['customer'])],
+  },
+  {
     path: 'login',
     loadComponent: () => import('./features/auth/login/login').then((m) => m.Login),
   },

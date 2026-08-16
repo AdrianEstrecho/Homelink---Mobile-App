@@ -1,0 +1,84 @@
+<div>
+  <div class="flex items-center justify-between mb-5">
+    <h2 class="flex items-center gap-2.5 text-sm font-semibold text-brand-ink">
+      <span class="w-6 h-6 rounded-full bg-brand-navy text-white text-xs font-bold flex items-center justify-center shrink-0">{{ stepNumber() }}</span>
+      {{ title() }}
+    </h2>
+    @if (!showForm() && options().length > 0) {
+      <button type="button" (click)="openForm()" class="flex items-center gap-1 text-sm font-semibold text-brand-teal hover:underline">
+        <svg lucidePlus class="w-3.5 h-3.5"></svg> Add New
+      </button>
+    }
+  </div>
+
+  @if (addresses() === null) {
+    <p class="text-sm text-gray-400">Loading addresses...</p>
+  } @else if (options().length > 0) {
+    <div class="space-y-3">
+      @for (a of options(); track a.id) {
+        <label class="flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition" [class]="selectedId() === a.id ? 'border-brand-orange bg-brand-orange/5' : 'border-gray-200 hover:border-gray-300'">
+          <input type="radio" name="address" [checked]="selectedId() === a.id" (change)="selectedId.set(a.id)" class="mt-1 accent-brand-orange" />
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2 flex-wrap">
+              <p class="text-sm font-semibold text-brand-ink">{{ a.label }}</p>
+              @if (a.is_default) {
+                <span class="badge bg-brand-teal/15 text-brand-teal">Default</span>
+              }
+            </div>
+            <p class="text-sm text-gray-500 mt-0.5">{{ a.fullAddress }}</p>
+          </div>
+        </label>
+      }
+    </div>
+  }
+
+  @if (showForm()) {
+    <div class="p-4 rounded-xl bg-gray-50 border border-gray-100 space-y-4" [class.mt-4]="options().length > 0">
+      <div>
+        <label class="block text-sm font-medium mb-1.5 text-gray-700">Label</label>
+        <input [ngModel]="form().label" (ngModelChange)="updateField('label', $event)" placeholder="Home, Office, ..." class="input-field" />
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-sm font-medium mb-1.5 text-gray-700">House / Unit No.</label>
+          <input [ngModel]="form().houseNumber" (ngModelChange)="updateField('houseNumber', $event)" placeholder="123" class="input-field" />
+        </div>
+        <div class="col-span-2">
+          <label class="block text-sm font-medium mb-1.5 text-gray-700">Street</label>
+          <input [ngModel]="form().street" (ngModelChange)="updateField('street', $event)" placeholder="Rizal Street" class="input-field" />
+        </div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium mb-1.5 text-gray-700">Village / Barangay</label>
+          <input [ngModel]="form().village" (ngModelChange)="updateField('village', $event)" placeholder="Barangay San Isidro" class="input-field" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1.5 text-gray-700">City / Municipality</label>
+          <input [ngModel]="form().city" (ngModelChange)="updateField('city', $event)" placeholder="Makati City" class="input-field" />
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium mb-1.5 text-gray-700">Province</label>
+          <input [ngModel]="form().province" (ngModelChange)="updateField('province', $event)" placeholder="Metro Manila" class="input-field" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1.5 text-gray-700">Postal Code</label>
+          <input [ngModel]="form().postalCode" (ngModelChange)="updateField('postalCode', $event)" placeholder="1200" class="input-field" />
+        </div>
+      </div>
+      @if (error()) {
+        <p class="text-red-600 text-sm">{{ error() }}</p>
+      }
+      <div class="flex gap-2">
+        <button type="button" (click)="handleSave()" [disabled]="saving()" class="btn-primary text-sm py-2 disabled:opacity-60">
+          {{ saving() ? 'Saving...' : 'Save & Use This Address' }}
+        </button>
+        @if (options().length > 0) {
+          <button type="button" (click)="cancelForm()" class="text-sm font-medium text-gray-500 hover:text-gray-700">Cancel</button>
+        }
+      </div>
+    </div>
+  }
+</div>
