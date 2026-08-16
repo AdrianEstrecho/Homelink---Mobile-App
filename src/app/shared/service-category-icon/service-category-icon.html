@@ -1,0 +1,8 @@
+@switch (category()) {
+  @case ('Air Conditioning') { <svg lucideAirVent [class]="iconClass()"></svg> }
+  @case ('Solar Energy') { <svg lucideSun [class]="iconClass()"></svg> }
+  @case ('Security') { <svg lucideCamera [class]="iconClass()"></svg> }
+  @case ('Electrical') { <svg lucideZap [class]="iconClass()"></svg> }
+  @case ('Plumbing') { <svg lucideDroplets [class]="iconClass()"></svg> }
+  @default { <svg lucideWrench [class]="iconClass()"></svg> }
+}

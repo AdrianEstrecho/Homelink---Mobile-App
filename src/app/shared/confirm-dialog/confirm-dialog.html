@@ -1,0 +1,31 @@
+@if (open()) {
+  <div class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <div class="modal-scrim" (click)="cancelled.emit()"></div>
+    <div class="modal-panel w-full max-w-sm p-6 fade-up">
+      <div class="w-12 h-12 rounded-full flex items-center justify-center mb-4 [&>svg]:w-6 [&>svg]:h-6" [class]="toneStyle().icon">
+        <ng-content select="[icon]"></ng-content>
+      </div>
+      <h2 class="font-display text-lg font-bold text-brand-navy">{{ title() }}</h2>
+      @if (message()) {
+        <p class="text-sm text-gray-600 mt-1.5 whitespace-pre-line">{{ message() }}</p>
+      }
+      <div class="flex gap-3 mt-6">
+        <button
+          type="button"
+          (click)="cancelled.emit()"
+          class="flex-1 border border-gray-300 rounded-lg py-2.5 font-medium text-sm text-gray-700 hover:bg-gray-50 transition"
+        >
+          {{ cancelLabel() }}
+        </button>
+        <button
+          type="button"
+          (click)="confirmed.emit()"
+          class="flex-1 rounded-lg py-2.5 font-semibold text-sm text-white transition"
+          [class]="toneStyle().confirm"
+        >
+          {{ confirmLabel() }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

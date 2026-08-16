@@ -27,6 +27,20 @@
       </div>
 
       <div class="flex items-center gap-3">
+        @if (user()?.role === 'customer') {
+          <a routerLink="/wishlist" class="relative p-2 rounded-lg transition text-white hover:bg-white/10">
+            <svg lucideHeart class="w-5 h-5"></svg>
+            @if (wishlistCount() > 0) {
+              <span class="absolute -top-1 -right-1 bg-brand-orange text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold text-white">{{ wishlistCount() }}</span>
+            }
+          </a>
+          <a routerLink="/cart" class="relative p-2 rounded-lg transition text-white hover:bg-white/10">
+            <svg lucideShoppingCart class="w-5 h-5"></svg>
+            @if (cartCount() > 0) {
+              <span class="absolute -top-1 -right-1 bg-brand-orange text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold text-white">{{ cartCount() }}</span>
+            }
+          </a>
+        }
         @if (user(); as u) {
           <div class="hidden md:flex items-center gap-2">
             <a routerLink="/account" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition text-sm text-white hover:bg-white/10">
@@ -75,6 +89,11 @@
         </a>
       }
       @if (user(); as u) {
+        @if (u.role === 'customer') {
+          <a routerLink="/wishlist" class="flex items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-white/5" (click)="closeMobile()">
+            <svg lucideHeart class="w-4 h-4"></svg> Wishlist{{ wishlistCount() > 0 ? ' (' + wishlistCount() + ')' : '' }}
+          </a>
+        }
         <a routerLink="/account" class="block px-2 py-2 rounded-lg hover:bg-white/5" (click)="closeMobile()">Account ({{ u.firstName }})</a>
         <button type="button" (click)="logout()" class="block w-full text-left px-2 py-2 rounded-lg text-brand-orange hover:bg-white/5">Logout</button>
       } @else {

@@ -1,0 +1,9 @@
+<div class="col-span-full flex flex-col items-center justify-center text-center py-10 px-4">
+  <div class="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mb-3">
+    <svg lucideTriangleAlert class="w-6 h-6 text-red-500"></svg>
+  </div>
+  <p class="text-gray-600 text-sm mb-4">{{ message() }}</p>
+  <button type="button" (click)="retry.emit()" class="flex items-center gap-1.5 text-sm font-semibold text-brand-navy hover:text-brand-orange transition">
+    <svg lucideRotateCw class="w-4 h-4"></svg> Try again
+  </button>
+</div>

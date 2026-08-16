@@ -1,0 +1,35 @@
+<div [class]="'relative ' + wrapClass()">
+  <button
+    #trigger
+    type="button"
+    [disabled]="disabled()"
+    (click)="toggle()"
+    class="input-field flex items-center justify-between gap-2 text-left"
+    [class]="disabled() ? 'bg-gray-50 text-gray-400 cursor-not-allowed' : 'cursor-pointer'"
+  >
+    <span class="truncate" [class]="hasSelection() ? 'text-gray-800' : 'text-gray-400'">{{ selectedLabel() }}</span>
+    <svg lucideChevronDown class="w-4 h-4 shrink-0 text-gray-400 transition-transform" [class.rotate-180]="open()"></svg>
+  </button>
+
+  <ng-template
+    cdkConnectedOverlay
+    [cdkConnectedOverlayOrigin]="triggerRef()"
+    [cdkConnectedOverlayOpen]="open() && !disabled()"
+    [cdkConnectedOverlayPositions]="positions"
+    (overlayOutsideClick)="close()"
+    (detach)="close()"
+  >
+    <div class="z-[200] bg-white rounded-lg shadow-lg border border-gray-100 max-h-60 overflow-y-auto py-1" [style.width.px]="triggerWidth()">
+      @for (o of options(); track o.value) {
+        <button
+          type="button"
+          (click)="selectOption(o.value)"
+          class="w-full text-left px-3 py-2 text-sm transition"
+          [class]="o.value === value() ? 'bg-brand-navy/10 text-brand-navy font-medium' : 'text-gray-700 hover:bg-gray-50'"
+        >
+          {{ o.label }}
+        </button>
+      }
+    </div>
+  </ng-template>
+</div>

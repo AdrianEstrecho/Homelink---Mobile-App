@@ -1,0 +1,7 @@
+@if (failed()) {
+  <div class="flex items-center justify-center bg-gray-100 text-gray-400" [class]="imgClass()">
+    <svg lucideImageOff [class]="iconClass()"></svg>
+  </div>
+} @else {
+  <img [src]="src()" [alt]="alt()" [class]="imgClass()" loading="lazy" (error)="onError()" />
+}

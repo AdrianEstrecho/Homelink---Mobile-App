@@ -5,10 +5,11 @@ import { LucideAlertOctagon } from '@lucide/angular';
 import { ErrorStateService } from './core/error-state.service';
 import { Footer } from './shared/footer/footer';
 import { Navbar } from './shared/navbar/navbar';
+import { ToastViewport } from './shared/toast-viewport/toast-viewport';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Navbar, Footer, LucideAlertOctagon],
+  imports: [RouterOutlet, Navbar, Footer, ToastViewport, LucideAlertOctagon],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })

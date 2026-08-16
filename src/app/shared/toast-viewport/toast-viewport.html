@@ -1,0 +1,35 @@
+@if (toasts().length > 0) {
+  <div class="fixed inset-x-0 top-0 sm:inset-x-auto sm:top-5 sm:right-5 z-[300] flex flex-col items-center sm:items-end gap-2.5 p-4 pointer-events-none">
+    @for (toast of toasts(); track toast.id) {
+      <div class="toast-in pointer-events-auto w-[calc(100vw-2rem)] sm:w-96 modal-panel p-4 flex items-start gap-3 overflow-hidden relative">
+        @if (toast.image) {
+          <app-safe-image [src]="toast.image" alt="" class="w-11 h-11 rounded-lg object-cover shrink-0 bg-gray-100" iconClass="w-5 h-5" />
+        } @else if (toast.icon === 'check') {
+          <div class="w-9 h-9 rounded-full flex items-center justify-center shrink-0" [class]="toast.iconClass || 'bg-brand-teal/15 text-brand-teal'">
+            <svg lucideCheck class="w-4.5 h-4.5"></svg>
+          </div>
+        }
+
+        <div class="min-w-0 flex-1 pt-0.5">
+          @if (toast.title) {
+            <p class="text-sm font-semibold text-brand-ink">{{ toast.title }}</p>
+          }
+          @if (toast.description) {
+            <p class="text-sm text-gray-500 mt-0.5 truncate">{{ toast.description }}</p>
+          }
+          @if (toast.action) {
+            <a [routerLink]="toast.action.to" (click)="dismiss(toast.id)" class="inline-block mt-1.5 text-sm font-semibold text-brand-teal hover:underline">
+              {{ toast.action.label }}
+            </a>
+          }
+        </div>
+
+        <button (click)="dismiss(toast.id)" aria-label="Dismiss notification" class="p-1 text-gray-400 hover:text-gray-600 transition shrink-0 -mt-1 -mr-1">
+          <svg lucideX class="w-4 h-4"></svg>
+        </button>
+
+        <div class="toast-progress absolute bottom-0 left-0 h-0.5 bg-brand-orange/50" [style.animation-duration.ms]="toast.duration"></div>
+      </div>
+    }
+  </div>
+}

@@ -1,0 +1,36 @@
+@if (item(); as item) {
+  <div class="fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-8 fade-up" style="animation-duration: 0.2s">
+    <div class="absolute inset-0 bg-brand-ink/95 backdrop-blur-sm" (click)="closed.emit()"></div>
+
+    <button (click)="closed.emit()" aria-label="Close" class="absolute top-4 right-4 sm:top-6 sm:right-6 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition z-10">
+      <svg lucideX class="w-5 h-5"></svg>
+    </button>
+
+    @if (items().length > 1) {
+      <button (click)="prev()" aria-label="Previous image" class="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition z-10">
+        <svg lucideChevronLeft class="w-6 h-6"></svg>
+      </button>
+      <button (click)="next()" aria-label="Next image" class="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition z-10">
+        <svg lucideChevronRight class="w-6 h-6"></svg>
+      </button>
+    }
+
+    <div class="relative max-w-4xl w-full flex flex-col items-center" (click)="$event.stopPropagation()">
+      <app-safe-image
+        [src]="item.image"
+        [alt]="item.title"
+        class="max-h-[70vh] w-auto max-w-full object-contain rounded-lg shadow-2xl bg-white/5"
+        iconClass="w-12 h-12 text-white/40"
+      />
+      <div class="text-center mt-5">
+        @if (item.category) {
+          <p class="eyebrow text-brand-orange justify-center mb-1.5">{{ item.category }}</p>
+        }
+        <h3 class="font-display text-xl font-bold text-white">{{ item.title }}</h3>
+        @if (items().length > 1) {
+          <p class="text-sm text-white/50 mt-1.5">{{ index() + 1 }} / {{ items().length }}</p>
+        }
+      </div>
+    </div>
+  </div>
+}

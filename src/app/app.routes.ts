@@ -13,6 +13,31 @@ export const routes: Routes = [
     canActivate: [roleGuard(['customer'])],
   },
   {
+    path: 'products',
+    loadComponent: () => import('./features/products/products').then((m) => m.Products),
+  },
+  {
+    path: 'products/:slug',
+    loadComponent: () =>
+      import('./features/products/product-detail/product-detail').then((m) => m.ProductDetail),
+  },
+  {
+    path: 'services',
+    loadComponent: () => import('./features/services/services').then((m) => m.Services),
+  },
+  {
+    path: 'gallery',
+    loadComponent: () => import('./features/gallery/gallery').then((m) => m.Gallery),
+  },
+  {
+    path: 'location',
+    loadComponent: () => import('./features/location/location').then((m) => m.Location),
+  },
+  {
+    path: 'policies',
+    loadComponent: () => import('./features/policies/policies').then((m) => m.Policies),
+  },
+  {
     path: 'login',
     loadComponent: () => import('./features/auth/login/login').then((m) => m.Login),
   },

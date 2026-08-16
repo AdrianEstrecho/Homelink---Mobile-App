@@ -1,0 +1,12 @@
+@switch (slug()) {
+  @case ('air-conditioners') { <svg lucideAirVent [class]="iconClass()"></svg> }
+  @case ('solar-panels') { <svg lucideSun [class]="iconClass()"></svg> }
+  @case ('cctv-security') { <svg lucideCamera [class]="iconClass()"></svg> }
+  @case ('electrical') { <svg lucideZap [class]="iconClass()"></svg> }
+  @case ('plumbing') { <svg lucideDroplets [class]="iconClass()"></svg> }
+  @case ('smart-home') { <svg lucideSmartphone [class]="iconClass()"></svg> }
+  @case ('home-appliances') { <svg lucideRefrigerator [class]="iconClass()"></svg> }
+  @case ('lighting') { <svg lucideLightbulb [class]="iconClass()"></svg> }
+  @case ('tools') { <svg lucideHammer [class]="iconClass()"></svg> }
+  @default { <svg lucidePackage [class]="iconClass()"></svg> }
+}

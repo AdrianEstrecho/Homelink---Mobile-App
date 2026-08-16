@@ -1,0 +1,22 @@
+@if (readOnly()) {
+  <div class="flex items-center gap-0.5" role="img" [attr.aria-label]="value() + ' out of 5 stars'">
+    @for (n of stars; track n) {
+      <svg lucideStar [class]="size() + ' transition-colors ' + (n <= value() ? 'fill-brand-orange text-brand-orange' : 'text-gray-300')"></svg>
+    }
+  </div>
+} @else {
+  <div class="flex items-center gap-0.5">
+    @for (n of stars; track n) {
+      <button
+        type="button"
+        (click)="select(n)"
+        (mouseenter)="hover.set(n)"
+        (mouseleave)="hover.set(0)"
+        class="cursor-pointer"
+        [attr.aria-label]="n + ' star' + (n > 1 ? 's' : '')"
+      >
+        <svg lucideStar [class]="size() + ' transition-colors ' + (n <= display() ? 'fill-brand-orange text-brand-orange' : 'text-gray-300')"></svg>
+      </button>
+    }
+  </div>
+}

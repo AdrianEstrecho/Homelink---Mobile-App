@@ -1,8 +1,238 @@
-<div class="max-w-3xl mx-auto px-4 py-24 text-center">
-  <p class="eyebrow justify-center mb-4">Welcome</p>
-  <h1 class="section-title mb-4">Home<span class="text-brand-orange">Link</span></h1>
-  <p class="text-gray-500">
-    The full homepage (hero, categories, featured products &amp; services) lands in
-    Phase 3 of the mobile app build.
-  </p>
+<div>
+  <app-hero />
+
+  <section class="bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 md:py-8 grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+      @for (s of stats; track s.label; let i = $index) {
+        <div class="text-center md:text-left bg-gradient-to-br from-brand-navy to-brand-blue backdrop-blur-md border border-white/10 rounded-2xl px-4 py-5 md:py-6">
+          <app-count-up [value]="s.value" [delay]="i * 100" class="font-display text-2xl md:text-3xl font-extrabold text-white block" />
+          <p class="text-xs md:text-sm text-white/60 mt-1">{{ s.label }}</p>
+        </div>
+      }
+    </div>
+  </section>
+
+  @if (announcements().length > 0) {
+    <div class="bg-brand-orange/10 border-b border-brand-orange/20 overflow-x-auto no-scrollbar">
+      <div class="py-3">
+        <div class="marquee-track items-center">
+          @for (dup of [0, 1]; track dup) {
+            <div class="flex items-center gap-8 shrink-0 pl-4 pr-12" [attr.aria-hidden]="dup === 1 ? true : null">
+              <svg lucideZap class="w-5 h-5 text-brand-orange shrink-0"></svg>
+              @for (a of announcements(); track a.id) {
+                <span class="text-sm whitespace-nowrap"><strong>{{ a.title }}:</strong> {{ a.content }}</span>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  <section class="py-20 md:py-24 bg-gradient-to-br from-brand-navy to-brand-blue">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+      <div appReveal class="text-center max-w-xl mx-auto mb-10">
+        <p class="eyebrow justify-center mb-3">Why HomeLink</p>
+        <h2 class="section-title text-white">The HomeLink promise</h2>
+      </div>
+      <div appReveal class="max-w-6xl mx-auto">
+        <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 sm:h-[240px]">
+          @for (f of features; track f.title; let i = $index) {
+            <button
+              type="button"
+              (click)="activeFeature.set(i)"
+              (mouseenter)="activeFeature.set(i)"
+              (focus)="activeFeature.set(i)"
+              [attr.aria-expanded]="activeFeature() === i"
+              class="group relative text-left rounded-2xl border p-5 flex flex-col justify-between overflow-hidden transition-all duration-500 ease-in-out"
+              [class]="activeFeature() === i ? 'sm:flex-[2.6] bg-gradient-to-br from-white/[0.14] to-white/[0.04] border-white/20' : 'sm:flex-1 bg-white/[0.03] border-white/10 hover:bg-white/[0.07]'"
+            >
+              <div class="flex items-start justify-between">
+                <div class="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 transition-colors duration-500" [class]="activeFeature() === i ? 'bg-brand-orange/25' : 'bg-white/10 group-hover:bg-white/15'">
+                  @switch (f.icon) {
+                    @case ('shield') { <svg lucideShield class="w-4 h-4 transition-colors duration-500" [class]="activeFeature() === i ? 'text-brand-orange' : 'text-white/70'"></svg> }
+                    @case ('truck') { <svg lucideTruck class="w-4 h-4 transition-colors duration-500" [class]="activeFeature() === i ? 'text-brand-orange' : 'text-white/70'"></svg> }
+                    @case ('wrench') { <svg lucideWrench class="w-4 h-4 transition-colors duration-500" [class]="activeFeature() === i ? 'text-brand-orange' : 'text-white/70'"></svg> }
+                    @case ('star') { <svg lucideStar class="w-4 h-4 transition-colors duration-500" [class]="activeFeature() === i ? 'text-brand-orange' : 'text-white/70'"></svg> }
+                  }
+                </div>
+                <span class="font-display font-black tabular-nums transition-all duration-500" [class]="activeFeature() === i ? 'text-2xl md:text-3xl text-white/30' : 'text-base text-white/20'">
+                  .{{ (i + 1).toString().padStart(2, '0') }}
+                </span>
+              </div>
+
+              <div class="mt-4">
+                <h3 class="font-display font-bold text-white transition-all duration-500" [class]="activeFeature() === i ? 'text-lg mb-1.5' : 'text-sm'">
+                  {{ f.title }}
+                </h3>
+                <div class="grid transition-[grid-template-rows] duration-500 ease-in-out" [style.grid-template-rows]="activeFeature() === i ? '1fr' : '0fr'">
+                  <div class="overflow-hidden">
+                    <p class="text-white/70 text-sm leading-relaxed max-w-xs">{{ f.desc }}</p>
+                  </div>
+                </div>
+              </div>
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="py-20 md:py-24 bg-brand-light">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+      <div appReveal class="text-center max-w-xl mx-auto mb-12">
+        <p class="eyebrow justify-center mb-3">What We Offer</p>
+        <h2 class="section-title">Shop by category</h2>
+      </div>
+      <div class="flex gap-2 sm:gap-4">
+        @if (categories().loading) {
+          @for (_ of [1,2,3,4,5,6,7,8,9]; track $index) {
+            <div class="flex-1 min-w-0"><app-category-skeleton /></div>
+          }
+        } @else if (categories().error) {
+          <app-error-state message="Couldn't load categories right now." (retry)="loadCategories()" />
+        } @else {
+          @for (c of topCategories(); track c.id; let i = $index) {
+            <div appReveal [revealDelay]="i * 50" class="flex-1 min-w-0">
+              <a [routerLink]="['/products']" [queryParams]="{ category: c.slug }" class="card hover:border-brand-orange/40 group h-full flex flex-col items-center text-center p-3 sm:p-5 gap-2 sm:gap-3">
+                <div class="w-10 h-10 sm:w-14 sm:h-14 rounded-2xl bg-brand-navy/5 flex items-center justify-center transition-all duration-300 group-hover:bg-brand-orange/10 group-hover:scale-105">
+                  <app-category-icon [slug]="c.slug" class="w-5 h-5 sm:w-7 sm:h-7 text-brand-navy transition-colors group-hover:text-brand-orange" />
+                </div>
+                <h3 class="font-medium text-xs sm:text-sm text-gray-800 leading-tight">{{ c.name }}</h3>
+              </a>
+            </div>
+          }
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="py-20 md:py-24 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+      <div appReveal class="flex justify-between items-end mb-10 gap-4">
+        <div>
+          <p class="eyebrow mb-3">Handpicked</p>
+          <h2 class="section-title">Featured products</h2>
+        </div>
+        <a routerLink="/products" class="shrink-0 text-brand-navy font-semibold hover:text-brand-orange transition flex items-center gap-1.5 group">
+          View All <svg lucideArrowRight class="w-4 h-4 transition-transform group-hover:translate-x-0.5"></svg>
+        </a>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        @if (featured().loading) {
+          @for (_ of [1,2,3,4]; track $index) {
+            <app-product-card-skeleton />
+          }
+        } @else if (featured().error) {
+          <app-error-state message="Couldn't load featured products right now." (retry)="loadFeatured()" />
+        } @else if (featured().data.length === 0) {
+          <p class="col-span-full text-center text-gray-500 py-8">No featured products yet — check back soon.</p>
+        } @else {
+          @for (p of featured().data; track p.id; let i = $index) {
+            <div appReveal [revealDelay]="i * 70" class="h-full">
+              <app-product-card [product]="p" />
+            </div>
+          }
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="relative overflow-hidden bg-brand-navy py-24 md:py-32">
+    <div appReveal class="relative z-10 flex flex-col items-center text-center px-4">
+      <div class="showcase-float w-56 h-56 md:w-72 md:h-72 rounded-[2rem] bg-gradient-to-br from-white to-gray-100 shadow-2xl flex items-center justify-center">
+        <div class="relative">
+          <svg lucideHouse class="w-20 h-20 md:w-24 md:h-24 text-brand-navy" [attr.stroke-width]="1.5"></svg>
+          <div class="absolute -bottom-2 -right-3 w-12 h-12 rounded-2xl bg-brand-orange flex items-center justify-center shadow-lg">
+            <svg lucideWrench class="w-6 h-6 text-white"></svg>
+          </div>
+        </div>
+      </div>
+      <p class="mt-8 text-gray-300 text-sm max-w-sm">
+        Every product installed, every job completed, by technicians who stand behind their work.
+      </p>
+    </div>
+  </section>
+
+  <section class="py-20 md:py-24 bg-brand-light">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+      <div appReveal class="flex justify-between items-end mb-10 gap-4">
+        <div>
+          <p class="eyebrow mb-3">Book a Pro</p>
+          <h2 class="section-title">Popular services</h2>
+        </div>
+        <a routerLink="/services" class="shrink-0 text-brand-navy font-semibold hover:text-brand-orange transition flex items-center gap-1.5 group">
+          View All <svg lucideArrowRight class="w-4 h-4 transition-transform group-hover:translate-x-0.5"></svg>
+        </a>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        @if (services().loading) {
+          @for (_ of [1,2,3,4]; track $index) {
+            <app-service-card-skeleton />
+          }
+        } @else if (services().error) {
+          <app-error-state message="Couldn't load services right now." (retry)="loadServices()" />
+        } @else if (services().data.length === 0) {
+          <p class="col-span-full text-center text-gray-500 py-8">No services listed yet — check back soon.</p>
+        } @else {
+          @for (s of services().data; track s.id; let i = $index) {
+            <div appReveal [revealDelay]="i * 70" class="h-full">
+              <app-service-card [service]="s" />
+            </div>
+          }
+        }
+      </div>
+    </div>
+  </section>
+
+  @if (reviews().loading || reviews().error || reviews().data.length > 0) {
+    <section class="py-20 md:py-24 bg-white">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6">
+        <div appReveal class="text-center max-w-xl mx-auto mb-12">
+          <p class="eyebrow justify-center mb-3">Testimonials</p>
+          <h2 class="section-title">What our customers say</h2>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          @if (reviews().loading) {
+            @for (_ of [1,2,3]; track $index) {
+              <app-review-card-skeleton />
+            }
+          } @else if (reviews().error) {
+            <app-error-state message="Couldn't load reviews right now." (retry)="loadReviews()" />
+          } @else {
+            @for (r of reviews().data; track r.id; let i = $index) {
+              <div appReveal [revealDelay]="i * 70" class="h-full">
+                <div class="card h-full p-6 flex flex-col gap-3">
+                  <svg lucideQuote class="w-6 h-6 text-brand-orange/40"></svg>
+                  <app-star-rating [value]="r.rating" [readOnly]="true" size="w-4 h-4" />
+                  <p class="text-gray-600 text-sm leading-relaxed flex-1">{{ r.comment }}</p>
+                  <div class="flex items-center gap-3 pt-4 mt-1 border-t border-gray-100">
+                    <div class="w-9 h-9 rounded-full bg-brand-navy/10 flex items-center justify-center text-brand-navy font-semibold text-sm shrink-0">
+                      {{ r.first_name[0] }}{{ r.last_name[0] }}
+                    </div>
+                    <div class="min-w-0">
+                      <p class="text-sm font-semibold text-gray-800 truncate">{{ r.first_name }} {{ r.last_name }}</p>
+                      <p class="text-xs text-gray-400 truncate">{{ r.product_name }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
+          }
+        </div>
+      </div>
+    </section>
+  }
+
+  <section class="relative overflow-hidden py-20 md:py-24 bg-brand-navy text-white">
+    <div class="absolute inset-0 opacity-[0.18] pointer-events-none" aria-hidden="true">
+      <div class="float-blob absolute -top-16 left-1/3 w-80 h-80 bg-brand-orange rounded-full blur-3xl"></div>
+      <div class="float-blob-delayed absolute -bottom-24 right-1/4 w-80 h-80 bg-brand-teal rounded-full blur-3xl"></div>
+    </div>
+    <div appReveal class="relative max-w-3xl mx-auto px-4 text-center">
+      <h2 class="font-display text-3xl md:text-5xl font-extrabold tracking-tight mb-5">Ready to upgrade your home?</h2>
+      <p class="text-gray-300 mb-10 max-w-lg mx-auto">Join thousands of homeowners who trust HomeLink for their home improvement needs.</p>
+      <a routerLink="/register" class="btn-primary inline-flex items-center gap-2">Get Started Free <svg lucideArrowRight class="w-4 h-4"></svg></a>
+    </div>
+  </section>
 </div>
