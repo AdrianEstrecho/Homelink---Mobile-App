@@ -1,0 +1,142 @@
+@if (items().length === 0) {
+  <div appReveal class="max-w-2xl mx-auto px-4 py-24 text-center">
+    <svg lucideShoppingBag class="w-16 h-16 text-gray-300 mx-auto mb-4"></svg>
+    <h2 class="font-display text-2xl font-bold text-brand-ink mb-2">Your cart is empty</h2>
+    <p class="text-gray-500 mb-6">Browse our products and add items to get started.</p>
+    <a routerLink="/products" class="btn-primary">Browse Products</a>
+  </div>
+} @else {
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10 md:py-14">
+    <div class="flex flex-wrap items-start sm:items-end justify-between gap-3 mb-8">
+      <div>
+        <p class="eyebrow mb-3">Your Order</p>
+        <h1 class="section-title">Shopping Cart</h1>
+        <p class="text-gray-500 mt-2">{{ count() }} item{{ count() === 1 ? '' : 's' }} in your cart</p>
+      </div>
+      <button type="button" (click)="confirmClear.set(true)" class="flex items-center gap-1.5 text-sm font-medium text-gray-400 hover:text-red-600 transition">
+        <svg lucideTrash2 class="w-3.5 h-3.5"></svg> Clear Cart
+      </button>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8 items-start">
+      <div class="space-y-4">
+        @for (item of items(); track item.productId; let i = $index) {
+          <div appReveal [revealDelay]="(i > 5 ? 5 : i) * 60" class="card p-4">
+            <div class="flex gap-4">
+              <a [routerLink]="['/products', item.slug]" class="shrink-0">
+                <app-safe-image [src]="item.image" [alt]="item.name" class="w-20 h-20 object-cover rounded-lg bg-gray-100" />
+              </a>
+              <div class="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center gap-3">
+                <div class="flex-1 min-w-0">
+                  <a [routerLink]="['/products', item.slug]" class="font-semibold text-brand-ink hover:text-brand-orange transition line-clamp-2">
+                    {{ item.name }}
+                  </a>
+                  <p class="text-brand-navy font-bold mt-1">{{ item.price | homelinkPrice }}</p>
+                  @if (lowStock(item)) {
+                    <p class="text-xs text-red-500 font-medium mt-1">Only {{ item.stock }} left in stock</p>
+                  }
+                </div>
+
+                <div class="flex items-center justify-between sm:justify-end gap-4">
+                  <div class="flex items-center gap-2 border border-gray-200 rounded-lg shrink-0">
+                    <button
+                      type="button"
+                      (click)="cart.updateQty(item.productId, item.quantity - 1)"
+                      [disabled]="item.quantity <= 1"
+                      [attr.aria-label]="'Decrease quantity of ' + item.name"
+                      class="p-2 hover:bg-gray-100 disabled:opacity-30 disabled:hover:bg-transparent rounded-l-lg transition"
+                    >
+                      <svg lucideMinus class="w-4 h-4"></svg>
+                    </button>
+                    <span class="w-8 text-center font-medium text-sm">{{ item.quantity }}</span>
+                    <button
+                      type="button"
+                      (click)="cart.updateQty(item.productId, item.quantity + 1)"
+                      [disabled]="item.quantity >= maxQty(item)"
+                      [attr.aria-label]="'Increase quantity of ' + item.name"
+                      class="p-2 hover:bg-gray-100 disabled:opacity-30 disabled:hover:bg-transparent rounded-r-lg transition"
+                    >
+                      <svg lucidePlus class="w-4 h-4"></svg>
+                    </button>
+                  </div>
+                  <p class="font-bold w-20 text-right text-brand-ink shrink-0">{{ item.price * item.quantity | homelinkPrice }}</p>
+                  <button
+                    type="button"
+                    (click)="requestRemove(item)"
+                    [attr.aria-label]="'Remove ' + item.name + ' from cart'"
+                    class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition shrink-0"
+                  >
+                    <svg lucideTrash2 class="w-4 h-4"></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="lg:sticky lg:top-24">
+        <div appReveal [revealDelay]="120" class="card p-6">
+          <h2 class="text-xs font-semibold uppercase tracking-[0.14em] text-gray-400 mb-4">Order Summary</h2>
+
+          <div class="space-y-2 text-sm">
+            <div class="flex justify-between text-gray-500">
+              <span>Subtotal ({{ count() }} item{{ count() === 1 ? '' : 's' }})</span>
+              <span class="font-medium text-brand-ink">{{ total() | homelinkPrice }}</span>
+            </div>
+            <div class="flex justify-between text-gray-500">
+              <span>Shipping</span>
+              <span class="text-xs text-gray-400">Calculated at checkout</span>
+            </div>
+          </div>
+
+          <div class="flex justify-between items-center font-bold text-lg mt-4 pt-4 border-t border-gray-100">
+            <span class="text-brand-ink">Total</span>
+            <span class="text-brand-navy">{{ total() | homelinkPrice }}</span>
+          </div>
+
+          <a routerLink="/checkout" class="btn-primary w-full text-center block py-3 mt-5">Proceed to Checkout</a>
+          <a routerLink="/products" class="block text-center text-sm text-brand-teal hover:underline mt-3">Continue Shopping</a>
+
+          <div class="grid grid-cols-3 gap-2 mt-5 pt-5 border-t border-gray-100 text-center">
+            <div>
+              <svg lucideLock class="w-4 h-4 text-brand-teal mx-auto mb-1"></svg>
+              <p class="text-[11px] text-gray-400 leading-tight">Secure Checkout</p>
+            </div>
+            <div>
+              <svg lucideShieldCheck class="w-4 h-4 text-brand-teal mx-auto mb-1"></svg>
+              <p class="text-[11px] text-gray-400 leading-tight">Buyer Protection</p>
+            </div>
+            <div>
+              <svg lucideTruck class="w-4 h-4 text-brand-teal mx-auto mb-1"></svg>
+              <p class="text-[11px] text-gray-400 leading-tight">Fast Delivery</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <app-confirm-dialog
+      [open]="confirmClear()"
+      title="Clear your cart?"
+      message="This will remove all items from your cart. This can't be undone."
+      confirmLabel="Clear Cart"
+      tone="delete"
+      (confirmed)="confirmClearCart()"
+      (cancelled)="confirmClear.set(false)"
+    >
+      <svg icon lucideTrash2></svg>
+    </app-confirm-dialog>
+    <app-confirm-dialog
+      [open]="removeTarget() !== null"
+      title="Remove this item?"
+      [message]="removeTarget() ? '&quot;' + removeTarget()!.name + '&quot; will be removed from your cart.' : ''"
+      confirmLabel="Remove"
+      tone="delete"
+      (confirmed)="confirmRemove()"
+      (cancelled)="removeTarget.set(null)"
+    >
+      <svg icon lucideTrash2></svg>
+    </app-confirm-dialog>
+  </div>
+}

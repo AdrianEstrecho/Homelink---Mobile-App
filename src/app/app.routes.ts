@@ -38,6 +38,16 @@ export const routes: Routes = [
     loadComponent: () => import('./features/policies/policies').then((m) => m.Policies),
   },
   {
+    path: 'cart',
+    loadComponent: () => import('./features/cart/cart').then((m) => m.Cart),
+    canActivate: [roleGuard(['customer'])],
+  },
+  {
+    path: 'wishlist',
+    loadComponent: () => import('./features/wishlist/wishlist').then((m) => m.Wishlist),
+    canActivate: [roleGuard(['customer'])],
+  },
+  {
     path: 'login',
     loadComponent: () => import('./features/auth/login/login').then((m) => m.Login),
   },

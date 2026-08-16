@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 
-export type ToastIcon = 'check';
+export type ToastIcon = 'check' | 'trash';
 
 export interface ToastAction {
   label: string;
