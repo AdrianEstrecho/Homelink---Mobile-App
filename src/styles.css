@@ -1,1 +1,266 @@
-/* You can add global styles to this file, and also import other style files */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Ported from frontend/src/index.css. The scroll-pinned hero parallax
+   (.hero-wrap/.hero-pin/.villa-*) and the full-screen page-cover transition
+   (.overlay-cover-in/out) are intentionally left out of this first pass —
+   both are decorative flourishes tied to oversized assets/components not yet
+   built for the mobile app (see the mobile port plan). Everything else below
+   ports unchanged. */
+
+@layer base {
+  html {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  html::-webkit-scrollbar {
+    display: none;
+  }
+  body {
+    @apply bg-white text-gray-900 font-sans antialiased;
+  }
+  ::selection {
+    @apply bg-brand-orange/25 text-brand-navy;
+  }
+  :focus-visible {
+    @apply outline-none ring-2 ring-brand-orange ring-offset-2 ring-offset-white rounded-sm;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-brand-orange hover:bg-orange-600 text-white font-semibold px-6 py-2.5 rounded-lg transition-all active:scale-[0.98];
+  }
+  .btn-secondary {
+    @apply bg-brand-navy hover:bg-brand-blue text-white font-semibold px-6 py-2.5 rounded-lg transition-all;
+  }
+  .btn-outline {
+    @apply backdrop-blur-md border border-brand-navy/20 text-brand-navy hover:border-brand-navy/40 font-semibold px-6 py-2.5 rounded-lg transition-all;
+    background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.04));
+  }
+  .btn-outline:hover {
+    background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.12));
+  }
+  .card {
+    @apply backdrop-blur-md rounded-2xl border border-white/70 shadow-[0_4px_24px_-8px_rgba(15,43,91,0.10)] overflow-hidden transition-all duration-300;
+    background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.68));
+  }
+  .input-field {
+    @apply w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-orange focus:border-transparent outline-none transition;
+  }
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  .modal-scrim {
+    @apply absolute inset-0 backdrop-blur-md;
+    background-image: linear-gradient(160deg, rgba(15, 43, 91, 0.6), rgba(15, 43, 91, 0.4));
+  }
+  .modal-panel {
+    @apply relative backdrop-blur-xl border border-white/70 rounded-2xl shadow-2xl;
+    background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.97), rgba(255, 255, 255, 0.82));
+  }
+  .eyebrow {
+    @apply inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-brand-orange;
+  }
+  .section-title {
+    @apply font-display text-3xl md:text-4xl font-extrabold tracking-tight text-brand-ink;
+  }
+  .skeleton {
+    @apply relative overflow-hidden bg-gray-200 rounded-lg;
+  }
+  .skeleton::after {
+    content: '';
+    @apply absolute inset-0 -translate-x-full;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+    animation: shimmer 1.6s infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .skeleton::after {
+      animation: none;
+    }
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .reveal-in {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .float-blob {
+    animation: floatBlob 9s ease-in-out infinite;
+  }
+  .float-blob-delayed {
+    animation: floatBlob 11s ease-in-out infinite;
+    animation-delay: -3s;
+  }
+
+  .ambient-mesh {
+    position: fixed;
+    inset: 0;
+    z-index: -10;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .ambient-mesh > span {
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(90px);
+    opacity: 0.16;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ambient-mesh .float-blob,
+    .ambient-mesh .float-blob-delayed {
+      animation: none;
+    }
+  }
+
+  .fade-up {
+    animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .route-fade {
+    animation: routeFadeIn 0.4s ease-out both;
+  }
+
+  .toast-in {
+    animation: toastIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .toast-progress {
+    width: 100%;
+    animation: toastProgress linear forwards;
+  }
+
+  .scrollbar-ghost::-webkit-scrollbar {
+    width: 6px;
+  }
+  .scrollbar-ghost::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-ghost::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    border-radius: 9999px;
+  }
+  .scrollbar-ghost:hover::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.18);
+  }
+  .scrollbar-ghost::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.32);
+  }
+  @supports not selector(::-webkit-scrollbar) {
+    .scrollbar-ghost {
+      scrollbar-width: thin;
+      scrollbar-color: transparent transparent;
+    }
+    .scrollbar-ghost:hover {
+      scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+    }
+  }
+
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+    .float-blob,
+    .float-blob-delayed,
+    .fade-up,
+    .toast-in,
+    .route-fade {
+      animation: none;
+    }
+  }
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes floatBlob {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-3%, 4%) scale(1.06); }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes routeFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(12px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes toastProgress {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
+.marquee-track {
+  display: flex;
+  white-space: nowrap;
+  animation: marqueeScroll 28s linear infinite;
+}
+@keyframes marqueeScroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.showcase-float {
+  animation: showcaseFloat 6s ease-in-out infinite;
+}
+@keyframes showcaseFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-14px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track,
+  .showcase-float {
+    animation: none;
+  }
+}
+
+/* Generic single-area print isolation — toggle .printing-active on <body> and mark
+   the one element to print with .print-area (see OrderDetailsModal). */
+@media print {
+  body.printing-active > * {
+    visibility: hidden;
+  }
+  body.printing-active .print-area,
+  body.printing-active .print-area * {
+    visibility: visible;
+  }
+  body.printing-active .print-area {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    max-height: none;
+    overflow: visible;
+    padding: 32px;
+    margin: 0;
+    box-shadow: none;
+    border-radius: 0;
+  }
+  body.printing-active .no-print {
+    display: none !important;
+  }
+}
