@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">HomeLink</string>
+    <string name="title_activity_main">HomeLink</string>
+    <string name="package_name">com.homelink.mobile</string>
+    <string name="custom_url_scheme">com.homelink.mobile</string>
+</resources>
