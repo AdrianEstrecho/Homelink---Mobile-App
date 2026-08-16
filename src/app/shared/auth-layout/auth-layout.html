@@ -1,0 +1,30 @@
+<div class="min-h-screen flex bg-white">
+  <div class="w-full lg:w-1/2 flex flex-col px-6 sm:px-12 lg:px-16 py-8">
+    <a routerLink="/" class="inline-flex items-center gap-2 group w-fit">
+      <div class="w-9 h-9 bg-brand-orange rounded-lg flex items-center justify-center group-hover:scale-105 transition">
+        <svg lucideHouse class="w-5 h-5 text-white"></svg>
+      </div>
+      <span class="font-display font-extrabold text-xl tracking-tight text-brand-navy">
+        Home<span class="text-brand-orange">Link</span>
+      </span>
+    </a>
+
+    <div class="flex-1 flex flex-col justify-center max-w-md mx-auto w-full py-10">
+      @if (backTo()) {
+        <a [routerLink]="backTo()" class="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-brand-navy mb-6 w-fit">
+          <svg lucideChevronLeft class="w-4 h-4"></svg> {{ backLabel() }}
+        </a>
+      }
+      <div class="mb-7">
+        <h1 class="font-display text-3xl font-extrabold tracking-tight text-brand-ink">{{ title() }}</h1>
+        @if (subtitle()) {
+          <p class="text-gray-500 mt-2">{{ subtitle() }}</p>
+        }
+      </div>
+      <ng-content></ng-content>
+    </div>
+  </div>
+  <div class="hidden lg:flex w-1/2 items-center justify-center bg-brand-light/40 p-10">
+    <ng-content select="[illustration]"></ng-content>
+  </div>
+</div>

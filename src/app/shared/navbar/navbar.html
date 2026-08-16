@@ -27,9 +27,20 @@
       </div>
 
       <div class="flex items-center gap-3">
-        <a routerLink="/login" class="hidden md:flex items-center gap-1.5 btn-primary text-sm py-2 px-4">
-          <svg lucideUser class="w-4 h-4"></svg> Login
-        </a>
+        @if (user(); as u) {
+          <div class="hidden md:flex items-center gap-2">
+            <a routerLink="/account" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition text-sm text-white hover:bg-white/10">
+              <svg lucideLayoutDashboard class="w-4 h-4"></svg> {{ u.firstName }}
+            </a>
+            <button type="button" (click)="logout()" class="p-2 rounded-lg transition text-white hover:bg-white/10" title="Logout">
+              <svg lucideLogOut class="w-4 h-4"></svg>
+            </button>
+          </div>
+        } @else {
+          <a routerLink="/login" class="hidden md:flex items-center gap-1.5 btn-primary text-sm py-2 px-4">
+            <svg lucideUser class="w-4 h-4"></svg> Login
+          </a>
+        }
         <button
           type="button"
           class="md:hidden p-2 rounded-lg text-white hover:bg-white/10 transition"
@@ -63,9 +74,14 @@
           {{ link.label }}
         </a>
       }
-      <a routerLink="/login" class="block px-2 py-2 rounded-lg text-brand-orange font-semibold hover:bg-white/5" (click)="closeMobile()">
-        Login / Register
-      </a>
+      @if (user(); as u) {
+        <a routerLink="/account" class="block px-2 py-2 rounded-lg hover:bg-white/5" (click)="closeMobile()">Account ({{ u.firstName }})</a>
+        <button type="button" (click)="logout()" class="block w-full text-left px-2 py-2 rounded-lg text-brand-orange hover:bg-white/5">Logout</button>
+      } @else {
+        <a routerLink="/login" class="block px-2 py-2 rounded-lg text-brand-orange font-semibold hover:bg-white/5" (click)="closeMobile()">
+          Login / Register
+        </a>
+      }
     </div>
   </div>
 </nav>

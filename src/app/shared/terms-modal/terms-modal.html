@@ -1,0 +1,36 @@
+@if (open()) {
+  <div class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <div class="modal-scrim" (click)="close()"></div>
+    <div class="modal-panel w-full max-w-2xl max-h-[85vh] flex flex-col fade-up">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
+        <div class="flex items-center gap-2.5">
+          <svg lucideFileText class="w-5 h-5 text-brand-navy"></svg>
+          <h2 class="font-display text-lg font-bold text-brand-navy">Terms &amp; Conditions</h2>
+        </div>
+        <button
+          type="button"
+          (click)="close()"
+          aria-label="Close"
+          class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition"
+        >
+          <svg lucideX class="w-5 h-5"></svg>
+        </button>
+      </div>
+
+      <div class="overflow-y-auto px-6 py-5 space-y-5">
+        @for (s of sections; track s.title) {
+          <div>
+            <h3 class="font-semibold text-sm text-brand-navy mb-1">{{ s.title }}</h3>
+            <p class="text-sm text-gray-600 leading-relaxed">{{ s.content }}</p>
+          </div>
+        }
+      </div>
+
+      <div class="px-6 py-4 border-t border-gray-100 shrink-0">
+        <button type="button" (click)="close()" class="btn-primary w-full py-2.5">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+}

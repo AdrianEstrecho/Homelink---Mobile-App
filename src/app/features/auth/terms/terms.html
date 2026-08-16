@@ -1,0 +1,15 @@
+<div class="max-w-4xl mx-auto px-4 py-14 md:py-16">
+  <div class="text-center mb-14">
+    <p class="eyebrow justify-center mb-4"><svg lucideFileText class="w-3.5 h-3.5"></svg> Legal</p>
+    <h1 class="section-title">Terms &amp; Conditions</h1>
+    <p class="text-gray-500 mt-3">Please read these terms carefully before using HomeLink.</p>
+  </div>
+  <div class="space-y-5">
+    @for (s of sections; track s.title) {
+      <div class="card p-6">
+        <h2 class="font-display font-bold text-lg text-brand-ink mb-2">{{ s.title }}</h2>
+        <p class="text-gray-500 leading-relaxed">{{ s.content }}</p>
+      </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,9 @@
+<div class="max-w-3xl mx-auto px-4 py-24 text-center">
+  <p class="eyebrow justify-center mb-4">Account</p>
+  <h1 class="section-title mb-4">Hi, {{ user()?.firstName }}</h1>
+  <p class="text-gray-500 mb-8">
+    The full account area (profile, addresses, orders, bookings &amp; more) lands
+    in Phase 6 of the mobile app build.
+  </p>
+  <button type="button" (click)="logout()" class="btn-outline">Log out</button>
+</div>

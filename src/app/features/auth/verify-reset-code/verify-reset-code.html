@@ -1,0 +1,53 @@
+@if (!pending()?.email) {
+  <app-auth-layout title="Verify code" backTo="/login">
+    <app-auth-illustration illustration>
+      <svg icon lucideShieldCheck></svg>
+      <svg badge lucideShieldCheck></svg>
+    </app-auth-illustration>
+    <p class="text-sm text-gray-600">
+      This verification session has expired. Please
+      <a routerLink="/forgot-password" class="text-brand-orange font-semibold hover:underline">request a new code</a>
+      to reset your password.
+    </p>
+  </app-auth-layout>
+} @else {
+  <app-auth-layout
+    title="Verify code"
+    subtitle="An authentication code has been sent to your email."
+    backTo="/login"
+  >
+    <app-auth-illustration illustration>
+      <svg icon lucideShieldCheck></svg>
+      <svg badge lucideShieldCheck></svg>
+    </app-auth-illustration>
+
+    <form (ngSubmit)="onSubmit()" class="space-y-5">
+      <div>
+        <label class="block text-sm font-medium mb-1.5">Enter Code</label>
+        <input
+          name="code"
+          required
+          autofocus
+          [ngModel]="code"
+          (ngModelChange)="onCodeInput($event)"
+          maxlength="8"
+          class="input-field tracking-widest font-mono uppercase"
+          placeholder="XXXXXXXX"
+        />
+      </div>
+      <p class="text-sm text-gray-600">
+        Didn't receive a code?
+        <button type="button" (click)="onResend()" class="text-brand-orange font-semibold hover:underline">Resend</button>
+        @if (resent()) {
+          <span class="text-green-600 ml-2">Sent!</span>
+        }
+      </p>
+      @if (error()) {
+        <p class="text-red-600 text-sm">{{ error() }}</p>
+      }
+      <button type="submit" [disabled]="loading()" class="btn-primary w-full py-3 disabled:opacity-50">
+        {{ loading() ? 'Verifying...' : 'Verify' }}
+      </button>
+    </form>
+  </app-auth-layout>
+}

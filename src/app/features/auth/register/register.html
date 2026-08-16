@@ -1,0 +1,78 @@
+<app-auth-layout title="Sign up" subtitle="Let's get you all set up so you can access your personal account.">
+  <app-auth-illustration illustration>
+    <svg icon lucideUserPlus></svg>
+    <svg badge lucideShieldCheck></svg>
+  </app-auth-illustration>
+
+  <form (ngSubmit)="onSubmit()" class="space-y-4">
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium mb-1.5">First Name</label>
+        <input name="firstName" required [(ngModel)]="firstName" class="input-field" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1.5">Last Name</label>
+        <input name="lastName" required [(ngModel)]="lastName" class="input-field" />
+      </div>
+    </div>
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium mb-1.5">Email</label>
+        <input type="email" name="email" required [(ngModel)]="email" class="input-field" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1.5">Phone Number</label>
+        <input name="phone" [(ngModel)]="phone" class="input-field" />
+      </div>
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1.5">Password</label>
+      <input
+        type="password"
+        name="password"
+        required
+        [(ngModel)]="password"
+        (focus)="passwordTouched.set(true)"
+        class="input-field"
+      />
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1.5">Confirm Password</label>
+      <input type="password" name="confirmPassword" required [(ngModel)]="confirmPassword" class="input-field" />
+    </div>
+    @if (passwordTouched()) {
+      <app-password-requirements [password]="password" />
+    }
+    @if (!passwordsMatch) {
+      <p class="text-red-600 text-xs">Passwords do not match</p>
+    }
+
+    <label class="flex items-start gap-2 text-sm text-gray-600 pt-1">
+      <input
+        type="checkbox"
+        required
+        [ngModel]="acceptedTerms()"
+        (ngModelChange)="acceptedTerms.set($event)"
+        name="acceptedTerms"
+        class="mt-0.5"
+      />
+      <span>
+        I agree to all the
+        <button type="button" (click)="showTerms.set(true)" class="text-brand-orange font-semibold hover:underline">Terms</button>
+        and Privacy Policies
+      </span>
+    </label>
+
+    @if (error()) {
+      <p class="text-red-600 text-sm">{{ error() }}</p>
+    }
+    <button type="submit" [disabled]="loading()" class="btn-primary w-full flex items-center justify-center gap-2 py-3 disabled:opacity-50">
+      <svg lucideUserPlus class="w-4 h-4"></svg> {{ loading() ? 'Creating...' : 'Create account' }}
+    </button>
+    <p class="text-center text-sm text-gray-600">
+      Already have an account? <a routerLink="/login" class="text-brand-orange font-semibold hover:underline">Login</a>
+    </p>
+  </form>
+
+  <app-terms-modal [open]="showTerms()" (closed)="showTerms.set(false)" />
+</app-auth-layout>
