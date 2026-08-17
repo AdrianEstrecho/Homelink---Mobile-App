@@ -1,0 +1,39 @@
+<div>
+  <h2 class="font-display font-bold text-lg text-brand-ink mb-1">Notification Preferences</h2>
+  <p class="text-sm text-gray-500 mb-6">Choose what HomeLink emails you about.</p>
+
+  <div class="space-y-3">
+    @for (o of options; track o.key) {
+      <div class="flex items-center gap-3 p-4 rounded-xl bg-gray-50 border border-gray-100">
+        <div class="w-9 h-9 rounded-lg bg-white flex items-center justify-center shrink-0 border border-gray-100">
+          @switch (o.icon) {
+            @case ('package') { <svg lucidePackage class="w-4 h-4 text-brand-navy"></svg> }
+            @case ('calendar') { <svg lucideCalendar class="w-4 h-4 text-brand-navy"></svg> }
+            @case ('megaphone') { <svg lucideMegaphone class="w-4 h-4 text-brand-navy"></svg> }
+          }
+        </div>
+        <div class="min-w-0 flex-1">
+          <p class="text-sm font-semibold text-gray-800">{{ o.title }}</p>
+          <p class="text-xs text-gray-500 mt-0.5">{{ o.desc }}</p>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          [attr.aria-checked]="prefs()[o.key]"
+          (click)="toggle(o.key)"
+          class="relative shrink-0 w-11 h-6 rounded-full transition-colors"
+          [class]="prefs()[o.key] ? 'bg-brand-orange' : 'bg-gray-300'"
+        >
+          <span class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform" [class]="prefs()[o.key] ? 'translate-x-5' : 'translate-x-0'"></span>
+        </button>
+      </div>
+    }
+  </div>
+
+  <button type="button" (click)="handleSave()" [disabled]="saving()" class="btn-primary flex items-center gap-2 mt-6 disabled:opacity-60">
+    @if (saved()) {
+      <svg lucideCheck class="w-4 h-4"></svg>
+    }
+    {{ saving() ? 'Saving...' : saved() ? 'Saved' : 'Save Preferences' }}
+  </button>
+</div>

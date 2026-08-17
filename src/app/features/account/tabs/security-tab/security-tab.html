@@ -1,0 +1,33 @@
+<div>
+  <h2 class="font-display font-bold text-lg text-brand-ink mb-1">Security</h2>
+  <p class="text-sm text-gray-500 mb-6">Update your password to keep your account secure.</p>
+
+  <form (submit)="$event.preventDefault(); handleSubmit()" class="max-w-sm space-y-4">
+    <div>
+      <label class="block text-sm font-medium mb-1.5 text-gray-700">Current Password</label>
+      <input type="password" [ngModel]="form().currentPassword" (ngModelChange)="updateField('currentPassword', $event)" name="currentPassword" class="input-field" required />
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1.5 text-gray-700">New Password</label>
+      <input type="password" [ngModel]="form().newPassword" (ngModelChange)="updateField('newPassword', $event)" name="newPassword" class="input-field" required minlength="6" />
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1.5 text-gray-700">Confirm New Password</label>
+      <input type="password" [ngModel]="form().confirmPassword" (ngModelChange)="updateField('confirmPassword', $event)" name="confirmPassword" class="input-field" required minlength="6" />
+    </div>
+    @if (error()) {
+      <p class="text-red-600 text-sm">{{ error() }}</p>
+    }
+    @if (success()) {
+      <p class="flex items-center gap-1.5 text-brand-teal text-sm font-medium"><svg lucideCircleCheck class="w-4 h-4"></svg> Password updated successfully.</p>
+    }
+    <button type="submit" [disabled]="saving()" class="btn-primary flex items-center gap-2 disabled:opacity-60">
+      <svg lucideKeyRound class="w-4 h-4"></svg> {{ saving() ? 'Updating...' : 'Update Password' }}
+    </button>
+  </form>
+
+  <div class="mt-8 pt-6 border-t border-gray-100 flex items-start gap-3 text-sm text-gray-500 max-w-sm">
+    <svg lucideLock class="w-4 h-4 text-gray-400 mt-0.5 shrink-0"></svg>
+    <p>Your password is never stored in plain text — HomeLink only keeps a one-way hash of it.</p>
+  </div>
+</div>

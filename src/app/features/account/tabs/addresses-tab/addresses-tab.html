@@ -1,0 +1,97 @@
+<div>
+  <div class="flex items-center justify-between mb-6">
+    <h2 class="font-display font-bold text-lg text-brand-ink">Saved Addresses</h2>
+    @if (!showForm()) {
+      <button type="button" (click)="startAdd()" class="flex items-center gap-1.5 text-sm font-semibold text-brand-navy hover:text-brand-orange transition">
+        <svg lucidePlus class="w-4 h-4"></svg> Add Address
+      </button>
+    }
+  </div>
+
+  @if (showForm()) {
+    <form (submit)="$event.preventDefault(); handleSubmit()" class="space-y-4 mb-6 p-4 rounded-xl bg-gray-50 border border-gray-100">
+      <div class="flex items-center justify-between">
+        <h3 class="text-sm font-semibold text-gray-700">{{ editingId() ? 'Edit Address' : 'New Address' }}</h3>
+        <button type="button" (click)="cancel()" class="text-gray-400 hover:text-gray-600"><svg lucideX class="w-4 h-4"></svg></button>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1.5 text-gray-700">Label</label>
+        <input [ngModel]="form().label" (ngModelChange)="updateField('label', $event)" name="label" placeholder="Home, Office, ..." class="input-field" required />
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-sm font-medium mb-1.5 text-gray-700">House / Unit No.</label>
+          <input [ngModel]="form().houseNumber" (ngModelChange)="updateField('houseNumber', $event)" name="houseNumber" placeholder="123" class="input-field" />
+        </div>
+        <div class="col-span-2">
+          <label class="block text-sm font-medium mb-1.5 text-gray-700">Street</label>
+          <input [ngModel]="form().street" (ngModelChange)="updateField('street', $event)" name="street" placeholder="Rizal Street" class="input-field" required />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium mb-1.5 text-gray-700">Village / Barangay</label>
+          <input [ngModel]="form().village" (ngModelChange)="updateField('village', $event)" name="village" placeholder="Barangay San Isidro" class="input-field" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1.5 text-gray-700">City / Municipality</label>
+          <input [ngModel]="form().city" (ngModelChange)="updateField('city', $event)" name="city" placeholder="Makati City" class="input-field" required />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium mb-1.5 text-gray-700">Province</label>
+          <input [ngModel]="form().province" (ngModelChange)="updateField('province', $event)" name="province" placeholder="Metro Manila" class="input-field" required />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1.5 text-gray-700">Postal Code</label>
+          <input [ngModel]="form().postalCode" (ngModelChange)="updateField('postalCode', $event)" name="postalCode" placeholder="1200" class="input-field" required />
+        </div>
+      </div>
+
+      @if (error()) {
+        <p class="text-red-600 text-sm">{{ error() }}</p>
+      }
+      <button type="submit" [disabled]="saving()" class="btn-primary text-sm disabled:opacity-60">{{ saving() ? 'Saving...' : 'Save Address' }}</button>
+    </form>
+  }
+
+  @if (addresses() === null) {
+    <p class="text-gray-400 text-sm">Loading...</p>
+  } @else if (addresses()!.length === 0 && !showForm()) {
+    <div class="text-center py-10">
+      <svg lucideMapPin class="w-8 h-8 text-gray-300 mx-auto mb-3"></svg>
+      <p class="text-gray-500 text-sm">No saved addresses yet. Add one to speed up checkout.</p>
+    </div>
+  } @else {
+    <div class="space-y-3">
+      @for (a of addresses()!; track a.id) {
+        <div class="flex items-start gap-3 p-4 rounded-xl bg-gray-50 border border-gray-100">
+          <div class="w-9 h-9 rounded-lg bg-white flex items-center justify-center shrink-0 border border-gray-100"><svg lucideMapPin class="w-4 h-4 text-brand-navy"></svg></div>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2 flex-wrap">
+              <p class="text-sm font-semibold text-gray-800">{{ a.label }}</p>
+              @if (a.is_default) {
+                <span class="badge bg-brand-teal/15 text-brand-teal flex items-center gap-1"><svg lucideStar class="w-3 h-3"></svg> Default</span>
+              }
+            </div>
+            <p class="text-sm text-gray-600 mt-0.5">{{ joinParts(a.house_number, a.street) }}</p>
+            <p class="text-sm text-gray-600">{{ joinPartsComma(a.village, a.city) }}</p>
+            <p class="text-sm text-gray-600">{{ joinParts(a.province, a.postal_code) }}</p>
+          </div>
+          <div class="flex items-center gap-1 shrink-0">
+            @if (!a.is_default) {
+              <button type="button" (click)="setDefault(a.id)" title="Set as default" class="p-2 text-gray-400 hover:text-brand-orange transition"><svg lucideStar class="w-4 h-4"></svg></button>
+            }
+            <button type="button" (click)="startEdit(a)" title="Edit" class="p-2 text-gray-400 hover:text-brand-navy transition"><svg lucidePencil class="w-4 h-4"></svg></button>
+            <button type="button" (click)="remove(a.id)" title="Delete" class="p-2 text-gray-400 hover:text-red-600 transition"><svg lucideTrash2 class="w-4 h-4"></svg></button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

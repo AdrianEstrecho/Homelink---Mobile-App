@@ -1,0 +1,72 @@
+<div>
+  <div class="flex items-center justify-between mb-6">
+    <h2 class="font-display font-bold text-lg text-brand-ink">Payment Methods</h2>
+    @if (!showForm()) {
+      <button type="button" (click)="startAdd()" class="flex items-center gap-1.5 text-sm font-semibold text-brand-navy hover:text-brand-orange transition">
+        <svg lucidePlus class="w-4 h-4"></svg> Add Card
+      </button>
+    }
+  </div>
+
+  @if (showForm()) {
+    <form (submit)="$event.preventDefault(); handleSubmit()" class="space-y-4 mb-6 p-4 rounded-xl bg-gray-50 border border-gray-100">
+      <div class="flex items-center justify-between">
+        <h3 class="text-sm font-semibold text-gray-700">New Card</h3>
+        <button type="button" (click)="cancel()" class="text-gray-400 hover:text-gray-600"><svg lucideX class="w-4 h-4"></svg></button>
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1.5 text-gray-700">Card Number</label>
+        <input [ngModel]="form().cardNumber" (ngModelChange)="updateField('cardNumber', $event)" name="cardNumber" placeholder="1234 5678 9012 3456" class="input-field" required inputmode="numeric" />
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium mb-1.5 text-gray-700">Expiry Month</label>
+          <app-select [value]="form().expMonth" (valueChange)="updateField('expMonth', $event)" placeholder="Month" [options]="monthOptions" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1.5 text-gray-700">Expiry Year</label>
+          <app-select [value]="form().expYear" (valueChange)="updateField('expYear', $event)" placeholder="Year" [options]="yearOptions" />
+        </div>
+      </div>
+      @if (error()) {
+        <p class="text-red-600 text-sm">{{ error() }}</p>
+      }
+      <p class="flex items-center gap-1.5 text-xs text-gray-500">
+        <svg lucideShieldCheck class="w-3.5 h-3.5 text-brand-teal"></svg> We only store your card's brand and last 4 digits — the full number is never saved.
+      </p>
+      <button type="submit" [disabled]="saving()" class="btn-primary text-sm disabled:opacity-60">{{ saving() ? 'Saving...' : 'Save Card' }}</button>
+    </form>
+  }
+
+  @if (methods() === null) {
+    <p class="text-gray-400 text-sm">Loading...</p>
+  } @else if (methods()!.length === 0 && !showForm()) {
+    <div class="text-center py-10">
+      <svg lucideCreditCard class="w-8 h-8 text-gray-300 mx-auto mb-3"></svg>
+      <p class="text-gray-500 text-sm">No saved payment methods yet.</p>
+    </div>
+  } @else {
+    <div class="space-y-3">
+      @for (m of methods()!; track m.id) {
+        <div class="flex items-center gap-3 p-4 rounded-xl bg-gray-50 border border-gray-100">
+          <div class="w-9 h-9 rounded-lg bg-white flex items-center justify-center shrink-0 border border-gray-100"><svg lucideCreditCard class="w-4 h-4 text-brand-navy"></svg></div>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2 flex-wrap">
+              <p class="text-sm font-semibold text-gray-800">{{ m.brand }} •••• {{ m.last4 }}</p>
+              @if (m.is_default) {
+                <span class="badge bg-brand-teal/15 text-brand-teal flex items-center gap-1"><svg lucideStar class="w-3 h-3"></svg> Default</span>
+              }
+            </div>
+            <p class="text-sm text-gray-500 mt-0.5">Expires {{ m.exp_month.toString().padStart(2, '0') }}/{{ m.exp_year }}</p>
+          </div>
+          <div class="flex items-center gap-1 shrink-0">
+            @if (!m.is_default) {
+              <button type="button" (click)="setDefault(m.id)" title="Set as default" class="p-2 text-gray-400 hover:text-brand-orange transition"><svg lucideStar class="w-4 h-4"></svg></button>
+            }
+            <button type="button" (click)="remove(m.id)" title="Remove" class="p-2 text-gray-400 hover:text-red-600 transition"><svg lucideTrash2 class="w-4 h-4"></svg></button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
