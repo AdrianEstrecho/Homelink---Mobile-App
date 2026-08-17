@@ -1,0 +1,51 @@
+<div class="max-w-4xl mx-auto px-4 py-8">
+  <button type="button" (click)="goBack()" class="flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-brand-navy transition mb-4">
+    <svg lucideArrowLeft class="w-4 h-4"></svg> Back
+  </button>
+  <p class="eyebrow mb-3">Order History</p>
+  <h1 class="section-title mb-8">My Orders</h1>
+
+  @if (orders().length === 0) {
+    <div class="text-center py-20">
+      <svg lucideShoppingBag class="w-16 h-16 text-gray-300 mx-auto mb-4"></svg>
+      <p class="text-gray-500">No orders yet.</p>
+    </div>
+  } @else {
+    <div class="space-y-3">
+      @for (o of orders(); track o.id) {
+        <button type="button" (click)="selectedOrder.set(o)" class="card p-5 w-full text-left flex flex-wrap items-center justify-between gap-3 hover:border-brand-navy/20 hover:shadow-md transition">
+          <div>
+            <p class="font-semibold text-brand-ink">Order #{{ o.id.slice(0, 8).toUpperCase() }}</p>
+            <p class="text-sm text-gray-500">
+              {{ o.created_at | date }} · {{ o.items?.length || 0 }} item{{ o.items?.length === 1 ? '' : 's' }}
+            </p>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="badge" [class]="statusColor(o.status)">{{ o.status }}</span>
+            <span class="font-bold text-brand-navy">{{ o.total | homelinkPrice }}</span>
+            <svg lucideChevronRight class="w-4 h-4 text-gray-400"></svg>
+          </div>
+        </button>
+      }
+    </div>
+  }
+
+  @if (selectedOrder(); as order) {
+    <app-order-details-modal
+      [order]="order"
+      [person]="billedTo()"
+      personLabel="Billed To"
+      [showCancel]="true"
+      (closed)="selectedOrder.set(null)"
+      (cancelRequested)="cancelTarget.set(order)"
+    />
+  }
+
+  <app-cancel-reason-modal
+    [open]="cancelTarget() !== null"
+    title="Cancel this order?"
+    message="This can't be undone once submitted. Let us know why you're cancelling."
+    (submitted)="submitCancel($event)"
+    (cancelled)="cancelTarget.set(null)"
+  />
+</div>

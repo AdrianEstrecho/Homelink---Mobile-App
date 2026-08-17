@@ -26,6 +26,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/services/services').then((m) => m.Services),
   },
   {
+    path: 'services/:slug/book',
+    loadComponent: () => import('./features/service-book/service-book').then((m) => m.ServiceBook),
+    canActivate: [roleGuard(['customer'])],
+  },
+  {
     path: 'gallery',
     loadComponent: () => import('./features/gallery/gallery').then((m) => m.Gallery),
   },
@@ -56,6 +61,16 @@ export const routes: Routes = [
     path: 'checkout/return',
     loadComponent: () =>
       import('./features/checkout/checkout-return/checkout-return').then((m) => m.CheckoutReturn),
+    canActivate: [roleGuard(['customer'])],
+  },
+  {
+    path: 'orders',
+    loadComponent: () => import('./features/orders/orders').then((m) => m.Orders),
+    canActivate: [roleGuard(['customer'])],
+  },
+  {
+    path: 'bookings',
+    loadComponent: () => import('./features/bookings/bookings').then((m) => m.Bookings),
     canActivate: [roleGuard(['customer'])],
   },
   {

@@ -12,6 +12,10 @@
           <div class="w-9 h-9 rounded-full flex items-center justify-center shrink-0" [class]="toast.iconClass || 'bg-brand-teal/15 text-brand-teal'">
             <svg lucideTrash2 class="w-4.5 h-4.5"></svg>
           </div>
+        } @else if (toast.icon === 'x-circle') {
+          <div class="w-9 h-9 rounded-full flex items-center justify-center shrink-0" [class]="toast.iconClass || 'bg-brand-teal/15 text-brand-teal'">
+            <svg lucideCircleX class="w-4.5 h-4.5"></svg>
+          </div>
         }
 
         <div class="min-w-0 flex-1 pt-0.5">

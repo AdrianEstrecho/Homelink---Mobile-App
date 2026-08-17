@@ -1,0 +1,145 @@
+@if (loadError()) {
+  <div class="max-w-2xl mx-auto px-4 py-20">
+    <app-error-state message="Couldn't load this service right now." (retry)="retry()" />
+  </div>
+} @else if (!service()) {
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10 md:py-14">
+    <app-skeleton class="h-4 w-40 mb-8" />
+    <div class="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8">
+      <div class="space-y-6">
+        <app-skeleton class="h-48 w-full rounded-2xl" />
+        <app-skeleton class="h-32 w-full rounded-2xl" />
+      </div>
+      <app-skeleton class="h-72 w-full rounded-2xl" />
+    </div>
+  </div>
+} @else {
+  @let s = service()!;
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10 md:py-14">
+    <nav class="flex items-center gap-1.5 text-sm text-gray-400 mb-8 flex-wrap" aria-label="Breadcrumb">
+      <a routerLink="/" class="hover:text-brand-navy transition">Home</a>
+      <svg lucideChevronRight class="w-3.5 h-3.5 shrink-0"></svg>
+      <a routerLink="/services" class="hover:text-brand-navy transition">Services</a>
+      <svg lucideChevronRight class="w-3.5 h-3.5 shrink-0"></svg>
+      <span class="text-brand-ink font-medium truncate max-w-[14rem]">{{ s.name }}</span>
+    </nav>
+
+    <p class="eyebrow mb-3">Schedule</p>
+    <h1 class="section-title mb-8">Book {{ s.name }}</h1>
+
+    <form (submit)="$event.preventDefault(); handleSubmit()" class="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8 items-start">
+      <div class="space-y-6">
+        <section class="card p-6">
+          <h2 class="flex items-center gap-2.5 text-sm font-semibold text-brand-ink mb-5">
+            <span class="w-6 h-6 rounded-full bg-brand-navy text-white text-xs font-bold flex items-center justify-center shrink-0">1</span>
+            Date &amp; Time
+          </h2>
+          <div>
+            <label class="flex items-center gap-1.5 text-sm font-medium text-brand-ink mb-1.5"><svg lucideCalendar class="w-4 h-4 text-gray-400"></svg> Preferred Date</label>
+            <input
+              type="date"
+              required
+              [attr.min]="todayIso"
+              [value]="date()"
+              (change)="onDateChange($any($event.target).value)"
+              class="input-field max-w-xs"
+            />
+          </div>
+          @if (date()) {
+            <div class="mt-4">
+              <label class="flex items-center gap-1.5 text-sm font-medium text-brand-ink mb-1.5"><svg lucideClock class="w-4 h-4 text-gray-400"></svg> Preferred Time</label>
+              <div class="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                @for (slot of slots(); track slot.time) {
+                  <button
+                    type="button"
+                    [disabled]="!slot.available"
+                    (click)="time.set(slot.time)"
+                    class="py-2.5 rounded-xl text-sm font-medium transition border"
+                    [class]="
+                      time() === slot.time
+                        ? 'border-brand-orange bg-brand-orange/5 text-brand-navy font-semibold'
+                        : slot.available
+                        ? 'border-gray-200 hover:border-gray-300'
+                        : 'border-gray-100 bg-gray-50 text-gray-300 cursor-not-allowed'
+                    "
+                  >
+                    {{ slot.time }}
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        </section>
+
+        <section class="card p-6">
+          <app-address-picker [stepNumber]="2" title="Service Address" />
+        </section>
+
+        <section class="card p-6">
+          <app-payment-method-picker [stepNumber]="3" />
+        </section>
+
+        <section class="card p-6">
+          <h2 class="text-sm font-semibold text-brand-ink mb-3">Notes (optional)</h2>
+          <textarea [value]="notes()" (input)="notes.set($any($event.target).value)" rows="3" class="input-field" placeholder="Any special instructions for the technician..."></textarea>
+        </section>
+
+        @if (error()) {
+          <p class="text-red-600 text-sm">{{ error() }}</p>
+        }
+      </div>
+
+      <div class="lg:sticky lg:top-24">
+        <div class="card p-6">
+          <h2 class="text-xs font-semibold uppercase tracking-[0.14em] text-gray-400 mb-4">Booking Summary</h2>
+
+          <div class="flex items-center gap-3 pb-4 border-b border-gray-100">
+            <app-safe-image [src]="s.image" [alt]="s.name" class="w-14 h-14 rounded-lg object-cover shrink-0 bg-gray-100" iconClass="w-5 h-5" />
+            <div class="min-w-0 flex-1">
+              <p class="text-sm font-semibold text-brand-ink truncate">{{ s.name }}</p>
+              <p class="text-xs text-gray-400">{{ s.category }} · ~{{ s.duration_hours.toFixed(1) }}h</p>
+            </div>
+          </div>
+
+          <div class="space-y-2 text-sm mt-4">
+            <div class="flex justify-between text-gray-500"><span>Base Price</span><span>{{ base() | homelinkPrice }}</span></div>
+            @if (firstTimeAmt() > 0) {
+              <div class="flex justify-between text-green-600"><span>{{ discounts()!.firstTime!.label }}</span><span>-{{ firstTimeAmt() | homelinkPrice }}</span></div>
+            }
+            @if (holidayAmt() > 0) {
+              <div class="flex justify-between text-green-600"><span>{{ discounts()!.holiday!.label }}</span><span>-{{ holidayAmt() | homelinkPrice }}</span></div>
+            }
+            @if (!firstTimeAmt() && !holidayAmt()) {
+              <p class="text-xs text-brand-teal font-medium">First-time customers get 15% off</p>
+            }
+          </div>
+
+          <div class="flex justify-between items-center font-bold text-lg mt-3 pt-3 border-t border-gray-200">
+            <span class="text-brand-ink">Total</span>
+            <span class="text-brand-navy">{{ total() | homelinkPrice }}</span>
+          </div>
+
+          <button type="submit" [disabled]="loading() || !date() || !time()" class="btn-primary w-full py-3 mt-5 disabled:opacity-50">
+            {{ loading() ? 'Confirming...' : 'Confirm Booking — ' + (total() | homelinkPrice) }}
+          </button>
+          <p class="text-center text-xs text-gray-400 mt-3">Zero obligation until confirmed. We never share your info.</p>
+
+          <div class="grid grid-cols-3 gap-2 mt-5 pt-5 border-t border-gray-100 text-center">
+            <div>
+              <svg lucideShieldCheck class="w-4 h-4 text-brand-teal mx-auto mb-1"></svg>
+              <p class="text-[11px] text-gray-400 leading-tight">Verified Technicians</p>
+            </div>
+            <div>
+              <svg lucideAward class="w-4 h-4 text-brand-teal mx-auto mb-1"></svg>
+              <p class="text-[11px] text-gray-400 leading-tight">Satisfaction Guarantee</p>
+            </div>
+            <div>
+              <svg lucideTimer class="w-4 h-4 text-brand-teal mx-auto mb-1"></svg>
+              <p class="text-[11px] text-gray-400 leading-tight">On-Time Arrival</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+}

@@ -1,0 +1,52 @@
+<div class="max-w-4xl mx-auto px-4 py-8">
+  <button type="button" (click)="goBack()" class="flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-brand-navy transition mb-4">
+    <svg lucideArrowLeft class="w-4 h-4"></svg> Back
+  </button>
+  <p class="eyebrow mb-3">Schedule</p>
+  <h1 class="section-title mb-8">My Service Bookings</h1>
+
+  @if (bookings().length === 0) {
+    <p class="text-gray-500 text-center py-12">No bookings yet.</p>
+  } @else {
+    <div class="space-y-4">
+      @for (b of bookings(); track b.id) {
+        <div class="card p-6">
+          <div class="flex flex-wrap justify-between items-start gap-2 mb-4 pb-4 border-b border-gray-100">
+            <div>
+              <h3 class="font-display font-bold text-brand-ink">{{ b.service_name }}</h3>
+              <p class="text-sm text-gray-500">{{ b.service_category }}</p>
+            </div>
+            <span class="badge capitalize" [class]="statusColor(b.status)">{{ statusLabel(b.status) }}</span>
+          </div>
+          <div class="text-sm text-gray-600 space-y-1 mb-4">
+            <p>Date: {{ b.scheduled_date }} at {{ b.scheduled_time }}</p>
+            <p>Address: {{ b.address }}</p>
+            @if (b.employee_first_name) {
+              <p>Technician: {{ b.employee_first_name }} {{ b.employee_last_name }}</p>
+            }
+          </div>
+          @if (b.status === 'cancelled' && b.cancel_reason) {
+            <div class="bg-red-50 border border-red-100 rounded-lg px-3 py-2.5 mb-4">
+              <p class="text-xs font-semibold text-red-700 uppercase tracking-wide mb-1">Cancellation Reason</p>
+              <p class="text-sm text-red-800">{{ b.cancel_reason }}</p>
+            </div>
+          }
+          <div class="flex justify-between items-center">
+            <span class="font-bold text-brand-navy">{{ b.price | homelinkPrice }}</span>
+            @if (b.status === 'pending') {
+              <button type="button" (click)="cancelTarget.set(b)" class="text-sm text-red-600 hover:underline">Cancel</button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <app-cancel-reason-modal
+    [open]="cancelTarget() !== null"
+    title="Cancel this booking?"
+    message="This can't be undone once submitted. Let us know why you're cancelling."
+    (submitted)="submitCancel($event)"
+    (cancelled)="cancelTarget.set(null)"
+  />
+</div>
