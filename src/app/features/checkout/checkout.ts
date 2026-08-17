@@ -1,3 +1,4 @@
+import { Browser } from '@capacitor/browser';
 import { Capacitor } from '@capacitor/core';
 import { Component, computed, inject, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -20,11 +21,6 @@ interface PaymentIntentResponse {
   pendingCheckoutId: string;
   paymentIntentId: string;
   clientKey: string;
-}
-
-async function loadBrowserPlugin() {
-  const mod = await import('@capacitor/browser');
-  return mod.Browser;
 }
 
 @Component({
@@ -182,12 +178,15 @@ export class Checkout {
             })
           : await this.paymongo.createPaymentMethod({ type: 'gcash', billing });
 
-      // See mobile port plan §3.5: the web app's return_url points back at its own
-      // /checkout/return; on native we keep pointing at the deployed web app too
-      // (not an Angular-hosted URL), since the redirect chain needs a real, always-
-      // resolvable HTTPS final hop even though we dismiss the in-app browser before
-      // the user ever sees it land there.
-      const returnUrl = `${window.location.origin}/checkout/return?pcid=${pendingCheckoutId}`;
+      // See mobile port plan §3.5: on native, window.location.origin is the
+      // Capacitor WebView's own local origin (e.g. https://localhost), which
+      // isn't reachable from the separate Custom Tab process the redirect
+      // actually lands in -- confirmed on-device (Phase 8), it dead-ends on
+      // "site can't be reached". Point at the already-deployed, pcid-driven
+      // web app instead, which is a real, always-resolvable HTTPS hop.
+      const returnUrl = Capacitor.isNativePlatform()
+        ? `https://homelink-frontend-umber.vercel.app/checkout/return?pcid=${pendingCheckoutId}`
+        : `${window.location.origin}/checkout/return?pcid=${pendingCheckoutId}`;
       const attached = await this.paymongo.attachPaymentIntent({ paymentIntentId, paymentMethodId, clientKey, returnUrl });
 
       if (attached.status === 'succeeded') {
@@ -217,7 +216,14 @@ export class Checkout {
     // Native: open a separate in-app browser tab rather than navigating our own
     // WebView away. It doesn't need to redirect back into the app at all — we
     // just keep polling underneath and dismiss it once we know the result.
-    const Browser = await loadBrowserPlugin();
+    // Browser must be a plain static import (not dynamically imported/returned
+    // through an async function) -- a Capacitor plugin proxy object flowing
+    // through a Promise's resolved value triggers JS's "thenable assimilation"
+    // (Promise machinery calls .then() on anything that looks thenable), and
+    // Capacitor's proxy throws "Browser.then() is not implemented on android"
+    // when that happens. Confirmed via on-device testing (Phase 8) -- this
+    // never surfaces in `ng serve`, since Capacitor.isNativePlatform() is
+    // false there and this whole branch never runs.
     await Browser.open({ url: redirectUrl });
     const result = await pollPaymentStatus(this.api, pendingCheckoutId);
     await Browser.close();
