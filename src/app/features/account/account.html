@@ -1,22 +1,14 @@
-<div class="max-w-5xl mx-auto px-4 py-8">
-  <button type="button" (click)="goBack()" class="flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-brand-navy transition mb-4">
-    <svg lucideArrowLeft class="w-4 h-4"></svg> Back
-  </button>
-
-  <div appReveal class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand-navy via-brand-blue to-brand-navy text-white p-6 sm:p-8 pb-14 sm:pb-16 shadow-lg shadow-brand-navy/10">
-    <div class="absolute inset-0 opacity-10 pointer-events-none">
-      <div class="float-blob absolute -top-10 -left-10 w-56 h-56 bg-brand-orange rounded-full blur-3xl"></div>
-      <div class="float-blob-delayed absolute -bottom-16 -right-10 w-64 h-64 bg-brand-teal rounded-full blur-3xl"></div>
-    </div>
-    <div class="relative flex flex-col sm:flex-row sm:items-center gap-6">
-      <div class="relative w-20 h-20 rounded-full flex items-center justify-center text-2xl font-display font-bold ring-4 ring-white/20 shadow-xl shrink-0" [class]="avatarColor()">
+<div class="px-4 py-4">
+  <div appReveal class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand-navy via-brand-blue to-brand-navy text-white p-5 pb-12 elevation-2">
+    <div class="relative flex items-center gap-4">
+      <div class="relative w-16 h-16 rounded-full flex items-center justify-center text-xl font-display font-bold ring-4 ring-white/20 shrink-0" [class]="avatarColor()">
         {{ initials() }}
       </div>
       <div class="flex-1 min-w-0">
-        <p class="text-xs font-semibold uppercase tracking-[0.14em] text-white/50 mb-1.5">{{ greeting }}</p>
-        <div class="flex items-center gap-2.5 flex-wrap">
-          <h1 class="font-display text-2xl sm:text-3xl font-extrabold tracking-tight truncate">{{ user()?.firstName }} {{ user()?.lastName }}</h1>
-          <span class="badge bg-white/15 backdrop-blur-sm text-white flex items-center gap-1">
+        <p class="text-xs font-semibold uppercase tracking-[0.14em] text-white/50 mb-1">{{ greeting }}</p>
+        <div class="flex items-center gap-2 flex-wrap">
+          <h1 class="font-display text-xl font-extrabold tracking-tight truncate">{{ user()?.firstName }} {{ user()?.lastName }}</h1>
+          <span class="badge bg-white/15 text-white flex items-center gap-1">
             <svg lucideShieldCheck class="w-3 h-3"></svg> Customer
           </span>
         </div>
@@ -25,50 +17,50 @@
     </div>
   </div>
 
-  <div appReveal [revealDelay]="40" class="relative z-10 -mt-9 sm:-mt-10 mb-6">
-    <div class="grid grid-cols-3 gap-3 sm:gap-4">
-      <div class="bg-white rounded-2xl border border-gray-100 shadow-lg shadow-brand-navy/5 p-3.5 sm:p-5 flex flex-col items-center text-center sm:flex-row sm:text-left gap-2 sm:gap-3.5 hover:-translate-y-1 hover:shadow-xl transition-all">
-        <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-brand-navy/10 flex items-center justify-center shrink-0"><svg lucidePackage class="w-4.5 h-4.5 sm:w-5 sm:h-5 text-brand-navy"></svg></div>
+  <div appReveal [revealDelay]="40" class="relative z-10 -mt-7 mb-5">
+    <div class="grid grid-cols-3 gap-2.5">
+      <div class="bg-white rounded-2xl border border-gray-100 elevation-2 p-3 flex flex-col items-center text-center gap-1.5">
+        <div class="w-9 h-9 rounded-xl bg-brand-navy/10 flex items-center justify-center shrink-0"><svg lucidePackage class="w-4.5 h-4.5 text-brand-navy"></svg></div>
         <div class="min-w-0">
           @if (ordersCount() === null) {
-            <p class="font-display font-bold text-lg sm:text-xl text-brand-ink leading-tight">—</p>
+            <p class="font-display font-bold text-lg text-brand-ink leading-tight">—</p>
           } @else {
-            <app-count-up [value]="ordersCount()!.toString()" class="font-display font-bold text-lg sm:text-xl text-brand-ink leading-tight" />
+            <app-count-up [value]="ordersCount()!.toString()" class="font-display font-bold text-lg text-brand-ink leading-tight" />
           }
-          <p class="text-[10px] sm:text-[11px] uppercase tracking-wide text-gray-400 mt-0.5">Orders</p>
+          <p class="text-[10px] uppercase tracking-wide text-gray-400 mt-0.5">Orders</p>
         </div>
       </div>
-      <div class="bg-white rounded-2xl border border-gray-100 shadow-lg shadow-brand-navy/5 p-3.5 sm:p-5 flex flex-col items-center text-center sm:flex-row sm:text-left gap-2 sm:gap-3.5 hover:-translate-y-1 hover:shadow-xl transition-all">
-        <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-brand-teal/10 flex items-center justify-center shrink-0"><svg lucideCalendar class="w-4.5 h-4.5 sm:w-5 sm:h-5 text-brand-teal"></svg></div>
+      <div class="bg-white rounded-2xl border border-gray-100 elevation-2 p-3 flex flex-col items-center text-center gap-1.5">
+        <div class="w-9 h-9 rounded-xl bg-brand-teal/10 flex items-center justify-center shrink-0"><svg lucideCalendar class="w-4.5 h-4.5 text-brand-teal"></svg></div>
         <div class="min-w-0">
           @if (bookingsCount() === null) {
-            <p class="font-display font-bold text-lg sm:text-xl text-brand-ink leading-tight">—</p>
+            <p class="font-display font-bold text-lg text-brand-ink leading-tight">—</p>
           } @else {
-            <app-count-up [value]="bookingsCount()!.toString()" class="font-display font-bold text-lg sm:text-xl text-brand-ink leading-tight" />
+            <app-count-up [value]="bookingsCount()!.toString()" class="font-display font-bold text-lg text-brand-ink leading-tight" />
           }
-          <p class="text-[10px] sm:text-[11px] uppercase tracking-wide text-gray-400 mt-0.5">Bookings</p>
+          <p class="text-[10px] uppercase tracking-wide text-gray-400 mt-0.5">Bookings</p>
         </div>
       </div>
-      <div class="bg-white rounded-2xl border border-gray-100 shadow-lg shadow-brand-navy/5 p-3.5 sm:p-5 flex flex-col items-center text-center sm:flex-row sm:text-left gap-2 sm:gap-3.5 hover:-translate-y-1 hover:shadow-xl transition-all">
-        <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-brand-orange/10 flex items-center justify-center shrink-0"><svg lucideClock class="w-4.5 h-4.5 sm:w-5 sm:h-5 text-brand-orange"></svg></div>
+      <div class="bg-white rounded-2xl border border-gray-100 elevation-2 p-3 flex flex-col items-center text-center gap-1.5">
+        <div class="w-9 h-9 rounded-xl bg-brand-orange/10 flex items-center justify-center shrink-0"><svg lucideClock class="w-4.5 h-4.5 text-brand-orange"></svg></div>
         <div class="min-w-0">
-          <p class="font-display font-bold text-lg sm:text-xl text-brand-ink leading-tight truncate">{{ memberSince() }}</p>
-          <p class="text-[10px] sm:text-[11px] uppercase tracking-wide text-gray-400 mt-0.5">Member Since</p>
+          <p class="font-display font-bold text-lg text-brand-ink leading-tight truncate">{{ memberSince() }}</p>
+          <p class="text-[10px] uppercase tracking-wide text-gray-400 mt-0.5">Since</p>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-6">
-    <nav appReveal [revealDelay]="130" class="card p-2 flex md:flex-col gap-1 overflow-x-auto md:overflow-visible h-fit">
+  <div class="flex flex-col gap-5">
+    <nav appReveal [revealDelay]="130" class="card p-2 flex gap-1 overflow-x-auto no-scrollbar">
       @for (t of tabs; track t.key) {
         <button
           type="button"
           (click)="tab.set(t.key)"
-          class="group flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-all whitespace-nowrap text-left"
-          [class]="tab() === t.key ? 'bg-brand-navy/8 text-brand-navy font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-brand-navy'"
+          class="tap group shrink-0 flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm transition-colors whitespace-nowrap text-left"
+          [class]="tab() === t.key ? 'bg-brand-navy/8 text-brand-navy font-semibold' : 'text-gray-600 active:bg-gray-50'"
         >
-          <span class="flex items-center justify-center w-7 h-7 rounded-lg transition-colors shrink-0" [class]="tab() === t.key ? 'bg-brand-navy text-white' : 'bg-gray-100 text-gray-400 group-hover:bg-brand-navy/10 group-hover:text-brand-navy'">
+          <span class="flex items-center justify-center w-7 h-7 rounded-lg transition-colors shrink-0" [class]="tab() === t.key ? 'bg-brand-navy text-white' : 'bg-gray-100 text-gray-400'">
             @switch (t.icon) {
               @case ('user') { <svg lucideUser class="w-3.5 h-3.5"></svg> }
               @case ('map') { <svg lucideMapPinned class="w-3.5 h-3.5"></svg> }
@@ -82,25 +74,52 @@
           {{ t.label }}
         </button>
       }
-      <a routerLink="/orders" class="group flex items-center gap-2.5 px-3 py-2.5 rounded-lg hover:bg-gray-50 text-gray-600 hover:text-brand-navy text-sm transition-all whitespace-nowrap md:mt-1 md:pt-3 md:border-t md:border-gray-100">
-        <span class="flex items-center justify-center w-7 h-7 rounded-lg bg-gray-100 text-gray-400 group-hover:bg-brand-navy/10 group-hover:text-brand-navy transition-colors shrink-0">
-          <svg lucidePackage class="w-3.5 h-3.5"></svg>
-        </span>
-        My Orders
-      </a>
-      <a routerLink="/bookings" class="group flex items-center gap-2.5 px-3 py-2.5 rounded-lg hover:bg-gray-50 text-gray-600 hover:text-brand-navy text-sm transition-all whitespace-nowrap">
-        <span class="flex items-center justify-center w-7 h-7 rounded-lg bg-gray-100 text-gray-400 group-hover:bg-brand-navy/10 group-hover:text-brand-navy transition-colors shrink-0">
-          <svg lucideCalendar class="w-3.5 h-3.5"></svg>
-        </span>
-        My Bookings
-      </a>
-      <button type="button" (click)="confirmLogout.set(true)" class="group flex items-center gap-2.5 px-3 py-2.5 rounded-lg hover:bg-red-50 text-red-600 text-sm transition-all whitespace-nowrap md:mt-2 md:border-t md:pt-3">
-        <span class="flex items-center justify-center w-7 h-7 rounded-lg bg-red-50 text-red-500 group-hover:bg-red-100 transition-colors shrink-0">
-          <svg lucideLogOut class="w-3.5 h-3.5"></svg>
-        </span>
-        Log Out
-      </button>
     </nav>
+
+    <div appReveal [revealDelay]="150" class="card divide-y divide-gray-100">
+      <a routerLink="/orders" class="tap group flex items-center gap-3 px-4 py-3 text-gray-700 active:bg-gray-50">
+        <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-brand-navy/10 text-brand-navy shrink-0"><svg lucidePackage class="w-4 h-4"></svg></span>
+        <span class="flex-1 text-sm font-medium">My Orders</span>
+        <svg lucideChevronRight class="w-4 h-4 text-gray-300"></svg>
+      </a>
+      <a routerLink="/bookings" class="tap group flex items-center gap-3 px-4 py-3 text-gray-700 active:bg-gray-50">
+        <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-brand-teal/10 text-brand-teal shrink-0"><svg lucideCalendar class="w-4 h-4"></svg></span>
+        <span class="flex-1 text-sm font-medium">My Bookings</span>
+        <svg lucideChevronRight class="w-4 h-4 text-gray-300"></svg>
+      </a>
+      <a routerLink="/wishlist" class="tap group flex items-center gap-3 px-4 py-3 text-gray-700 active:bg-gray-50">
+        <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-red-50 text-red-500 shrink-0"><svg lucideHeart class="w-4 h-4"></svg></span>
+        <span class="flex-1 text-sm font-medium">Wishlist</span>
+        <svg lucideChevronRight class="w-4 h-4 text-gray-300"></svg>
+      </a>
+    </div>
+
+    <div appReveal [revealDelay]="160" class="card divide-y divide-gray-100">
+      <a routerLink="/gallery" class="tap group flex items-center gap-3 px-4 py-3 text-gray-700 active:bg-gray-50">
+        <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 text-gray-500 shrink-0"><svg lucideImage class="w-4 h-4"></svg></span>
+        <span class="flex-1 text-sm font-medium">Gallery</span>
+        <svg lucideChevronRight class="w-4 h-4 text-gray-300"></svg>
+      </a>
+      <a routerLink="/location" class="tap group flex items-center gap-3 px-4 py-3 text-gray-700 active:bg-gray-50">
+        <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 text-gray-500 shrink-0"><svg lucideMapPin class="w-4 h-4"></svg></span>
+        <span class="flex-1 text-sm font-medium">Our Location</span>
+        <svg lucideChevronRight class="w-4 h-4 text-gray-300"></svg>
+      </a>
+      <a routerLink="/policies" class="tap group flex items-center gap-3 px-4 py-3 text-gray-700 active:bg-gray-50">
+        <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 text-gray-500 shrink-0"><svg lucideFileText class="w-4 h-4"></svg></span>
+        <span class="flex-1 text-sm font-medium">Policies</span>
+        <svg lucideChevronRight class="w-4 h-4 text-gray-300"></svg>
+      </a>
+    </div>
+
+    <button type="button" (click)="confirmLogout.set(true)" class="tap card flex items-center justify-center gap-2 px-4 py-3 text-red-600 font-semibold text-sm active:bg-red-50">
+      <svg lucideLogOut class="w-4 h-4"></svg> Log Out
+    </button>
+
+    <p class="text-center text-xs text-gray-400 pb-2">
+      <svg lucidePhone class="w-3 h-3 inline -mt-0.5 mr-1"></svg>(02) 8123-4567 &middot;
+      <svg lucideMail class="w-3 h-3 inline -mt-0.5 mx-1"></svg>support&#64;homelink.com
+    </p>
 
     <app-confirm-dialog
       [open]="confirmLogout()"

@@ -1,27 +1,17 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { LucideCircleCheck, LucideKeyRound, LucideLock } from '@lucide/angular';
+import { LucideCircleCheck, LucideKeyRound } from '@lucide/angular';
 
 import { ApiService } from '../../../core/api.service';
 import { PasswordResetFlowService } from '../../../core/password-reset-flow.service';
 import { isPasswordValid } from '../../../core/password.util';
-import { AuthIllustration } from '../../../shared/auth-illustration/auth-illustration';
 import { AuthLayout } from '../../../shared/auth-layout/auth-layout';
 import { PasswordRequirements } from '../../../shared/password-requirements/password-requirements';
 
 @Component({
   selector: 'app-reset-password',
-  imports: [
-    FormsModule,
-    RouterLink,
-    AuthLayout,
-    AuthIllustration,
-    PasswordRequirements,
-    LucideKeyRound,
-    LucideLock,
-    LucideCircleCheck,
-  ],
+  imports: [FormsModule, RouterLink, AuthLayout, PasswordRequirements, LucideKeyRound, LucideCircleCheck],
   templateUrl: './reset-password.html',
   styleUrl: './reset-password.css',
 })

@@ -18,7 +18,7 @@ const TONE_STYLES: Record<ConfirmTone, ToneStyle> = {
 /**
  * Ported from frontend/src/components/ConfirmDialog.jsx. React passes the
  * icon as a component prop; here callers project it via the [icon] content
- * slot instead (see AuthIllustration for the same pattern).
+ * slot instead.
  */
 @Component({
   selector: 'app-confirm-dialog',

@@ -1,5 +1,4 @@
 import { Component, inject, signal, viewChild } from '@angular/core';
-import { LucideArrowLeft } from '@lucide/angular';
 
 import { ApiService } from '../../core/api.service';
 import { Booking } from '../../core/booking.model';
@@ -10,7 +9,7 @@ import { CancelReasonModal } from '../../shared/cancel-reason-modal/cancel-reaso
 
 @Component({
   selector: 'app-bookings',
-  imports: [PricePipe, CancelReasonModal, LucideArrowLeft],
+  imports: [PricePipe, CancelReasonModal],
   templateUrl: './bookings.html',
   styleUrl: './bookings.css',
 })
@@ -29,10 +28,6 @@ export class Bookings {
       .get<Booking[]>('/bookings/my')
       .then((data) => this.bookings.set(data))
       .catch(() => {});
-  }
-
-  goBack(): void {
-    window.history.back();
   }
 
   statusLabel(status: string): string {

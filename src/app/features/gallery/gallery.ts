@@ -1,6 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { LucideArrowRight, LucideExpand } from '@lucide/angular';
+import { LucideArrowRight } from '@lucide/angular';
 
 import { ApiService } from '../../core/api.service';
 import { GalleryItem } from '../../core/gallery.model';
@@ -18,7 +18,7 @@ interface LoadState<T> {
 
 @Component({
   selector: 'app-gallery',
-  imports: [RouterLink, ErrorState, RevealDirective, SafeImage, GalleryLightbox, GallerySkeleton, LucideExpand, LucideArrowRight],
+  imports: [RouterLink, ErrorState, RevealDirective, SafeImage, GalleryLightbox, GallerySkeleton, LucideArrowRight],
   templateUrl: './gallery.html',
   styleUrl: './gallery.css',
 })

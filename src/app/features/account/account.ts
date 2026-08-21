@@ -1,18 +1,22 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import {
-  LucideArrowLeft,
-  LucideArrowRight,
   LucideBell,
   LucideCalendar,
+  LucideChevronRight,
   LucideClock,
   LucideCreditCard,
-  LucideLayoutDashboard,
+  LucideFileText,
+  LucideHeart,
+  LucideImage,
   LucideLifeBuoy,
   LucideLock,
   LucideLogOut,
+  LucideMail,
+  LucideMapPin,
   LucideMapPinned,
   LucidePackage,
+  LucidePhone,
   LucideShieldCheck,
   LucideStar,
   LucideUser,
@@ -80,8 +84,6 @@ function greeting(): string {
     SecurityTab,
     ReviewsTab,
     SupportTab,
-    LucideArrowLeft,
-    LucideArrowRight,
     LucideShieldCheck,
     LucidePackage,
     LucideCalendar,
@@ -93,8 +95,14 @@ function greeting(): string {
     LucideLock,
     LucideStar,
     LucideLifeBuoy,
-    LucideLayoutDashboard,
     LucideLogOut,
+    LucideChevronRight,
+    LucideHeart,
+    LucideImage,
+    LucideMapPin,
+    LucideFileText,
+    LucidePhone,
+    LucideMail,
   ],
   templateUrl: './account.html',
   styleUrl: './account.css',
@@ -132,10 +140,6 @@ export class Account {
       .get<unknown[]>('/bookings/my')
       .then((d) => this.bookingsCount.set(d.length))
       .catch(() => this.bookingsCount.set(0));
-  }
-
-  goBack(): void {
-    window.history.back();
   }
 
   handleLogout(): void {

@@ -1,21 +1,27 @@
-@if (errorState.hasError()) {
-  <div class="min-h-screen flex items-center justify-center px-4 py-20">
-    <div class="text-center max-w-md">
-      <div class="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
-        <svg lucideAlertOctagon class="w-7 h-7 text-red-500"></svg>
+<div class="app-shell">
+  @if (errorState.hasError()) {
+    <div class="min-h-screen flex items-center justify-center px-4 py-20">
+      <div class="text-center max-w-md">
+        <div class="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
+          <svg lucideAlertOctagon class="w-7 h-7 text-red-500"></svg>
+        </div>
+        <h1 class="font-display text-2xl font-bold text-brand-navy mb-3">Something went wrong</h1>
+        <p class="text-gray-600 mb-8">This page hit an unexpected error. Reloading usually fixes it.</p>
+        <button type="button" (click)="reload()" class="btn-primary">Reload page</button>
       </div>
-      <h1 class="font-display text-2xl font-bold text-brand-navy mb-3">Something went wrong</h1>
-      <p class="text-gray-600 mb-8">This page hit an unexpected error. Reloading usually fixes it.</p>
-      <button type="button" (click)="reload()" class="btn-primary">Reload page</button>
     </div>
-  </div>
-} @else {
-  <div class="min-h-screen flex flex-col">
-    <app-navbar></app-navbar>
-    <main class="flex-1">
-      <router-outlet></router-outlet>
-    </main>
-    <app-footer></app-footer>
-  </div>
-  <app-toast-viewport></app-toast-viewport>
-}
+  } @else {
+    <div class="app-scroll-frame min-h-screen flex flex-col">
+      @if (showChrome()) {
+        <app-navbar></app-navbar>
+      }
+      <main class="app-scroll-region flex-1" [class.app-main]="showChrome()" [class.app-main-tabbed]="showTabs()">
+        <router-outlet></router-outlet>
+      </main>
+      @if (showTabs()) {
+        <app-bottom-nav></app-bottom-nav>
+      }
+    </div>
+    <app-toast-viewport></app-toast-viewport>
+  }
+</div>

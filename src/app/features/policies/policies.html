@@ -1,12 +1,11 @@
-<div class="max-w-3xl mx-auto px-4 py-16 md:py-20">
-  <div class="text-center mb-16">
-    <p class="eyebrow justify-center mb-4"><svg lucideShield class="w-3.5 h-3.5"></svg> Trust &amp; Safety</p>
-    <h1 class="section-title">Policies</h1>
-    <p class="text-gray-500 mt-3">Your trust and satisfaction are our priority.</p>
+<div class="px-4 py-4">
+  <div class="text-center mb-4">
+    <p class="eyebrow justify-center mb-2"><svg lucideShield class="w-3.5 h-3.5"></svg> Trust &amp; Safety</p>
+    <p class="text-gray-500 text-sm">Your trust and satisfaction are our priority.</p>
   </div>
-  <div class="divide-y divide-gray-100 border-t border-gray-100">
+  <div class="divide-y divide-gray-100 card">
     @for (p of policies; track p.title) {
-      <div class="py-8 flex gap-5">
+      <div class="p-4 flex gap-3.5">
         @switch (p.icon) {
           @case ('refresh') { <svg lucideRefreshCw class="w-5 h-5 text-brand-navy shrink-0 mt-1"></svg> }
           @case ('headphones') { <svg lucideHeadphones class="w-5 h-5 text-brand-navy shrink-0 mt-1"></svg> }
@@ -14,8 +13,8 @@
           @case ('x-circle') { <svg lucideCircleX class="w-5 h-5 text-brand-navy shrink-0 mt-1"></svg> }
         }
         <div>
-          <h2 class="font-display font-bold text-lg text-brand-ink mb-2">{{ p.title }}</h2>
-          <p class="text-gray-500 leading-relaxed">{{ p.content }}</p>
+          <h2 class="font-display font-bold text-base text-brand-ink mb-1.5">{{ p.title }}</h2>
+          <p class="text-gray-500 leading-relaxed text-sm">{{ p.content }}</p>
         </div>
       </div>
     }

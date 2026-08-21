@@ -1,106 +1,20 @@
-<nav class="sticky top-0 z-50 bg-gradient-to-b from-brand-navy/95 to-brand-navy/80 backdrop-blur-xl border-b border-white/10 transition-[background-color,box-shadow,border-color,backdrop-filter] duration-300">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6">
-    <div class="flex items-center justify-between h-20">
-      <a routerLink="/" class="flex items-center gap-2.5 group">
-        <div class="w-9 h-9 bg-brand-orange rounded-lg flex items-center justify-center group-hover:scale-105 transition">
-          <svg lucideHouse class="w-5 h-5 text-white"></svg>
-        </div>
-        <span class="font-display font-extrabold text-xl tracking-tight text-white">Home<span class="text-brand-orange">Link</span></span>
-      </a>
-
-      <div class="hidden md:flex items-stretch gap-8 h-full">
-        @for (link of navLinks; track link.to) {
-          <a
-            [routerLink]="link.to"
-            routerLinkActive="text-white"
-            [routerLinkActiveOptions]="{ exact: link.to === '/' }"
-            #rla="routerLinkActive"
-            class="relative flex items-center text-sm font-medium tracking-wide transition"
-            [class]="rla.isActive ? 'text-white' : 'text-white/70 hover:text-white'"
-          >
-            {{ link.label }}
-            @if (rla.isActive) {
-              <span class="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-orange"></span>
-            }
-          </a>
-        }
+<header class="app-topbar">
+  <div class="h-14 flex items-center gap-2 px-4">
+    @if (!isTabRoot()) {
+      <button type="button" (click)="goBack()" aria-label="Go back" class="tap -ml-2 mr-1 p-2 rounded-full active:bg-white/10">
+        <svg lucideArrowLeft class="w-5 h-5"></svg>
+      </button>
+    } @else if (isHome()) {
+      <div class="w-8 h-8 bg-brand-orange rounded-lg flex items-center justify-center shrink-0 mr-0.5">
+        <svg lucideHouse class="w-4.5 h-4.5 text-white"></svg>
       </div>
-
-      <div class="flex items-center gap-3">
-        @if (user()?.role === 'customer') {
-          <a routerLink="/wishlist" class="relative p-2 rounded-lg transition text-white hover:bg-white/10">
-            <svg lucideHeart class="w-5 h-5"></svg>
-            @if (wishlistCount() > 0) {
-              <span class="absolute -top-1 -right-1 bg-brand-orange text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold text-white">{{ wishlistCount() }}</span>
-            }
-          </a>
-          <a routerLink="/cart" class="relative p-2 rounded-lg transition text-white hover:bg-white/10">
-            <svg lucideShoppingCart class="w-5 h-5"></svg>
-            @if (cartCount() > 0) {
-              <span class="absolute -top-1 -right-1 bg-brand-orange text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold text-white">{{ cartCount() }}</span>
-            }
-          </a>
-        }
-        @if (user(); as u) {
-          <div class="hidden md:flex items-center gap-2">
-            <a routerLink="/account" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition text-sm text-white hover:bg-white/10">
-              <svg lucideLayoutDashboard class="w-4 h-4"></svg> {{ u.firstName }}
-            </a>
-            <button type="button" (click)="logout()" class="p-2 rounded-lg transition text-white hover:bg-white/10" title="Logout">
-              <svg lucideLogOut class="w-4 h-4"></svg>
-            </button>
-          </div>
-        } @else {
-          <a routerLink="/login" class="hidden md:flex items-center gap-1.5 btn-primary text-sm py-2 px-4">
-            <svg lucideUser class="w-4 h-4"></svg> Login
-          </a>
-        }
-        <button
-          type="button"
-          class="md:hidden p-2 rounded-lg text-white hover:bg-white/10 transition"
-          (click)="toggleMobile()"
-          [attr.aria-expanded]="mobileOpen()"
-          [attr.aria-label]="mobileOpen() ? 'Close menu' : 'Open menu'"
-        >
-          @if (!mobileOpen()) {
-            <svg lucideMenu></svg>
-          } @else {
-            <svg lucideX></svg>
-          }
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <div
-    class="md:hidden bg-gradient-to-b from-brand-navy/95 to-brand-navy/90 backdrop-blur-xl text-white overflow-hidden transition-[max-height,opacity] duration-300 ease-out"
-    [class]="mobileOpen() ? 'max-h-[420px] opacity-100 border-t border-white/10' : 'max-h-0 opacity-0'"
-  >
-    <div class="px-4 py-4 space-y-1">
-      @for (link of navLinks; track link.to) {
-        <a
-          [routerLink]="link.to"
-          routerLinkActive="bg-white/10 text-brand-orange"
-          [routerLinkActiveOptions]="{ exact: link.to === '/' }"
-          class="block px-2 py-2 rounded-lg transition hover:bg-white/5"
-          (click)="closeMobile()"
-        >
-          {{ link.label }}
-        </a>
-      }
-      @if (user(); as u) {
-        @if (u.role === 'customer') {
-          <a routerLink="/wishlist" class="flex items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-white/5" (click)="closeMobile()">
-            <svg lucideHeart class="w-4 h-4"></svg> Wishlist{{ wishlistCount() > 0 ? ' (' + wishlistCount() + ')' : '' }}
-          </a>
-        }
-        <a routerLink="/account" class="block px-2 py-2 rounded-lg hover:bg-white/5" (click)="closeMobile()">Account ({{ u.firstName }})</a>
-        <button type="button" (click)="logout()" class="block w-full text-left px-2 py-2 rounded-lg text-brand-orange hover:bg-white/5">Logout</button>
+    }
+    <h1 class="font-display font-bold text-lg truncate flex-1">
+      @if (isHome()) {
+        Home<span class="text-brand-orange">Link</span>
       } @else {
-        <a routerLink="/login" class="block px-2 py-2 rounded-lg text-brand-orange font-semibold hover:bg-white/5" (click)="closeMobile()">
-          Login / Register
-        </a>
+        {{ pageTitle() }}
       }
-    </div>
+    </h1>
   </div>
-</nav>
+</header>

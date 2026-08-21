@@ -1,27 +1,17 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { LucideShieldCheck, LucideUserPlus } from '@lucide/angular';
+import { LucideUserPlus } from '@lucide/angular';
 
 import { AuthService } from '../../../core/auth.service';
 import { isPasswordValid } from '../../../core/password.util';
-import { AuthIllustration } from '../../../shared/auth-illustration/auth-illustration';
 import { AuthLayout } from '../../../shared/auth-layout/auth-layout';
 import { PasswordRequirements } from '../../../shared/password-requirements/password-requirements';
 import { TermsModal } from '../../../shared/terms-modal/terms-modal';
 
 @Component({
   selector: 'app-register',
-  imports: [
-    FormsModule,
-    RouterLink,
-    AuthLayout,
-    AuthIllustration,
-    PasswordRequirements,
-    TermsModal,
-    LucideUserPlus,
-    LucideShieldCheck,
-  ],
+  imports: [FormsModule, RouterLink, AuthLayout, PasswordRequirements, TermsModal, LucideUserPlus],
   templateUrl: './register.html',
   styleUrl: './register.css',
 })

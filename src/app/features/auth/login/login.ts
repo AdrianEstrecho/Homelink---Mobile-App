@@ -1,10 +1,9 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { LucideLoaderCircle, LucideLock, LucideLogIn, LucideShieldCheck } from '@lucide/angular';
+import { LucideLoaderCircle, LucideLogIn } from '@lucide/angular';
 
 import { AuthService } from '../../../core/auth.service';
-import { AuthIllustration } from '../../../shared/auth-illustration/auth-illustration';
 import { AuthLayout } from '../../../shared/auth-layout/auth-layout';
 
 /**
@@ -15,7 +14,7 @@ import { AuthLayout } from '../../../shared/auth-layout/auth-layout';
  */
 @Component({
   selector: 'app-login',
-  imports: [FormsModule, RouterLink, AuthLayout, AuthIllustration, LucideLock, LucideShieldCheck, LucideLogIn, LucideLoaderCircle],
+  imports: [FormsModule, RouterLink, AuthLayout, LucideLogIn, LucideLoaderCircle],
   templateUrl: './login.html',
   styleUrl: './login.css',
 })

@@ -1,6 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { Component, inject, signal, viewChild } from '@angular/core';
-import { LucideArrowLeft, LucideChevronRight, LucideShoppingBag } from '@lucide/angular';
+import { LucideChevronRight, LucideShoppingBag } from '@lucide/angular';
 
 import { ApiService } from '../../core/api.service';
 import { AuthService } from '../../core/auth.service';
@@ -13,7 +13,7 @@ import { OrderDetailsModal } from '../../shared/order-details-modal/order-detail
 
 @Component({
   selector: 'app-orders',
-  imports: [DatePipe, PricePipe, OrderDetailsModal, CancelReasonModal, LucideArrowLeft, LucideChevronRight, LucideShoppingBag],
+  imports: [DatePipe, PricePipe, OrderDetailsModal, CancelReasonModal, LucideChevronRight, LucideShoppingBag],
   templateUrl: './orders.html',
   styleUrl: './orders.css',
 })
@@ -39,10 +39,6 @@ export class Orders {
       .get<Order[]>('/orders/my')
       .then((data) => this.orders.set(data))
       .catch(() => {});
-  }
-
-  goBack(): void {
-    window.history.back();
   }
 
   async submitCancel(reason: string): Promise<void> {

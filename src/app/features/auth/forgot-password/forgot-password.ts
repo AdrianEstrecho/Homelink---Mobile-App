@@ -1,16 +1,15 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { LucideKeyRound, LucideMail } from '@lucide/angular';
+import { LucideKeyRound } from '@lucide/angular';
 
 import { ApiService } from '../../../core/api.service';
 import { PasswordResetFlowService } from '../../../core/password-reset-flow.service';
-import { AuthIllustration } from '../../../shared/auth-illustration/auth-illustration';
 import { AuthLayout } from '../../../shared/auth-layout/auth-layout';
 
 @Component({
   selector: 'app-forgot-password',
-  imports: [FormsModule, AuthLayout, AuthIllustration, LucideKeyRound, LucideMail],
+  imports: [FormsModule, AuthLayout, LucideKeyRound],
   templateUrl: './forgot-password.html',
   styleUrl: './forgot-password.css',
 })

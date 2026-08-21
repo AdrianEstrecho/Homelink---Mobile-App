@@ -17,6 +17,10 @@
   html::-webkit-scrollbar {
     display: none;
   }
+  :root {
+    --topbar-h: 3.5rem;
+    --bottomnav-h: 4rem;
+  }
   body {
     @apply bg-white text-gray-900 font-sans antialiased;
   }
@@ -29,22 +33,57 @@
 }
 
 @layer components {
+  /* Native app shell: fixed top app bar + bottom nav, safe-area aware. */
+  .app-topbar {
+    @apply fixed top-0 inset-x-0 z-40 bg-brand-navy text-white;
+    padding-top: env(safe-area-inset-top);
+  }
+  .app-bottomnav {
+    @apply fixed bottom-0 inset-x-0 z-40 bg-white border-t border-gray-100;
+    padding-bottom: env(safe-area-inset-bottom);
+    box-shadow: 0 -2px 12px -4px rgba(15, 43, 91, 0.14);
+  }
+  .app-main {
+    padding-top: calc(var(--topbar-h) + env(safe-area-inset-top));
+  }
+  .app-main-tabbed {
+    padding-bottom: calc(var(--bottomnav-h) + env(safe-area-inset-bottom));
+  }
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Material-ish elevation scale, replacing hover-only depth cues with
+     always-visible shadows that read on a touchscreen. */
+  .elevation-1 {
+    box-shadow: 0 1px 2px rgba(15, 43, 91, 0.06), 0 1px 3px rgba(15, 43, 91, 0.08);
+  }
+  .elevation-2 {
+    box-shadow: 0 2px 4px rgba(15, 43, 91, 0.06), 0 4px 10px rgba(15, 43, 91, 0.10);
+  }
+  .elevation-3 {
+    box-shadow: 0 4px 8px rgba(15, 43, 91, 0.08), 0 10px 20px rgba(15, 43, 91, 0.14);
+  }
+
+  /* CSS-only press feedback for tappable surfaces (no hover dependency). */
+  .tap {
+    @apply transition-transform duration-150 active:scale-[0.96];
+  }
+
   .btn-primary {
-    @apply bg-brand-orange hover:bg-orange-600 text-white font-semibold px-6 py-2.5 rounded-lg transition-all active:scale-[0.98];
+    @apply tap bg-brand-orange text-white font-semibold px-6 py-2.5 rounded-lg elevation-1;
   }
   .btn-secondary {
-    @apply bg-brand-navy hover:bg-brand-blue text-white font-semibold px-6 py-2.5 rounded-lg transition-all;
+    @apply tap bg-brand-navy text-white font-semibold px-6 py-2.5 rounded-lg elevation-1;
   }
   .btn-outline {
-    @apply backdrop-blur-md border border-brand-navy/20 text-brand-navy hover:border-brand-navy/40 font-semibold px-6 py-2.5 rounded-lg transition-all;
-    background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.04));
-  }
-  .btn-outline:hover {
-    background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.12));
+    @apply tap border border-brand-navy/20 text-brand-navy font-semibold px-6 py-2.5 rounded-lg bg-white;
   }
   .card {
-    @apply backdrop-blur-md rounded-2xl border border-white/70 shadow-[0_4px_24px_-8px_rgba(15,43,91,0.10)] overflow-hidden transition-all duration-300;
-    background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.68));
+    @apply bg-white rounded-2xl border border-gray-100 elevation-1 overflow-hidden transition-shadow duration-200;
   }
   .input-field {
     @apply w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-orange focus:border-transparent outline-none transition;
@@ -88,7 +127,11 @@
   }
   .reveal-in {
     opacity: 1;
-    transform: translateY(0);
+    /* transform: none (not translateY(0)) -- any non-none transform on this
+       ancestor becomes a containing block for `position: fixed` descendants,
+       which broke ConfirmDialog inside product cards (it rendered pinned to
+       the card instead of centered over the viewport). */
+    transform: none;
   }
 
   .float-blob {
@@ -182,6 +225,91 @@
     .route-fade {
       animation: none;
     }
+  }
+}
+
+/* Browser/desktop preview only: real phones (and the Capacitor WebView) are
+   always narrower than this breakpoint, so native behavior is untouched.
+   Without this, the app has no max-width and stretches full-bleed on any
+   wider window. .app-shell sizes/centers the app to a phone-width column.
+
+   The top bar and bottom nav are position:fixed on real devices, where body
+   is the only scroll surface -- but a fixed/sticky element only stays
+   visually anchored while its containing block IS the thing scrolling, and
+   .app-shell isn't the viewport here, so neither trick holds up (a
+   transformed ancestor drags its position:fixed descendants along with its
+   own scroll, and this bottom nav's natural flow position -- at the very
+   end of a long page -- means `sticky` wouldn't engage until you'd already
+   scrolled nearly to the bottom). So instead of trying to keep them
+   fixed/sticky, .app-scroll-frame takes them out of any scrolling
+   context entirely: topbar and bottom nav become plain in-flow flex items
+   (position:static) bookending the column, and only .app-scroll-region
+   (the routed page content) scrolls internally between them -- the classic
+   native-app-shell layout. .app-main's fixed-bar padding compensation is
+   zeroed out here too, since static flex items already claim their own
+   space; that padding would otherwise double it up. */
+@media (min-width: 481px) {
+  html,
+  body {
+    height: 100%;
+  }
+  body {
+    overflow: hidden;
+    background: #d8dce3;
+  }
+  app-root {
+    display: block;
+    height: 100%;
+  }
+  .app-shell {
+    max-width: 430px;
+    height: 100%;
+    margin-inline: auto;
+    background: #fff;
+    box-shadow: 0 0 0 1px rgba(15, 43, 91, 0.06), 0 24px 48px -12px rgba(15, 43, 91, 0.25);
+  }
+  .app-scroll-frame {
+    height: 100%;
+    overflow: hidden;
+  }
+  .app-scroll-region {
+    min-height: 0;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .app-scroll-region::-webkit-scrollbar {
+    display: none;
+  }
+  .app-topbar,
+  .app-bottomnav {
+    position: static;
+  }
+  .app-main {
+    padding-top: 0;
+  }
+  .app-main-tabbed {
+    padding-bottom: 0;
+  }
+
+  /* Page-level fixed bars (product-detail's buy bar, toasts) use plain
+     position:fixed with inset-x-0, so -- same as the topbar/bottomnav
+     dilemma above -- they escape .app-shell entirely and span the real
+     browser window. left:0 + right:0 + max-width + auto margins is the
+     classic over-constrained-box centering trick: with both edges pinned,
+     capping the width forces the auto margins to split the remainder
+     evenly, landing the bar in the same horizontal center as .app-shell
+     (both centered in the same viewport) without needing a matching
+     containing-block change. */
+  .app-bottom-bar {
+    max-width: 430px;
+    margin-inline: auto;
+  }
+  .app-toast-bar {
+    left: 0;
+    right: 0;
+    max-width: 430px;
+    margin-inline: auto;
   }
 }
 

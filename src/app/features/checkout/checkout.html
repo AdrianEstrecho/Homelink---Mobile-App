@@ -18,28 +18,25 @@
     (closed)="editOrder()"
   />
 } @else if (items().length === 0) {
-  <div class="max-w-2xl mx-auto px-4 py-24 text-center">
+  <div class="px-4 py-16 text-center">
     <svg lucideShoppingBag class="w-16 h-16 text-gray-300 mx-auto mb-4"></svg>
-    <h2 class="font-display text-2xl font-bold text-brand-ink mb-2">Your cart is empty</h2>
+    <h2 class="font-display text-xl font-bold text-brand-ink mb-2">Your cart is empty</h2>
     <p class="text-gray-500 mb-6">Add some products before checking out.</p>
     <a routerLink="/products" class="btn-primary">Browse Products</a>
   </div>
 } @else {
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10 md:py-14">
-    <p class="eyebrow mb-3">Final Step</p>
-    <h1 class="section-title mb-8">Checkout</h1>
-
-    <form (submit)="$event.preventDefault(); handleReview()" class="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8 items-start">
-      <div class="space-y-6">
-        <section class="card p-6">
+  <div class="px-4 py-4">
+    <form (submit)="$event.preventDefault(); handleReview()" class="flex flex-col gap-4">
+      <div class="flex flex-col gap-4">
+        <section class="card p-4">
           <app-address-picker [stepNumber]="1" title="Shipping Address" />
         </section>
 
-        <section class="card p-6">
+        <section class="card p-4">
           <app-payment-method-picker [stepNumber]="2" />
         </section>
 
-        <section class="card p-6">
+        <section class="card p-4">
           <h2 class="flex items-center gap-2.5 text-sm font-semibold text-brand-ink mb-5">
             <span class="w-6 h-6 rounded-full bg-brand-navy text-white text-xs font-bold flex items-center justify-center shrink-0">3</span>
             Promo Code
@@ -75,8 +72,8 @@
         }
       </div>
 
-      <div class="lg:sticky lg:top-24">
-        <div class="card p-6">
+      <div>
+        <div class="card p-4">
           <h2 class="text-xs font-semibold uppercase tracking-[0.14em] text-gray-400 mb-4">Order Summary</h2>
 
           <div class="space-y-3 max-h-64 overflow-y-auto pr-1 -mr-1 mb-4">

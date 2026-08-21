@@ -2,16 +2,7 @@ import { DatePipe } from '@angular/common';
 import { Component, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import {
-  LucideChevronRight,
-  LucideHeart,
-  LucideShieldCheck,
-  LucideShoppingCart,
-  LucideStar,
-  LucideTruck,
-  LucideWrench,
-  LucideZap,
-} from '@lucide/angular';
+import { LucideHeart, LucideShieldCheck, LucideShoppingCart, LucideStar, LucideTruck, LucideWrench, LucideZap } from '@lucide/angular';
 
 import { ApiService } from '../../../core/api.service';
 import { AuthService } from '../../../core/auth.service';
@@ -60,7 +51,6 @@ type Tab = (typeof TABS)[number];
     ConfirmDialog,
     PricePipe,
     LucideShoppingCart,
-    LucideChevronRight,
     LucideTruck,
     LucideShieldCheck,
     LucideWrench,

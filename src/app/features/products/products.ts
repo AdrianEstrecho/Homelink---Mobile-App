@@ -1,12 +1,13 @@
-import { Component, effect, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { LucideLayoutGrid, LucideSearch } from '@lucide/angular';
+import { LucideBadgeCheck, LucideChevronRight, LucideLayoutGrid, LucideSearch, LucideSlidersHorizontal, LucideX } from '@lucide/angular';
 
 import { ApiService } from '../../core/api.service';
 import { Category, Product } from '../../core/product.model';
 import { RevealDirective } from '../../shared/reveal.directive';
+import { categoryAccent } from '../../shared/category-accent';
 import { CategoryIcon } from '../../shared/category-icon/category-icon';
 import { ErrorState } from '../../shared/error-state/error-state';
 import { ProductCard } from '../../shared/product-card/product-card';
@@ -21,6 +22,14 @@ const SORT_OPTIONS: SelectOption[] = [
   { value: 'name', label: 'Name: A to Z' },
 ];
 
+type QuickFilterKey = 'featured' | 'inStock' | 'topRated';
+
+const QUICK_FILTERS: { key: QuickFilterKey; label: string }[] = [
+  { key: 'featured', label: 'Featured' },
+  { key: 'inStock', label: 'In Stock' },
+  { key: 'topRated', label: 'Top Rated' },
+];
+
 interface LoadState<T> {
   data: T[];
   loading: boolean;
@@ -29,7 +38,22 @@ interface LoadState<T> {
 
 @Component({
   selector: 'app-products',
-  imports: [FormsModule, RevealDirective, CategoryIcon, ErrorState, ProductCard, CategorySkeleton, ProductCardSkeleton, Select, LucideSearch, LucideLayoutGrid],
+  imports: [
+    FormsModule,
+    RevealDirective,
+    CategoryIcon,
+    ErrorState,
+    ProductCard,
+    CategorySkeleton,
+    ProductCardSkeleton,
+    Select,
+    LucideSearch,
+    LucideLayoutGrid,
+    LucideX,
+    LucideSlidersHorizontal,
+    LucideBadgeCheck,
+    LucideChevronRight,
+  ],
   templateUrl: './products.html',
   styleUrl: './products.css',
 })
@@ -39,6 +63,7 @@ export class Products {
   private router = inject(Router);
 
   protected readonly sortOptions = SORT_OPTIONS;
+  protected readonly quickFilters = QUICK_FILTERS;
 
   private queryParamMap = toSignal(this.route.queryParamMap, { requireSync: true });
   protected readonly category = () => this.queryParamMap().get('category') ?? '';
@@ -46,9 +71,33 @@ export class Products {
 
   protected search = signal(this.queryParamMap().get('search') ?? '');
   protected readonly debouncedSearch = signal(this.search());
+  protected readonly searchFocused = signal(false);
+
+  protected readonly activeFilters = signal<Set<QuickFilterKey>>(new Set());
+  protected readonly showFilters = signal(false);
 
   protected readonly categories = signal<LoadState<Category>>({ data: [], loading: true, error: false });
   protected readonly products = signal<LoadState<Product>>({ data: [], loading: true, error: false });
+
+  protected readonly filteredProducts = computed(() => {
+    const filters = this.activeFilters();
+    let list = this.products().data;
+    if (filters.has('featured')) list = list.filter((p) => p.featured);
+    if (filters.has('inStock')) list = list.filter((p) => p.stock > 0);
+    if (filters.has('topRated')) list = list.filter((p) => (p.avg_rating ?? 0) >= 4);
+    return list;
+  });
+
+  protected readonly matchedBrand = computed(() => {
+    const query = this.debouncedSearch().trim().toLowerCase();
+    if (!query) return null;
+    const list = this.products().data;
+    const brand = list.find((p) => p.brand?.toLowerCase().startsWith(query))?.brand;
+    if (!brand) return null;
+    return { name: brand, count: list.filter((p) => p.brand === brand).length };
+  });
+
+  protected readonly categoryAccent = categoryAccent;
 
   constructor() {
     this.api
@@ -111,5 +160,37 @@ export class Products {
 
   onSearchInput(value: string): void {
     this.search.set(value);
+  }
+
+  onSearchFocus(): void {
+    this.searchFocused.set(true);
+  }
+
+  onSearchBlur(): void {
+    this.searchFocused.set(false);
+  }
+
+  clearSearch(): void {
+    this.search.set('');
+    this.debouncedSearch.set('');
+    this.mergeQueryParams({ search: null });
+  }
+
+  cancelSearch(): void {
+    this.clearSearch();
+    this.searchFocused.set(false);
+  }
+
+  toggleFilter(key: QuickFilterKey): void {
+    this.activeFilters.update((current) => {
+      const next = new Set(current);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
+
+  toggleFilterPanel(): void {
+    this.showFilters.update((v) => !v);
   }
 }

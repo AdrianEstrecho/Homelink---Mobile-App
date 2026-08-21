@@ -1,19 +1,15 @@
 @if (items().length === 0) {
-  <div appReveal class="max-w-2xl mx-auto px-4 py-24 text-center">
+  <div appReveal class="px-4 py-16 text-center">
     <svg lucideHeart class="w-16 h-16 text-gray-300 mx-auto mb-4"></svg>
-    <h2 class="font-display text-2xl font-bold text-brand-ink mb-2">Your wishlist is empty</h2>
+    <h2 class="font-display text-xl font-bold text-brand-ink mb-2">Your wishlist is empty</h2>
     <p class="text-gray-500 mb-6">Save products you love to come back to them later.</p>
     <a routerLink="/products" class="btn-primary">Browse Products</a>
   </div>
 } @else {
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-10 md:py-14">
-    <div class="mb-8">
-      <p class="eyebrow mb-3">Saved for Later</p>
-      <h1 class="section-title">Wishlist</h1>
-      <p class="text-gray-500 mt-2">{{ items().length }} item{{ items().length === 1 ? '' : 's' }} saved</p>
-    </div>
+  <div class="px-4 py-4">
+    <p class="text-sm text-gray-500 mb-4">{{ items().length }} item{{ items().length === 1 ? '' : 's' }} saved</p>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div class="grid grid-cols-2 gap-3">
       @for (p of items(); track p.id; let i = $index) {
         <div appReveal [revealDelay]="(i % 8) * 60" class="h-full">
           <app-product-card [product]="p" />

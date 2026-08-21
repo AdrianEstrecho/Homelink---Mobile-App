@@ -1,10 +1,4 @@
-<div class="max-w-4xl mx-auto px-4 py-8">
-  <button type="button" (click)="goBack()" class="flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-brand-navy transition mb-4">
-    <svg lucideArrowLeft class="w-4 h-4"></svg> Back
-  </button>
-  <p class="eyebrow mb-3">Order History</p>
-  <h1 class="section-title mb-8">My Orders</h1>
-
+<div class="px-4 py-4">
   @if (orders().length === 0) {
     <div class="text-center py-20">
       <svg lucideShoppingBag class="w-16 h-16 text-gray-300 mx-auto mb-4"></svg>
@@ -13,7 +7,7 @@
   } @else {
     <div class="space-y-3">
       @for (o of orders(); track o.id) {
-        <button type="button" (click)="selectedOrder.set(o)" class="card p-5 w-full text-left flex flex-wrap items-center justify-between gap-3 hover:border-brand-navy/20 hover:shadow-md transition">
+        <button type="button" (click)="selectedOrder.set(o)" class="tap card p-4 w-full text-left flex flex-wrap items-center justify-between gap-3">
           <div>
             <p class="font-semibold text-brand-ink">Order #{{ o.id.slice(0, 8).toUpperCase() }}</p>
             <p class="text-sm text-gray-500">

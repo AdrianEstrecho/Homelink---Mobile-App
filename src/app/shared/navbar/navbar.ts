@@ -1,66 +1,61 @@
-import { Component, inject, signal } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
-import { LucideHeart, LucideHouse, LucideLayoutDashboard, LucideLogOut, LucideMenu, LucideShoppingCart, LucideUser, LucideX } from '@lucide/angular';
+import { Component, computed, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { NavigationEnd, Router } from '@angular/router';
+import { filter, map } from 'rxjs/operators';
+import { LucideArrowLeft, LucideHouse } from '@lucide/angular';
 
-import { AuthService } from '../../core/auth.service';
-import { CartService } from '../../core/cart.service';
-import { WishlistService } from '../../core/wishlist.service';
+import { isTabRoot } from '../../core/shell-route.util';
 
-const NAV_LINKS = [
-  { to: '/', label: 'Home' },
-  { to: '/products', label: 'Products' },
-  { to: '/services', label: 'Services' },
-  { to: '/gallery', label: 'Gallery' },
-  { to: '/policies', label: 'Policies' },
-  { to: '/location', label: 'Location' },
+const TAB_TITLES: Record<string, string> = {
+  '/': 'HomeLink',
+  '/products': 'Products',
+  '/services': 'Services',
+  '/cart': 'Cart',
+  '/account': 'Account',
+};
+
+const SECTION_TITLES: { test: (url: string) => boolean; title: string }[] = [
+  { test: (u) => u.startsWith('/products/'), title: 'Product Details' },
+  { test: (u) => u.startsWith('/services/'), title: 'Book Service' },
+  { test: (u) => u.startsWith('/gallery'), title: 'Gallery' },
+  { test: (u) => u.startsWith('/location'), title: 'Our Location' },
+  { test: (u) => u.startsWith('/policies'), title: 'Policies' },
+  { test: (u) => u.startsWith('/wishlist'), title: 'Wishlist' },
+  { test: (u) => u.startsWith('/checkout'), title: 'Checkout' },
+  { test: (u) => u.startsWith('/orders'), title: 'My Orders' },
+  { test: (u) => u.startsWith('/bookings'), title: 'My Bookings' },
+  { test: (u) => u.startsWith('/terms'), title: 'Terms & Conditions' },
 ];
 
 /**
- * Ported from frontend/src/components/Navbar.jsx, minus the scroll-into-
- * transparent-hero treatment (lands with Home's hero in a later pass). Every
- * user here is a customer — staff accounts are rejected at login — so
- * there's no admin-shortcut branch.
+ * Compact Android top app bar: the HomeLink wordmark on Home, a plain title
+ * on the other bottom-nav tab roots, and a back arrow + section title on
+ * every drill-down screen (product detail, checkout, orders, ...).
  */
 @Component({
   selector: 'app-navbar',
-  imports: [
-    RouterLink,
-    RouterLinkActive,
-    LucideHouse,
-    LucideMenu,
-    LucideX,
-    LucideUser,
-    LucideLayoutDashboard,
-    LucideLogOut,
-    LucideHeart,
-    LucideShoppingCart,
-  ],
+  imports: [LucideArrowLeft, LucideHouse],
   templateUrl: './navbar.html',
   styleUrl: './navbar.css',
 })
 export class Navbar {
-  private auth = inject(AuthService);
   private router = inject(Router);
-  private cart = inject(CartService);
-  private wishlist = inject(WishlistService);
 
-  protected readonly navLinks = NAV_LINKS;
-  protected readonly mobileOpen = signal(false);
-  protected readonly user = this.auth.user;
-  protected readonly cartCount = this.cart.count;
-  protected readonly wishlistCount = this.wishlist.count;
+  private readonly url = toSignal(
+    this.router.events.pipe(
+      filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+      map((e) => e.urlAfterRedirects.split('?')[0]),
+    ),
+    { initialValue: this.router.url.split('?')[0] },
+  );
 
-  toggleMobile(): void {
-    this.mobileOpen.update((v) => !v);
-  }
+  protected readonly isHome = computed(() => this.url() === '/');
+  protected readonly isTabRoot = computed(() => isTabRoot(this.url()));
+  protected readonly pageTitle = computed(
+    () => TAB_TITLES[this.url()] ?? SECTION_TITLES.find((t) => t.test(this.url()))?.title ?? 'HomeLink',
+  );
 
-  closeMobile(): void {
-    this.mobileOpen.set(false);
-  }
-
-  logout(): void {
-    this.closeMobile();
-    this.auth.logout();
-    this.router.navigateByUrl('/');
+  goBack(): void {
+    window.history.back();
   }
 }

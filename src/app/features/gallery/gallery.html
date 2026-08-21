@@ -1,17 +1,11 @@
-<div class="max-w-7xl mx-auto px-4 pt-16 pb-20">
-  <div class="mb-10">
-    <p class="eyebrow mb-3">Our Work</p>
-    <h1 class="section-title mb-2">Project Gallery</h1>
-    <p class="text-gray-500 max-w-lg">A look at completed installations and repairs from our verified technicians.</p>
-  </div>
-
+<div class="px-4 py-4">
   @if (categories().length > 0) {
-    <div class="flex flex-wrap items-center gap-x-6 gap-y-2 mb-8">
+    <div class="flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 pb-1 mb-4">
       <button
         type="button"
         (click)="category.set('')"
-        class="text-sm font-medium transition pb-0.5 border-b-2"
-        [class]="!category() ? 'border-brand-orange text-brand-navy font-semibold' : 'border-transparent text-gray-500 hover:text-brand-navy'"
+        class="tap shrink-0 badge text-sm px-3 py-1.5"
+        [class]="!category() ? 'bg-brand-navy text-white font-semibold' : 'bg-gray-100 text-gray-600'"
       >
         All
       </button>
@@ -19,8 +13,8 @@
         <button
           type="button"
           (click)="category.set(c!)"
-          class="text-sm font-medium transition pb-0.5 border-b-2"
-          [class]="category() === c ? 'border-brand-orange text-brand-navy font-semibold' : 'border-transparent text-gray-500 hover:text-brand-navy'"
+          class="tap shrink-0 badge text-sm px-3 py-1.5"
+          [class]="category() === c ? 'bg-brand-navy text-white font-semibold' : 'bg-gray-100 text-gray-600'"
         >
           {{ c }}
         </button>
@@ -29,7 +23,7 @@
   }
 
   @if (items().loading) {
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-2 gap-3">
       @for (_ of [1,2,3,4,5,6]; track $index) {
         <app-gallery-skeleton />
       }
@@ -39,23 +33,18 @@
   } @else if (filtered().length === 0) {
     <p class="text-center text-gray-500 py-12">No projects to show yet — check back soon.</p>
   } @else {
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-2 gap-3">
       @for (g of filtered(); track g.id; let i = $index) {
         <div appReveal [revealDelay]="(i % 6) * 60">
-          <button type="button" (click)="navigate(i)" class="card group relative overflow-hidden w-full text-left">
-            <div class="relative h-64 overflow-hidden bg-gray-100">
-              <app-safe-image [src]="g.image" [alt]="g.title" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-              <div class="absolute inset-0 bg-gradient-to-t from-brand-navy/85 via-brand-navy/10 to-transparent opacity-90 group-hover:opacity-100 transition"></div>
-              <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
-                <span class="w-11 h-11 rounded-full bg-white/15 backdrop-blur-sm border border-white/30 flex items-center justify-center">
-                  <svg lucideExpand class="w-4.5 h-4.5 text-white"></svg>
-                </span>
-              </div>
-              <div class="absolute bottom-0 left-0 right-0 p-4">
+          <button type="button" (click)="navigate(i)" class="tap card relative overflow-hidden w-full text-left">
+            <div class="relative h-40 overflow-hidden bg-gray-100">
+              <app-safe-image [src]="g.image" [alt]="g.title" class="w-full h-full object-cover" />
+              <div class="absolute inset-0 bg-gradient-to-t from-brand-navy/85 via-brand-navy/5 to-transparent"></div>
+              <div class="absolute bottom-0 left-0 right-0 p-2.5">
                 @if (g.category) {
-                  <span class="badge bg-brand-teal text-white mb-1.5">{{ g.category }}</span>
+                  <span class="badge bg-brand-teal text-white text-[10px] mb-1">{{ g.category }}</span>
                 }
-                <h3 class="font-display font-bold text-white leading-snug">{{ g.title }}</h3>
+                <h3 class="font-display font-bold text-white text-sm leading-snug line-clamp-2">{{ g.title }}</h3>
               </div>
             </div>
           </button>
@@ -65,9 +54,9 @@
   }
 
   @if (!items().loading && !items().error && items().data.length > 0) {
-    <div appReveal class="mt-16 rounded-2xl bg-brand-navy px-6 py-10 sm:px-12 text-center">
-      <p class="font-display text-xl sm:text-2xl font-bold text-white mb-2">Like what you see?</p>
-      <p class="text-white/60 mb-6 max-w-md mx-auto">Book a verified technician and get a project like this done in your own home.</p>
+    <div appReveal class="mt-6 rounded-2xl bg-brand-navy px-6 py-8 text-center">
+      <p class="font-display text-lg font-bold text-white mb-2">Like what you see?</p>
+      <p class="text-white/60 mb-5 text-sm">Book a verified technician and get a project like this done in your own home.</p>
       <a routerLink="/services" class="btn-primary inline-flex items-center gap-2">
         Book a Service <svg lucideArrowRight class="w-4 h-4"></svg>
       </a>

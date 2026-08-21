@@ -1,16 +1,14 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { LucideShieldCheck } from '@lucide/angular';
 
 import { ApiService } from '../../../core/api.service';
 import { PasswordResetFlowService } from '../../../core/password-reset-flow.service';
-import { AuthIllustration } from '../../../shared/auth-illustration/auth-illustration';
 import { AuthLayout } from '../../../shared/auth-layout/auth-layout';
 
 @Component({
   selector: 'app-verify-reset-code',
-  imports: [FormsModule, RouterLink, AuthLayout, AuthIllustration, LucideShieldCheck],
+  imports: [FormsModule, RouterLink, AuthLayout],
   templateUrl: './verify-reset-code.html',
   styleUrl: './verify-reset-code.css',
 })

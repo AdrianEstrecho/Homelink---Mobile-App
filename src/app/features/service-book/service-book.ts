@@ -1,7 +1,7 @@
 import { Component, effect, inject, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { LucideAward, LucideCalendar, LucideChevronRight, LucideClock, LucideShieldCheck, LucideTimer } from '@lucide/angular';
+import { ActivatedRoute, Router } from '@angular/router';
+import { LucideAward, LucideCalendar, LucideClock, LucideShieldCheck, LucideTimer } from '@lucide/angular';
 
 import { ApiService } from '../../core/api.service';
 import { AvailabilitySlot, DiscountPreview } from '../../core/booking.model';
@@ -16,7 +16,7 @@ import { Skeleton } from '../../shared/skeleton/skeleton';
 
 @Component({
   selector: 'app-service-book',
-  imports: [RouterLink, ErrorState, Skeleton, SafeImage, AddressPicker, PaymentMethodPicker, PricePipe, LucideChevronRight, LucideCalendar, LucideClock, LucideShieldCheck, LucideAward, LucideTimer],
+  imports: [ErrorState, Skeleton, SafeImage, AddressPicker, PaymentMethodPicker, PricePipe, LucideCalendar, LucideClock, LucideShieldCheck, LucideAward, LucideTimer],
   templateUrl: './service-book.html',
   styleUrl: './service-book.css',
 })

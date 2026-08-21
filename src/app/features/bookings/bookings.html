@@ -1,16 +1,10 @@
-<div class="max-w-4xl mx-auto px-4 py-8">
-  <button type="button" (click)="goBack()" class="flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-brand-navy transition mb-4">
-    <svg lucideArrowLeft class="w-4 h-4"></svg> Back
-  </button>
-  <p class="eyebrow mb-3">Schedule</p>
-  <h1 class="section-title mb-8">My Service Bookings</h1>
-
+<div class="px-4 py-4">
   @if (bookings().length === 0) {
     <p class="text-gray-500 text-center py-12">No bookings yet.</p>
   } @else {
     <div class="space-y-4">
       @for (b of bookings(); track b.id) {
-        <div class="card p-6">
+        <div class="card p-4">
           <div class="flex flex-wrap justify-between items-start gap-2 mb-4 pb-4 border-b border-gray-100">
             <div>
               <h3 class="font-display font-bold text-brand-ink">{{ b.service_name }}</h3>
@@ -34,7 +28,7 @@
           <div class="flex justify-between items-center">
             <span class="font-bold text-brand-navy">{{ b.price | homelinkPrice }}</span>
             @if (b.status === 'pending') {
-              <button type="button" (click)="cancelTarget.set(b)" class="text-sm text-red-600 hover:underline">Cancel</button>
+              <button type="button" (click)="cancelTarget.set(b)" class="tap text-sm text-red-600 font-medium">Cancel</button>
             }
           </div>
         </div>

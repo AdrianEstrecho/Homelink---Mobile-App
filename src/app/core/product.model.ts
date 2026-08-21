@@ -13,6 +13,8 @@ export interface Product {
   avg_rating?: number;
   review_count?: number;
   specifications?: Record<string, string>;
+  brand?: string | null;
+  discount?: number;
 }
 
 export interface Category {

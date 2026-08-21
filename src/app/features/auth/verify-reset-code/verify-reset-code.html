@@ -1,9 +1,5 @@
 @if (!pending()?.email) {
   <app-auth-layout title="Verify code" backTo="/login">
-    <app-auth-illustration illustration>
-      <svg icon lucideShieldCheck></svg>
-      <svg badge lucideShieldCheck></svg>
-    </app-auth-illustration>
     <p class="text-sm text-gray-600">
       This verification session has expired. Please
       <a routerLink="/forgot-password" class="text-brand-orange font-semibold hover:underline">request a new code</a>
@@ -16,11 +12,6 @@
     subtitle="An authentication code has been sent to your email."
     backTo="/login"
   >
-    <app-auth-illustration illustration>
-      <svg icon lucideShieldCheck></svg>
-      <svg badge lucideShieldCheck></svg>
-    </app-auth-illustration>
-
     <form (ngSubmit)="onSubmit()" class="space-y-5">
       <div>
         <label class="block text-sm font-medium mb-1.5">Enter Code</label>
