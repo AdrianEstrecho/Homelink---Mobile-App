@@ -1,5 +1,6 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
+import { from, switchMap } from 'rxjs';
 
 import { environment } from '../../environments/environment';
 import { TokenStorageService } from './token-storage.service';
@@ -10,9 +11,12 @@ import { TokenStorageService } from './token-storage.service';
  */
 export const authTokenInterceptor: HttpInterceptorFn = (req, next) => {
   const tokens = inject(TokenStorageService);
-  const token = tokens.get();
-  if (token && req.url.startsWith(environment.apiUrl)) {
-    req = req.clone({ setHeaders: { Authorization: `Bearer ${token}` } });
-  }
-  return next(req);
+  return from(tokens.get()).pipe(
+    switchMap((token) => {
+      if (token && req.url.startsWith(environment.apiUrl)) {
+        req = req.clone({ setHeaders: { Authorization: `Bearer ${token}` } });
+      }
+      return next(req);
+    }),
+  );
 };

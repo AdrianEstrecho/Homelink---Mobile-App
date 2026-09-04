@@ -36,41 +36,41 @@ export class AuthService {
   readonly authReady: Promise<void>;
 
   constructor() {
-    const token = this.tokens.get();
-    if (token) {
-      this.authReady = this.api
-        .get<User>('/auth/me')
-        .then((user) => {
-          this.user.set(user);
-        })
-        .catch(() => {
-          this.tokens.clear();
-        })
-        .finally(() => {
-          this.loading.set(false);
-        });
-    } else {
+    this.authReady = this.bootstrap();
+  }
+
+  private async bootstrap(): Promise<void> {
+    const token = await this.tokens.get();
+    if (!token) {
       this.loading.set(false);
-      this.authReady = Promise.resolve();
+      return;
+    }
+    try {
+      const user = await this.api.get<User>('/auth/me');
+      this.user.set(user);
+    } catch {
+      await this.tokens.clear();
+    } finally {
+      this.loading.set(false);
     }
   }
 
   async login(email: string, password: string): Promise<User> {
     const data = await this.api.post<AuthResponse>('/auth/login', { email, password });
-    this.tokens.set(data.token);
+    await this.tokens.set(data.token);
     this.user.set(data.user);
     return data.user;
   }
 
   async register(form: RegisterForm): Promise<User> {
     const data = await this.api.post<AuthResponse>('/auth/register', form);
-    this.tokens.set(data.token);
+    await this.tokens.set(data.token);
     this.user.set(data.user);
     return data.user;
   }
 
-  logout(): void {
-    this.tokens.clear();
+  async logout(): Promise<void> {
+    await this.tokens.clear();
     this.user.set(null);
   }
 

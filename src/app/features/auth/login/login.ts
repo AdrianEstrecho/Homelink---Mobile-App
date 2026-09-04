@@ -33,7 +33,7 @@ export class Login {
     try {
       const user = await this.auth.login(this.email, this.password);
       if (user.role !== 'customer') {
-        this.auth.logout();
+        await this.auth.logout();
         throw new Error("This account isn't a customer account. Please sign in via the HomeLink web portal.");
       }
       this.router.navigateByUrl('/');

@@ -145,8 +145,8 @@ export class Account {
   handleLogout(): void {
     this.confirmLogout.set(false);
     this.loggingOut.set(true);
-    setTimeout(() => {
-      this.auth.logout();
+    setTimeout(async () => {
+      await this.auth.logout();
       window.location.href = '/';
     }, 600);
   }
