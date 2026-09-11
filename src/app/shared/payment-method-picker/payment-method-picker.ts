@@ -1,10 +1,10 @@
 import { Component, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { LucideCheck, LucideCopy, LucideCreditCard, LucideLandmark, LucideShieldCheck, LucideSmartphone } from '@lucide/angular';
+import { LucideCheck, LucideCopy, LucideCreditCard, LucideLandmark, LucideQrCode, LucideShieldCheck, LucideSmartphone } from '@lucide/angular';
 
 import { Select, SelectOption } from '../select/select';
 
-export type PaymentMethodValue = 'card' | 'gcash' | 'bank';
+export type PaymentMethodValue = 'card' | 'gcash' | 'qrph' | 'bank';
 
 interface CardForm {
   cardNumber: string;
@@ -19,11 +19,14 @@ export interface ValidatedPayment {
   gcashNumber?: string;
 }
 
-const PAYMENT_METHODS: { value: PaymentMethodValue; label: string; description: string; icon: 'card' | 'gcash' | 'bank' }[] = [
+const PAYMENT_METHODS: { value: PaymentMethodValue; label: string; description: string; icon: 'card' | 'gcash' | 'qrph' | 'bank' }[] = [
   { value: 'card', label: 'Credit / Debit Card', description: 'Visa, Mastercard & more', icon: 'card' },
   { value: 'gcash', label: 'GCash', description: 'Pay with your wallet', icon: 'gcash' },
+  { value: 'qrph', label: 'QR Ph', description: 'Scan with any app', icon: 'qrph' },
   { value: 'bank', label: 'Bank Transfer', description: 'Direct bank deposit', icon: 'bank' },
 ];
+
+const PAYMENT_METHOD_OPTIONS: SelectOption[] = PAYMENT_METHODS.map((m) => ({ value: m.value, label: m.label }));
 
 const BANK_DETAILS = { bank: 'BDO Unibank', accountName: 'HomeLink Home Improvement Inc.', accountNumber: '0012 3456 7890' };
 
@@ -38,7 +41,7 @@ const yearOptions: SelectOption[] = Array.from({ length: 12 }, (_, i) => ({ valu
  */
 @Component({
   selector: 'app-payment-method-picker',
-  imports: [FormsModule, Select, LucideCreditCard, LucideSmartphone, LucideLandmark, LucideShieldCheck, LucideCopy, LucideCheck],
+  imports: [FormsModule, Select, LucideCreditCard, LucideSmartphone, LucideQrCode, LucideLandmark, LucideShieldCheck, LucideCopy, LucideCheck],
   templateUrl: './payment-method-picker.html',
   styleUrl: './payment-method-picker.css',
 })
@@ -46,6 +49,7 @@ export class PaymentMethodPicker {
   readonly stepNumber = input(2);
 
   protected readonly paymentMethods = PAYMENT_METHODS;
+  protected readonly paymentMethodOptions = PAYMENT_METHOD_OPTIONS;
   protected readonly monthOptions = monthOptions;
   protected readonly yearOptions = yearOptions;
   protected readonly bankDetails = BANK_DETAILS;
@@ -56,6 +60,10 @@ export class PaymentMethodPicker {
   protected readonly gcashNumber = signal('');
   protected readonly gcashError = signal('');
   protected readonly bankCopied = signal(false);
+
+  onMethodChange(value: string): void {
+    this.method.set(value as PaymentMethodValue);
+  }
 
   updateCard<K extends keyof CardForm>(key: K, value: CardForm[K]): void {
     this.cardForm.update((f) => ({ ...f, [key]: value }));
@@ -111,6 +119,8 @@ export class PaymentMethodPicker {
       this.gcashError.set('');
       return { method, gcashNumber: digits };
     }
+    // 'qrph' and 'bank' need no client-side form data — PayMongo's hosted page (qrph) or the
+    // static bank details below (bank) are all that's shown for those two.
     return { method };
   }
 }

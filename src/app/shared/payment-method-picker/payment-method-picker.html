@@ -3,19 +3,16 @@
     <span class="w-6 h-6 rounded-full bg-brand-navy text-white text-xs font-bold flex items-center justify-center shrink-0">{{ stepNumber() }}</span>
     Payment Method
   </h2>
-  <div class="grid sm:grid-cols-3 gap-3">
-    @for (m of paymentMethods; track m.value) {
-      <label class="flex flex-col items-center text-center gap-1.5 p-4 rounded-xl border cursor-pointer transition" [class]="method() === m.value ? 'border-brand-orange bg-brand-orange/5' : 'border-gray-200 hover:border-gray-300'">
-        <input type="radio" name="payment" class="sr-only" [checked]="method() === m.value" (change)="method.set(m.value)" />
-        @switch (m.icon) {
-          @case ('card') { <svg lucideCreditCard class="w-6 h-6 mb-1" [class]="method() === m.value ? 'text-brand-orange' : 'text-gray-400'"></svg> }
-          @case ('gcash') { <svg lucideSmartphone class="w-6 h-6 mb-1" [class]="method() === m.value ? 'text-brand-orange' : 'text-gray-400'"></svg> }
-          @case ('bank') { <svg lucideLandmark class="w-6 h-6 mb-1" [class]="method() === m.value ? 'text-brand-orange' : 'text-gray-400'"></svg> }
-        }
-        <span class="text-sm font-semibold text-brand-ink">{{ m.label }}</span>
-        <span class="text-xs text-gray-400">{{ m.description }}</span>
-      </label>
-    }
+  <div class="flex gap-3">
+    <div class="w-10 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0">
+      @switch (method()) {
+        @case ('card') { <svg lucideCreditCard class="w-5 h-5 text-brand-orange"></svg> }
+        @case ('gcash') { <svg lucideSmartphone class="w-5 h-5 text-brand-orange"></svg> }
+        @case ('qrph') { <svg lucideQrCode class="w-5 h-5 text-brand-orange"></svg> }
+        @case ('bank') { <svg lucideLandmark class="w-5 h-5 text-brand-orange"></svg> }
+      }
+    </div>
+    <app-select [value]="method()" (valueChange)="onMethodChange($event)" [options]="paymentMethodOptions" class="flex-1" />
   </div>
 
   @if (method() === 'card') {
@@ -55,6 +52,12 @@
         <p class="text-red-600 text-sm mt-1.5">{{ gcashError() }}</p>
       }
       <p class="text-xs text-gray-400 mt-2">You'll be redirected to GCash to authorize this payment.</p>
+    </div>
+  }
+
+  @if (method() === 'qrph') {
+    <div class="mt-5 pt-5 border-t border-gray-100">
+      <p class="text-sm text-gray-500">You'll be taken to a secure PayMongo page to scan a QR code with GCash, Maya, or your bank's app.</p>
     </div>
   }
 

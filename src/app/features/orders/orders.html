@@ -7,18 +7,19 @@
   } @else {
     <div class="space-y-3">
       @for (o of orders(); track o.id) {
-        <button type="button" (click)="selectedOrder.set(o)" class="tap card p-4 w-full text-left flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p class="font-semibold text-brand-ink">Order #{{ o.id.slice(0, 8).toUpperCase() }}</p>
-            <p class="text-sm text-gray-500">
+        <button type="button" (click)="selectedOrder.set(o)" class="tap card p-4 w-full text-left flex items-center gap-3">
+          <app-safe-image [src]="o.items[0]?.image" [alt]="o.items[0]?.name || ''" class="w-14 h-14 rounded-lg object-cover shrink-0 bg-gray-50" iconClass="w-6 h-6" />
+          <div class="flex-1 min-w-0">
+            <p class="font-semibold text-brand-ink truncate">Order #{{ o.id.slice(0, 8).toUpperCase() }}</p>
+            <p class="text-sm text-gray-500 truncate">
               {{ o.created_at | date }} · {{ o.items?.length || 0 }} item{{ o.items?.length === 1 ? '' : 's' }}
             </p>
+            <div class="flex items-center gap-2 flex-wrap mt-1">
+              <span class="badge" [class]="statusColor(o.status)">{{ o.status }}</span>
+              <span class="font-bold text-brand-navy text-sm">{{ o.total | homelinkPrice }}</span>
+            </div>
           </div>
-          <div class="flex items-center gap-3">
-            <span class="badge" [class]="statusColor(o.status)">{{ o.status }}</span>
-            <span class="font-bold text-brand-navy">{{ o.total | homelinkPrice }}</span>
-            <svg lucideChevronRight class="w-4 h-4 text-gray-400"></svg>
-          </div>
+          <svg lucideChevronRight class="w-4 h-4 text-gray-400 shrink-0"></svg>
         </button>
       }
     </div>
@@ -30,8 +31,11 @@
       [person]="billedTo()"
       personLabel="Billed To"
       [showCancel]="true"
+      [reviewableProductIds]="reviewableProductIds()"
+      [reviewsByProduct]="reviewsByProduct()"
       (closed)="selectedOrder.set(null)"
       (cancelRequested)="cancelTarget.set(order)"
+      (reviewed)="handleReviewed($event)"
     />
   }
 

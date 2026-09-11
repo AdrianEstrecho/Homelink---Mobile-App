@@ -42,7 +42,7 @@
         <div class="w-9 h-9 rounded-lg bg-white flex items-center justify-center shrink-0 border border-gray-100"><svg lucideUser class="w-4 h-4 text-brand-navy"></svg></div>
         <div class="min-w-0">
           <p class="text-[11px] uppercase tracking-wide text-gray-400 font-medium mb-0.5">Full Name</p>
-          <p class="text-sm font-semibold text-gray-800 truncate">{{ (user()?.firstName + ' ' + user()?.lastName).trim() || 'Not set' }}</p>
+          <p class="text-sm font-semibold text-gray-800 truncate">{{ ((user()?.firstName ?? '') + ' ' + (user()?.lastName ?? '')).trim() || 'Not set' }}</p>
         </div>
       </div>
       <div class="flex items-start gap-3 p-4 rounded-xl bg-gray-50 border border-gray-100">

@@ -8,10 +8,12 @@ import { AuthService } from '../../../core/auth.service';
 /**
  * Ported from frontend/src/pages/admin/AdminLogin.jsx, trimmed to the
  * admin-only scope decided for the mobile app (see AdminUsers/AdminShell) —
- * no 2FA stage, since the mobile app doesn't implement email-code 2FA at all
- * yet (see login.ts and the mobile port plan) and employee-position accounts
- * are out of scope here too, so any non-admin credential is rejected outright
- * rather than routed to an employee landing page.
+ * employee-position accounts are out of scope here, so any non-admin
+ * credential is rejected outright rather than routed to an employee landing
+ * page. No 2FA *stage* is built (unlike login.ts) since staff 2FA is rarer
+ * to hit in practice, but /auth/login can still return `requires2FA` for an
+ * admin who has it turned on — handled below by pointing them at the web
+ * admin panel instead of leaving the response half-unread.
  */
 @Component({
   selector: 'app-admin-login',
@@ -38,8 +40,11 @@ export class AdminLogin {
     this.loading.set(true);
     this.error.set('');
     try {
-      const user = await this.auth.login(this.email, this.password);
-      if (user.role !== 'admin') {
+      const result = await this.auth.login(this.email, this.password);
+      if (result.requires2FA) {
+        throw new Error('This account has two-factor authentication enabled — sign in from the web admin panel for now.');
+      }
+      if (result.user.role !== 'admin') {
         await this.auth.logout();
         throw new Error('This portal is for staff use only.');
       }

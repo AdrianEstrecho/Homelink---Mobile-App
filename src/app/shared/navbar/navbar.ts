@@ -15,6 +15,13 @@ const TAB_TITLES: Record<string, string> = {
 };
 
 const SECTION_TITLES: { test: (url: string) => boolean; title: string }[] = [
+  { test: (u) => u.startsWith('/account/profile'), title: 'Profile Details' },
+  { test: (u) => u.startsWith('/account/address'), title: 'Address' },
+  { test: (u) => u.startsWith('/account/payment'), title: 'Payment' },
+  { test: (u) => u.startsWith('/account/notifications'), title: 'Notifications' },
+  { test: (u) => u.startsWith('/account/security'), title: 'Security' },
+  { test: (u) => u.startsWith('/account/reviews'), title: 'Reviews' },
+  { test: (u) => u.startsWith('/account/support'), title: 'Support' },
   { test: (u) => u.startsWith('/products/'), title: 'Product Details' },
   { test: (u) => u.startsWith('/services/'), title: 'Book Service' },
   { test: (u) => u.startsWith('/gallery'), title: 'Gallery' },

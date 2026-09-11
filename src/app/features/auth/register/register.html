@@ -10,30 +10,70 @@
         <input name="lastName" required [(ngModel)]="lastName" class="input-field" />
       </div>
     </div>
-    <div class="grid grid-cols-2 gap-4">
-      <div>
-        <label class="block text-sm font-medium mb-1.5">Email</label>
-        <input type="email" name="email" required [(ngModel)]="email" class="input-field" />
+    <div>
+      <label class="block text-sm font-medium mb-1.5">Email</label>
+      <div class="flex gap-2">
+        <input
+          type="email"
+          name="email"
+          required
+          [disabled]="codeSent()"
+          [(ngModel)]="email"
+          class="input-field flex-1 disabled:bg-gray-50 disabled:text-gray-500"
+        />
+        @if (!codeSent()) {
+          <button
+            type="button"
+            (click)="confirmEmail()"
+            [disabled]="sendingCode() || !email"
+            class="btn-secondary whitespace-nowrap px-4 disabled:opacity-50"
+          >
+            {{ sendingCode() ? 'Sending...' : 'Confirm Email' }}
+          </button>
+        }
       </div>
-      <div>
-        <label class="block text-sm font-medium mb-1.5">Phone Number</label>
-        <input name="phone" [(ngModel)]="phone" class="input-field" />
-      </div>
+
+      @if (codeSent()) {
+        <div class="mt-3">
+          <label class="block text-sm font-medium mb-1.5">Verification Code</label>
+          <input
+            required
+            autofocus
+            [ngModel]="code"
+            (ngModelChange)="onCodeInput($event)"
+            name="code"
+            maxlength="8"
+            class="input-field tracking-widest font-mono uppercase"
+            placeholder="XXXXXXXX"
+          />
+          <p class="text-xs text-gray-500 mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-1">
+            <span class="flex items-center gap-1">
+              <svg lucideCheckCircle2 class="w-3.5 h-3.5 text-brand-teal shrink-0"></svg> Code sent to {{ email }}.
+            </span>
+            <button type="button" (click)="resendCode()" class="text-brand-orange font-semibold hover:underline">Resend</button>
+            @if (resent()) {
+              <span class="text-green-600">Sent!</span>
+            }
+            <span class="text-gray-300">&middot;</span>
+            <button type="button" (click)="changeEmail()" class="text-brand-orange font-semibold hover:underline">Change email</button>
+          </p>
+        </div>
+      }
+      @if (verifyError()) {
+        <p class="text-red-600 text-xs mt-1.5">{{ verifyError() }}</p>
+      }
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1.5">Phone Number</label>
+      <input name="phone" [(ngModel)]="phone" class="input-field" />
     </div>
     <div>
       <label class="block text-sm font-medium mb-1.5">Password</label>
-      <input
-        type="password"
-        name="password"
-        required
-        [(ngModel)]="password"
-        (focus)="passwordTouched.set(true)"
-        class="input-field"
-      />
+      <app-password-input name="password" [required]="true" [(value)]="password" (focused)="passwordTouched.set(true)" />
     </div>
     <div>
       <label class="block text-sm font-medium mb-1.5">Confirm Password</label>
-      <input type="password" name="confirmPassword" required [(ngModel)]="confirmPassword" class="input-field" />
+      <app-password-input name="confirmPassword" [required]="true" [(value)]="confirmPassword" />
     </div>
     @if (passwordTouched()) {
       <app-password-requirements [password]="password" />
@@ -61,12 +101,21 @@
     @if (error()) {
       <p class="text-red-600 text-sm">{{ error() }}</p>
     }
-    <button type="submit" [disabled]="loading()" class="btn-primary w-full flex items-center justify-center gap-2 py-3 disabled:opacity-50">
+    <button type="submit" [disabled]="loading() || !codeSent() || !code.trim()" class="btn-primary w-full flex items-center justify-center gap-2 py-3 disabled:opacity-50">
       <svg lucideUserPlus class="w-4 h-4"></svg> {{ loading() ? 'Creating...' : 'Create account' }}
     </button>
     <p class="text-center text-sm text-gray-600">
       Already have an account? <a routerLink="/login" class="text-brand-orange font-semibold hover:underline">Login</a>
     </p>
+
+    @if (googleSupported) {
+      <div class="flex items-center gap-3 my-1">
+        <div class="flex-1 h-px bg-gray-200"></div>
+        <span class="text-xs text-gray-400">or sign up with</span>
+        <div class="flex-1 h-px bg-gray-200"></div>
+      </div>
+      <app-google-signin-button text="signup_with" (credential)="onGoogleCredential($event)" />
+    }
   </form>
 
   <app-terms-modal [open]="showTerms()" (closed)="showTerms.set(false)" />

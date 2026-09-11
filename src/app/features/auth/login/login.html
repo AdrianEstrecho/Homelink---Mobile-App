@@ -1,29 +1,83 @@
-<app-auth-layout title="Login" subtitle="Login to access your HomeLink account">
-  <form (ngSubmit)="onSubmit()" class="space-y-5">
-    <div>
-      <label class="block text-sm font-medium mb-1.5">Email</label>
-      <input type="email" name="email" required [(ngModel)]="email" class="input-field" />
-    </div>
-    <div>
-      <label class="block text-sm font-medium mb-1.5">Password</label>
-      <input type="password" name="password" required [(ngModel)]="password" class="input-field" />
-      <div class="flex justify-end mt-1.5">
-        <a routerLink="/forgot-password" class="text-xs text-brand-orange font-medium hover:underline">Forgot Password?</a>
+@if (stage() === '2fa') {
+  <app-auth-layout title="Verify it's you" [subtitle]="'An authentication code has been sent to ' + email + '.'">
+    <form (ngSubmit)="verify2fa()" class="space-y-5">
+      <div>
+        <label class="block text-sm font-medium mb-1.5">Enter Code</label>
+        <input
+          required
+          autofocus
+          [ngModel]="code"
+          (ngModelChange)="onCodeInput($event)"
+          name="code"
+          maxlength="8"
+          class="input-field tracking-widest font-mono uppercase"
+          placeholder="XXXXXXXX"
+        />
       </div>
-    </div>
-    @if (error()) {
-      <p class="text-red-600 text-sm">{{ error() }}</p>
-    }
-    <button type="submit" [disabled]="loading()" class="btn-primary w-full flex items-center justify-center gap-2 py-3 disabled:opacity-70 transition-opacity">
-      @if (loading()) {
-        <svg lucideLoaderCircle class="w-4 h-4 animate-spin"></svg>
-      } @else {
-        <svg lucideLogIn class="w-4 h-4"></svg>
+      <p class="text-sm text-gray-600">
+        Didn't receive a code?
+        <button type="button" (click)="resendCode()" class="text-brand-orange font-semibold hover:underline">Resend</button>
+        @if (resent()) {
+          <span class="text-green-600 ml-2">Sent!</span>
+        }
+      </p>
+      @if (error()) {
+        <p class="text-red-600 text-sm">{{ error() }}</p>
       }
-      {{ loading() ? 'Signing in...' : 'Login' }}
-    </button>
-    <p class="text-center text-sm text-gray-600">
-      Don't have an account? <a routerLink="/register" class="text-brand-orange font-semibold hover:underline">Sign up</a>
-    </p>
-  </form>
-</app-auth-layout>
+      <button type="submit" [disabled]="loading()" class="btn-primary w-full flex items-center justify-center gap-2 py-3 disabled:opacity-70 transition-opacity">
+        @if (loading()) {
+          <svg lucideLoaderCircle class="w-4 h-4 animate-spin"></svg>
+        } @else {
+          <svg lucideLogIn class="w-4 h-4"></svg>
+        }
+        {{ loading() ? 'Verifying...' : 'Verify' }}
+      </button>
+      <button type="button" (click)="backToCredentials()" class="w-full text-center text-sm text-gray-500 hover:text-brand-navy">
+        Back to login
+      </button>
+    </form>
+  </app-auth-layout>
+} @else {
+  <app-auth-layout title="Login" subtitle="Login to access your HomeLink account">
+    <form (ngSubmit)="onSubmit()" class="space-y-5">
+      <div>
+        <label class="block text-sm font-medium mb-1.5">Email</label>
+        <input type="email" name="email" required [(ngModel)]="email" class="input-field" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1.5">Password</label>
+        <app-password-input name="password" [required]="true" [(value)]="password" />
+        <div class="flex justify-end mt-1.5">
+          <a routerLink="/forgot-password" class="text-xs text-brand-orange font-medium hover:underline">Forgot Password?</a>
+        </div>
+      </div>
+      @if (error()) {
+        <p class="text-red-600 text-sm">{{ error() }}</p>
+      }
+      <button type="submit" [disabled]="loading()" class="btn-primary w-full flex items-center justify-center gap-2 py-3 disabled:opacity-70 transition-opacity">
+        @if (loading()) {
+          <svg lucideLoaderCircle class="w-4 h-4 animate-spin"></svg>
+        } @else {
+          <svg lucideLogIn class="w-4 h-4"></svg>
+        }
+        {{ loading() ? 'Signing in...' : 'Login' }}
+      </button>
+
+      @if (googleSupported) {
+        <div class="flex items-center gap-3 my-1">
+          <div class="flex-1 h-px bg-gray-200"></div>
+          <span class="text-xs text-gray-400">or</span>
+          <div class="flex-1 h-px bg-gray-200"></div>
+        </div>
+        <app-google-signin-button text="signin_with" (credential)="onGoogleCredential($event)" />
+        @if (googleError()) {
+          <p class="text-red-600 text-sm text-center mt-2">{{ googleError() }}</p>
+        }
+      }
+
+      <p class="text-center text-sm text-gray-600">
+        Don't have an account? <a routerLink="/register" class="text-brand-orange font-semibold hover:underline">Sign up</a>
+      </p>
+    </form>
+  </app-auth-layout>
+}

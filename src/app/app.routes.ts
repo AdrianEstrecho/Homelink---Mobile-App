@@ -13,6 +13,42 @@ export const routes: Routes = [
     canActivate: [roleGuard(['customer'])],
   },
   {
+    path: 'account/profile',
+    loadComponent: () => import('./features/account/profile-page/profile-page').then((m) => m.ProfilePage),
+    canActivate: [roleGuard(['customer'])],
+  },
+  {
+    path: 'account/address',
+    loadComponent: () => import('./features/account/address-page/address-page').then((m) => m.AddressPage),
+    canActivate: [roleGuard(['customer'])],
+  },
+  {
+    path: 'account/payment',
+    loadComponent: () => import('./features/account/payment-page/payment-page').then((m) => m.PaymentPage),
+    canActivate: [roleGuard(['customer'])],
+  },
+  {
+    path: 'account/notifications',
+    loadComponent: () =>
+      import('./features/account/notifications-page/notifications-page').then((m) => m.NotificationsPage),
+    canActivate: [roleGuard(['customer'])],
+  },
+  {
+    path: 'account/security',
+    loadComponent: () => import('./features/account/security-page/security-page').then((m) => m.SecurityPage),
+    canActivate: [roleGuard(['customer'])],
+  },
+  {
+    path: 'account/reviews',
+    loadComponent: () => import('./features/account/reviews-page/reviews-page').then((m) => m.ReviewsPage),
+    canActivate: [roleGuard(['customer'])],
+  },
+  {
+    path: 'account/support',
+    loadComponent: () => import('./features/account/support-page/support-page').then((m) => m.SupportPage),
+    canActivate: [roleGuard(['customer'])],
+  },
+  {
     path: 'products',
     loadComponent: () => import('./features/products/products').then((m) => m.Products),
   },

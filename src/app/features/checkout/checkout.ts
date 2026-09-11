@@ -9,18 +9,16 @@ import { ApiService } from '../../core/api.service';
 import { AuthService } from '../../core/auth.service';
 import { CartService } from '../../core/cart.service';
 import { Order, PendingOrder } from '../../core/order.model';
-import { PaymongoService } from '../../core/paymongo.service';
 import { pollPaymentStatus } from '../../core/payment-polling.util';
 import { PricePipe } from '../../core/price.pipe';
 import { ActivePromos, AppliedVoucher, calcDiscount } from '../../core/promo.model';
 import { AddressPicker } from '../../shared/address-picker/address-picker';
 import { OrderDetailsModal } from '../../shared/order-details-modal/order-details-modal';
-import { PaymentMethodPicker, ValidatedPayment } from '../../shared/payment-method-picker/payment-method-picker';
+import { PaymentMethodPicker } from '../../shared/payment-method-picker/payment-method-picker';
 
-interface PaymentIntentResponse {
+interface CheckoutSessionResponse {
   pendingCheckoutId: string;
-  paymentIntentId: string;
-  clientKey: string;
+  checkoutUrl: string;
 }
 
 @Component({
@@ -33,7 +31,6 @@ export class Checkout {
   private api = inject(ApiService);
   private auth = inject(AuthService);
   private cart = inject(CartService);
-  private paymongo = inject(PaymongoService);
   private router = inject(Router);
 
   protected readonly items = this.cart.items;
@@ -50,7 +47,6 @@ export class Checkout {
 
   protected readonly error = signal('');
   protected readonly pendingOrder = signal<PendingOrder | null>(null);
-  protected paymentDetails: ValidatedPayment | null = null;
   protected readonly placingOrder = signal(false);
   protected readonly confirmedOrder = signal<Order | null>(null);
 
@@ -112,7 +108,6 @@ export class Checkout {
     if (!payment) return;
 
     this.error.set('');
-    this.paymentDetails = payment;
     this.pendingOrder.set({
       items: this.items().map((i) => ({ id: i.productId, name: i.name, image: i.image, price: i.price, quantity: i.quantity })),
       shipping_address: selectedAddress.fullAddress,
@@ -126,7 +121,6 @@ export class Checkout {
 
   editOrder(): void {
     this.pendingOrder.set(null);
-    this.paymentDetails = null;
     this.error.set('');
   }
 
@@ -150,55 +144,19 @@ export class Checkout {
         return;
       }
 
-      const { pendingCheckoutId, paymentIntentId, clientKey } = await this.api.post<PaymentIntentResponse>('/payments/intent', {
+      // Card, GCash, and QR Ph all hand off to PayMongo's hosted Checkout Session (v2) — created
+      // server-side (it holds the PayMongo secret key), so only the chosen method is sent here.
+      // PayMongo's own page collects the actual payment details (card number, GCash login, QR
+      // scan); we never see or store them. Mirrors frontend/src/pages/Checkout.jsx's
+      // handleConfirmOrder().
+      const { pendingCheckoutId, checkoutUrl } = await this.api.post<CheckoutSessionResponse>('/payments/checkout-session', {
         items: pending.items.map((i) => ({ productId: i.id, quantity: i.quantity })),
         shippingAddress: pending.shipping_address,
         paymentMethod: pending.payment_method,
         promoCode: pending.promo_code || undefined,
       });
 
-      const user = this.auth.user();
-      const billing = {
-        name: user ? `${user.firstName} ${user.lastName}` : undefined,
-        email: user?.email,
-        phone: pending.payment_method === 'gcash' ? this.paymentDetails?.gcashNumber : user?.phone,
-      };
-
-      const paymentMethodId =
-        pending.payment_method === 'card'
-          ? await this.paymongo.createPaymentMethod({
-              type: 'card',
-              details: {
-                card_number: this.paymentDetails!.card!.cardNumber,
-                exp_month: this.paymentDetails!.card!.expMonth,
-                exp_year: this.paymentDetails!.card!.expYear,
-                cvc: this.paymentDetails!.card!.cvc,
-              },
-              billing,
-            })
-          : await this.paymongo.createPaymentMethod({ type: 'gcash', billing });
-
-      // See mobile port plan §3.5: on native, window.location.origin is the
-      // Capacitor WebView's own local origin (e.g. https://localhost), which
-      // isn't reachable from the separate Custom Tab process the redirect
-      // actually lands in -- confirmed on-device (Phase 8), it dead-ends on
-      // "site can't be reached". Point at the already-deployed, pcid-driven
-      // web app instead, which is a real, always-resolvable HTTPS hop.
-      const returnUrl = Capacitor.isNativePlatform()
-        ? `https://homelink-frontend-umber.vercel.app/checkout/return?pcid=${pendingCheckoutId}`
-        : `${window.location.origin}/checkout/return?pcid=${pendingCheckoutId}`;
-      const attached = await this.paymongo.attachPaymentIntent({ paymentIntentId, paymentMethodId, clientKey, returnUrl });
-
-      if (attached.status === 'succeeded') {
-        const result = await this.api.get<{ order: Order }>(`/payments/status/${pendingCheckoutId}`);
-        this.cart.clearCart();
-        this.pendingOrder.set(null);
-        this.confirmedOrder.set(result.order);
-      } else if (attached.nextAction?.redirect?.url) {
-        await this.handleRedirect(attached.nextAction.redirect.url, pendingCheckoutId);
-      } else {
-        this.error.set(attached.lastPaymentError?.detail || 'Payment could not be completed. Please try again.');
-      }
+      await this.openCheckoutSession(checkoutUrl, pendingCheckoutId);
     } catch (err) {
       this.error.set((err as Error).message);
     } finally {
@@ -206,10 +164,10 @@ export class Checkout {
     }
   }
 
-  private async handleRedirect(redirectUrl: string, pendingCheckoutId: string): Promise<void> {
+  private async openCheckoutSession(checkoutUrl: string, pendingCheckoutId: string): Promise<void> {
     if (!Capacitor.isNativePlatform()) {
       // Leaving the page — CheckoutReturn picks up from here once PayMongo redirects back.
-      window.location.href = redirectUrl;
+      window.location.href = checkoutUrl;
       return;
     }
 
@@ -224,7 +182,7 @@ export class Checkout {
     // when that happens. Confirmed via on-device testing (Phase 8) -- this
     // never surfaces in `ng serve`, since Capacitor.isNativePlatform() is
     // false there and this whole branch never runs.
-    await Browser.open({ url: redirectUrl });
+    await Browser.open({ url: checkoutUrl });
     const result = await pollPaymentStatus(this.api, pendingCheckoutId);
     await Browser.close();
 

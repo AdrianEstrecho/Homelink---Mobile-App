@@ -6,8 +6,7 @@ import { environment } from '../../environments/environment';
 import { TokenStorageService } from './token-storage.service';
 
 /**
- * Scoped to our own API only — PaymongoService talks to api.paymongo.com
- * directly with PayMongo's public key, and must never see this JWT.
+ * Scoped to our own API only, so this JWT is never attached to unrelated requests.
  */
 export const authTokenInterceptor: HttpInterceptorFn = (req, next) => {
   const tokens = inject(TokenStorageService);

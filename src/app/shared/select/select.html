@@ -1,4 +1,4 @@
-<div [class]="'relative ' + wrapClass()">
+<div [class]="'relative min-w-0 ' + wrapClass()">
   <button
     #trigger
     type="button"
@@ -24,7 +24,7 @@
         <button
           type="button"
           (click)="selectOption(o.value)"
-          class="w-full text-left px-3 py-2 text-sm transition"
+          class="w-full text-left px-3 py-2 text-sm transition truncate"
           [class]="o.value === value() ? 'bg-brand-navy/10 text-brand-navy font-medium' : 'text-gray-700 hover:bg-gray-50'"
         >
           {{ o.label }}

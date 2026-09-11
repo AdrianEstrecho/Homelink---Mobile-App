@@ -71,16 +71,61 @@
       <div>
         <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Items</h3>
         <div class="space-y-3">
-          @for (i of o.items; track i.id) {
-            <div class="flex items-center gap-3">
-              @if (i.image) {
-                <app-safe-image [src]="i.image" [alt]="i.name" class="w-14 h-14 object-cover rounded-lg flex-shrink-0 print:hidden" />
-              }
-              <div class="flex-1 min-w-0">
-                <p class="font-medium text-sm truncate">{{ i.name }}</p>
-                <p class="text-xs text-gray-500">Qty {{ i.quantity }} × {{ i.price | homelinkPrice }}</p>
+          @for (i of asOrder().items; track i.id) {
+            @let existing = existingReview(i);
+            @let reviewable = canReviewItem(i);
+            <div class="rounded-xl" [class.bg-gray-50]="existing || reviewable" [class.border]="existing || reviewable" [class.border-gray-100]="existing || reviewable" [class.p-3]="existing || reviewable">
+              <div class="flex items-center gap-3">
+                @if (i.image) {
+                  <app-safe-image [src]="i.image" [alt]="i.name" class="w-14 h-14 object-cover rounded-lg flex-shrink-0 print:hidden" />
+                }
+                <div class="flex-1 min-w-0">
+                  <p class="font-medium text-sm truncate">{{ i.name }}</p>
+                  <p class="text-xs text-gray-500">Qty {{ i.quantity }} × {{ i.price | homelinkPrice }}</p>
+                </div>
+                <p class="font-semibold text-sm">{{ i.price * i.quantity | homelinkPrice }}</p>
               </div>
-              <p class="font-semibold text-sm">{{ i.price * i.quantity | homelinkPrice }}</p>
+
+              @if (existing) {
+                <div class="no-print mt-2 pt-2 border-t border-gray-200">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Your Review</span>
+                    <app-star-rating [value]="existing.rating" [readOnly]="true" size="w-3.5 h-3.5" />
+                  </div>
+                  @if (existing.comment) {
+                    <p class="text-sm text-gray-600 mt-1">{{ existing.comment }}</p>
+                  }
+                </div>
+              } @else if (reviewable) {
+                <div class="no-print mt-2 pt-2 border-t border-gray-200">
+                  @if (writingProductId() !== i.product_id) {
+                    <button type="button" (click)="startReview(i)" class="flex items-center gap-1.5 text-sm font-semibold text-brand-navy hover:text-brand-orange transition">
+                      <svg lucidePenLine class="w-4 h-4"></svg> Write a Review
+                    </button>
+                  } @else {
+                    <form (submit)="$event.preventDefault(); submitReview(i)" class="space-y-2.5">
+                      <app-star-rating [value]="rating()" (valueChange)="rating.set($event)" />
+                      <textarea
+                        [ngModel]="comment()"
+                        (ngModelChange)="comment.set($event)"
+                        name="comment-{{ i.id }}"
+                        placeholder="How was it? (optional)"
+                        rows="2"
+                        class="input-field text-sm"
+                      ></textarea>
+                      @if (reviewError()) {
+                        <p class="text-red-600 text-sm">{{ reviewError() }}</p>
+                      }
+                      <div class="flex gap-2">
+                        <button type="submit" [disabled]="reviewSaving()" class="btn-primary text-sm py-1.5 disabled:opacity-60">
+                          {{ reviewSaving() ? 'Posting...' : 'Post Review' }}
+                        </button>
+                        <button type="button" (click)="cancelReview()" class="text-sm font-semibold text-gray-500 hover:text-gray-700">Cancel</button>
+                      </div>
+                    </form>
+                  }
+                </div>
+              }
             </div>
           }
         </div>

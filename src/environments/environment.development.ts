@@ -3,5 +3,5 @@
 export const environment = {
   production: false,
   apiUrl: '/api',
-  paymongoPublicKey: 'pk_test_fSZmDSLvA8mWyjqG8B1LxFEs',
+  googleClientId: '142696496639-6fgf05ecv8n1h00hc6qji72en9bhberi.apps.googleusercontent.com',
 };
