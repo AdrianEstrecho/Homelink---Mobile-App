@@ -31,11 +31,22 @@
       [person]="billedTo()"
       personLabel="Billed To"
       [showCancel]="true"
+      [showTrack]="true"
       [reviewableProductIds]="reviewableProductIds()"
       [reviewsByProduct]="reviewsByProduct()"
       (closed)="selectedOrder.set(null)"
       (cancelRequested)="cancelTarget.set(order)"
+      (trackRequested)="trackingOrder.set(order)"
       (reviewed)="handleReviewed($event)"
+    />
+  }
+
+  @if (trackingOrder(); as order) {
+    <app-tracking-modal
+      kind="order"
+      [id]="order.id"
+      [title]="'Order #' + order.id.slice(0, 8).toUpperCase()"
+      (closed)="trackingOrder.set(null)"
     />
   }
 

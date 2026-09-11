@@ -45,9 +45,16 @@
       }
 
       @if (!previewing()) {
-        <div class="flex gap-2">
-          <span class="badge capitalize" [class]="statusColor(asOrder().status)">{{ asOrder().status }}</span>
-          <span class="badge" [class]="statusColor(asOrder().payment_status)">{{ asOrder().payment_status }}</span>
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex gap-2">
+            <span class="badge capitalize" [class]="statusColor(asOrder().status)">{{ asOrder().status }}</span>
+            <span class="badge" [class]="statusColor(asOrder().payment_status)">{{ asOrder().payment_status }}</span>
+          </div>
+          @if (showTrack()) {
+            <button type="button" (click)="trackRequested.emit()" class="no-print flex items-center gap-1.5 text-xs font-semibold text-brand-teal hover:underline shrink-0">
+              <svg lucideTruck class="w-3.5 h-3.5"></svg> Track Order
+            </button>
+          }
         </div>
       }
 

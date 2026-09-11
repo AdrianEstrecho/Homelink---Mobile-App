@@ -1,0 +1,14 @@
+@if (currentIndex() !== -1) {
+  <div class="flex items-center flex-wrap gap-1.5">
+    @for (step of steps(); track step; let i = $index) {
+      <div class="flex items-center gap-1.5">
+        <span class="text-xs font-medium px-2.5 py-1 rounded-full" [class]="stepClass(i)">
+          {{ labels()[step] || step }}
+        </span>
+        @if (i < steps().length - 1) {
+          <span class="w-3 h-px" [class]="connectorClass(i)"></span>
+        }
+      </div>
+    }
+  </div>
+}

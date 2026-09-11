@@ -8,6 +8,7 @@ import {
   LucideMapPin,
   LucidePenLine,
   LucidePrinter,
+  LucideTruck,
   LucideX,
 } from '@lucide/angular';
 
@@ -51,6 +52,7 @@ const REVIEWABLE_STATUSES = new Set(['delivered', 'completed']);
     LucideDownload,
     LucideCircleCheck,
     LucidePenLine,
+    LucideTruck,
   ],
   templateUrl: './order-details-modal.html',
   styleUrl: './order-details-modal.css',
@@ -66,12 +68,14 @@ export class OrderDetailsModal {
   readonly confirmLoading = input(false);
   readonly error = input<string>();
   readonly showCancel = input(false);
+  readonly showTrack = input(false);
   readonly reviewableProductIds = input<Set<string>>(new Set());
   readonly reviewsByProduct = input<Map<string, Review>>(new Map());
 
   readonly closed = output<void>();
   readonly confirmed = output<void>();
   readonly cancelRequested = output<void>();
+  readonly trackRequested = output<void>();
   /** Emits the posted review once it's saved. */
   readonly reviewed = output<Review>();
 

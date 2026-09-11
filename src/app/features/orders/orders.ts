@@ -12,10 +12,11 @@ import { ToastService } from '../../core/toast.service';
 import { CancelReasonModal } from '../../shared/cancel-reason-modal/cancel-reason-modal';
 import { OrderDetailsModal } from '../../shared/order-details-modal/order-details-modal';
 import { SafeImage } from '../../shared/safe-image/safe-image';
+import { TrackingModal } from '../../shared/tracking-modal/tracking-modal';
 
 @Component({
   selector: 'app-orders',
-  imports: [DatePipe, PricePipe, OrderDetailsModal, CancelReasonModal, SafeImage, LucideChevronRight, LucideShoppingBag],
+  imports: [DatePipe, PricePipe, OrderDetailsModal, CancelReasonModal, TrackingModal, SafeImage, LucideChevronRight, LucideShoppingBag],
   templateUrl: './orders.html',
   styleUrl: './orders.css',
 })
@@ -27,6 +28,7 @@ export class Orders {
   protected readonly statusColor = statusColor;
   protected readonly orders = signal<Order[]>([]);
   protected readonly selectedOrder = signal<Order | null>(null);
+  protected readonly trackingOrder = signal<Order | null>(null);
   protected readonly cancelTarget = signal<Order | null>(null);
 
   /** Product IDs the signed-in user has purchased but not yet reviewed — lets
