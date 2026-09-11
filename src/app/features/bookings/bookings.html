@@ -13,7 +13,7 @@
             <span class="badge capitalize" [class]="statusColor(b.status)">{{ statusLabel(b.status) }}</span>
           </div>
           <div class="text-sm text-gray-600 space-y-1 mb-4">
-            <p>Date: {{ b.scheduled_date }} at {{ b.scheduled_time }}</p>
+            <p>Date: {{ b.scheduled_date }} at {{ formatTimeAmPm(b.scheduled_time) }}</p>
             <p>Address: {{ b.address }}</p>
             @if (b.employee_first_name) {
               <p>Technician: {{ b.employee_first_name }} {{ b.employee_last_name }}</p>

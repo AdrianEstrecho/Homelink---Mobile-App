@@ -1,6 +1,6 @@
 @if (toasts().length > 0) {
   <div class="app-toast-bar fixed inset-x-0 top-0 sm:inset-x-auto sm:top-5 sm:right-5 z-[300] flex flex-col items-center sm:items-end gap-2.5 p-4 pointer-events-none">
-    @for (toast of toasts(); track toast.id) {
+    @for (toast of toasts(); track toast.nonce) {
       <div class="toast-in pointer-events-auto w-[calc(100vw-2rem)] sm:w-96 modal-panel p-4 flex items-start gap-3 overflow-hidden relative">
         @if (toast.image) {
           <app-safe-image [src]="toast.image" alt="" class="w-11 h-11 rounded-lg object-cover shrink-0 bg-gray-100" iconClass="w-5 h-5" />
@@ -15,6 +15,10 @@
         } @else if (toast.icon === 'x-circle') {
           <div class="w-9 h-9 rounded-full flex items-center justify-center shrink-0" [class]="toast.iconClass || 'bg-brand-teal/15 text-brand-teal'">
             <svg lucideCircleX class="w-4.5 h-4.5"></svg>
+          </div>
+        } @else if (toast.icon === 'spinner') {
+          <div class="w-9 h-9 rounded-full flex items-center justify-center shrink-0" [class]="toast.iconClass || 'bg-brand-teal/15 text-brand-teal'">
+            <svg lucideLoaderCircle class="w-4.5 h-4.5 animate-spin"></svg>
           </div>
         }
 

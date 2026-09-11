@@ -1,3 +1,5 @@
+import { Browser } from '@capacitor/browser';
+import { Capacitor } from '@capacitor/core';
 import { Component, effect, inject, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -5,6 +7,8 @@ import { LucideAward, LucideCalendar, LucideClock, LucideShieldCheck, LucideTime
 
 import { ApiService } from '../../core/api.service';
 import { AvailabilitySlot, DiscountPreview } from '../../core/booking.model';
+import { formatTimeAmPm } from '../../core/format.util';
+import { pollBookingPaymentStatus } from '../../core/payment-polling.util';
 import { PricePipe } from '../../core/price.pipe';
 import { calcDiscount } from '../../core/promo.model';
 import { Service } from '../../core/product.model';
@@ -13,6 +17,11 @@ import { ErrorState } from '../../shared/error-state/error-state';
 import { PaymentMethodPicker } from '../../shared/payment-method-picker/payment-method-picker';
 import { SafeImage } from '../../shared/safe-image/safe-image';
 import { Skeleton } from '../../shared/skeleton/skeleton';
+
+interface BookingCheckoutSessionResponse {
+  pendingBookingId: string;
+  checkoutUrl: string;
+}
 
 @Component({
   selector: 'app-service-book',
@@ -24,6 +33,8 @@ export class ServiceBook {
   private api = inject(ApiService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+
+  protected readonly formatTimeAmPm = formatTimeAmPm;
 
   private slugParam = toSignal(this.route.paramMap, { requireSync: true });
 
@@ -108,19 +119,56 @@ export class ServiceBook {
     this.loading.set(true);
     this.error.set('');
     try {
-      await this.api.post('/bookings', {
+      const bookingParams = {
         serviceId: service.id,
         scheduledDate: this.date(),
         scheduledTime: this.time(),
         address: selectedAddress.fullAddress,
         notes: this.notes(),
+      };
+
+      // Only bank transfer is a plain, immediate POST — card, GCash, and QR Ph are real,
+      // gateway-verified charges and have to go through PayMongo's hosted Checkout Session,
+      // same as Checkout uses for orders.
+      if (payment.method === 'bank') {
+        await this.api.post('/bookings', { ...bookingParams, paymentMethod: 'bank' });
+        this.router.navigateByUrl('/bookings');
+        return;
+      }
+
+      const { pendingBookingId, checkoutUrl } = await this.api.post<BookingCheckoutSessionResponse>('/bookings/checkout-session', {
+        ...bookingParams,
         paymentMethod: payment.method,
       });
-      this.router.navigateByUrl('/bookings');
+
+      await this.openCheckoutSession(checkoutUrl, pendingBookingId);
     } catch (err) {
       this.error.set((err as Error).message);
     } finally {
       this.loading.set(false);
+    }
+  }
+
+  private async openCheckoutSession(checkoutUrl: string, pendingBookingId: string): Promise<void> {
+    if (!Capacitor.isNativePlatform()) {
+      // Leaving the page — BookingReturn picks up from here once PayMongo redirects back.
+      window.location.href = checkoutUrl;
+      return;
+    }
+
+    // Native: open a separate in-app browser tab rather than navigating our own WebView
+    // away — see Checkout.openCheckoutSession for why. We just poll underneath and
+    // dismiss it once we know the result.
+    await Browser.open({ url: checkoutUrl });
+    const result = await pollBookingPaymentStatus(this.api, pendingBookingId);
+    await Browser.close();
+
+    if (result.status === 'succeeded') {
+      this.router.navigateByUrl('/bookings');
+    } else if (result.status === 'failed') {
+      this.error.set(result.error || 'Payment could not be completed. Please try again.');
+    } else {
+      this.error.set("We couldn't confirm this payment in time. Check My Bookings in a moment.");
     }
   }
 }

@@ -2,7 +2,7 @@ import { Component, inject, signal, viewChild } from '@angular/core';
 
 import { ApiService } from '../../core/api.service';
 import { Booking } from '../../core/booking.model';
-import { statusColor } from '../../core/format.util';
+import { formatTimeAmPm, statusColor } from '../../core/format.util';
 import { PricePipe } from '../../core/price.pipe';
 import { ToastService } from '../../core/toast.service';
 import { CancelReasonModal } from '../../shared/cancel-reason-modal/cancel-reason-modal';
@@ -18,6 +18,7 @@ export class Bookings {
   private toast = inject(ToastService);
 
   protected readonly statusColor = statusColor;
+  protected readonly formatTimeAmPm = formatTimeAmPm;
   protected readonly bookings = signal<Booking[]>([]);
   protected readonly cancelTarget = signal<Booking | null>(null);
 

@@ -110,6 +110,12 @@ export const routes: Routes = [
     canActivate: [roleGuard(['customer'])],
   },
   {
+    path: 'bookings/return',
+    loadComponent: () =>
+      import('./features/bookings/booking-return/booking-return').then((m) => m.BookingReturn),
+    canActivate: [roleGuard(['customer'])],
+  },
+  {
     path: 'login',
     loadComponent: () => import('./features/auth/login/login').then((m) => m.Login),
   },

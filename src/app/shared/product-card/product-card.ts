@@ -1,11 +1,12 @@
 import { Component, inject, input, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { LucideHeart, LucideShoppingCart, LucideStar } from '@lucide/angular';
 
 import { AuthService } from '../../core/auth.service';
 import { CartService } from '../../core/cart.service';
 import { PricePipe } from '../../core/price.pipe';
 import { Product } from '../../core/product.model';
+import { requireRole } from '../../core/require-role';
 import { ToastService } from '../../core/toast.service';
 import { WishlistService } from '../../core/wishlist.service';
 import { ConfirmDialog } from '../confirm-dialog/confirm-dialog';
@@ -20,7 +21,6 @@ import { StarRating } from '../star-rating/star-rating';
 })
 export class ProductCard {
   private auth = inject(AuthService);
-  private router = inject(Router);
   private cart = inject(CartService);
   private wishlist = inject(WishlistService);
   private toast = inject(ToastService);
@@ -56,11 +56,8 @@ export class ProductCard {
     });
   }
 
-  handleAdd(): void {
-    if (this.auth.user()?.role !== 'customer') {
-      this.router.navigateByUrl('/login');
-      return;
-    }
+  async handleAdd(): Promise<void> {
+    if ((await requireRole(this.auth, this.toast, ['customer'])) !== 'ok') return;
     if (this.wishlisted()) {
       this.confirmAddToCart.set(true);
       return;
@@ -73,12 +70,9 @@ export class ProductCard {
     this.confirmAddToCart.set(false);
   }
 
-  handleWishlistToggle(event: Event): void {
+  async handleWishlistToggle(event: Event): Promise<void> {
     event.preventDefault();
-    if (this.auth.user()?.role !== 'customer') {
-      this.router.navigateByUrl('/login');
-      return;
-    }
+    if ((await requireRole(this.auth, this.toast, ['customer'])) !== 'ok') return;
     if (this.wishlisted()) {
       this.confirmUnfavorite.set(true);
       return;

@@ -1,9 +1,10 @@
 import { Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { NavigationEnd, Router } from '@angular/router';
+import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { filter, map } from 'rxjs/operators';
-import { LucideArrowLeft, LucideHouse } from '@lucide/angular';
+import { LucideArrowLeft, LucideHouse, LucideLogIn } from '@lucide/angular';
 
+import { AuthService } from '../../core/auth.service';
 import { isTabRoot } from '../../core/shell-route.util';
 
 const TAB_TITLES: Record<string, string> = {
@@ -41,12 +42,13 @@ const SECTION_TITLES: { test: (url: string) => boolean; title: string }[] = [
  */
 @Component({
   selector: 'app-navbar',
-  imports: [LucideArrowLeft, LucideHouse],
+  imports: [RouterLink, LucideArrowLeft, LucideHouse, LucideLogIn],
   templateUrl: './navbar.html',
   styleUrl: './navbar.css',
 })
 export class Navbar {
   private router = inject(Router);
+  protected auth = inject(AuthService);
 
   private readonly url = toSignal(
     this.router.events.pipe(

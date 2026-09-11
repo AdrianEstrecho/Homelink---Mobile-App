@@ -9,6 +9,7 @@ import { AuthService } from '../../../core/auth.service';
 import { CartService } from '../../../core/cart.service';
 import { PricePipe } from '../../../core/price.pipe';
 import { Product } from '../../../core/product.model';
+import { requireRole } from '../../../core/require-role';
 import { ToastService } from '../../../core/toast.service';
 import { WishlistService } from '../../../core/wishlist.service';
 import { ConfirmDialog } from '../../../shared/confirm-dialog/confirm-dialog';
@@ -156,11 +157,8 @@ export class ProductDetail {
     });
   }
 
-  handleAdd(): void {
-    if (this.auth.user()?.role !== 'customer') {
-      this.router.navigateByUrl('/login');
-      return;
-    }
+  async handleAdd(): Promise<void> {
+    if ((await requireRole(this.auth, this.toast, ['customer'])) !== 'ok') return;
     if (this.wishlisted()) {
       this.confirmAddToCart.set(true);
       return;
@@ -173,25 +171,19 @@ export class ProductDetail {
     this.confirmAddToCart.set(false);
   }
 
-  handleBuyNow(): void {
+  async handleBuyNow(): Promise<void> {
     const p = this.product();
     if (!p) return;
-    if (this.auth.user()?.role !== 'customer') {
-      this.router.navigateByUrl('/login');
-      return;
-    }
+    if ((await requireRole(this.auth, this.toast, ['customer'])) !== 'ok') return;
     this.cart.addItem(p, this.qty());
     if (this.wishlisted()) this.wishlist.removeItem(p.id);
     this.router.navigateByUrl('/checkout');
   }
 
-  handleWishlistToggle(): void {
+  async handleWishlistToggle(): Promise<void> {
     const p = this.product();
     if (!p) return;
-    if (this.auth.user()?.role !== 'customer') {
-      this.router.navigateByUrl('/login');
-      return;
-    }
+    if ((await requireRole(this.auth, this.toast, ['customer'])) !== 'ok') return;
     if (this.wishlisted()) {
       this.confirmUnfavorite.set(true);
       return;

@@ -1,13 +1,13 @@
 import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { LucideCheck, LucideCircleX, LucideTrash2, LucideX } from '@lucide/angular';
+import { LucideCheck, LucideCircleX, LucideLoaderCircle, LucideTrash2, LucideX } from '@lucide/angular';
 
 import { ToastService } from '../../core/toast.service';
 import { SafeImage } from '../safe-image/safe-image';
 
 @Component({
   selector: 'app-toast-viewport',
-  imports: [RouterLink, SafeImage, LucideCheck, LucideTrash2, LucideCircleX, LucideX],
+  imports: [RouterLink, SafeImage, LucideCheck, LucideTrash2, LucideCircleX, LucideLoaderCircle, LucideX],
   templateUrl: './toast-viewport.html',
   styleUrl: './toast-viewport.css',
 })

@@ -19,3 +19,12 @@ const STATUS_COLORS: Record<string, string> = {
 export function statusColor(status: string): string {
   return STATUS_COLORS[status] || 'bg-gray-100 text-gray-800';
 }
+
+// scheduled_time (bookings) is a plain "HH:MM" slot label already in PH local time — there's
+// no UTC offset to convert, just 24h -> 12h display with an AM/PM suffix.
+export function formatTimeAmPm(time: string): string {
+  const [h, m] = time.split(':').map(Number);
+  const period = h >= 12 ? 'PM' : 'AM';
+  const hour12 = h % 12 === 0 ? 12 : h % 12;
+  return `${hour12}:${String(m).padStart(2, '0')} ${period}`;
+}

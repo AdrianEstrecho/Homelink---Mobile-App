@@ -16,5 +16,14 @@
         {{ pageTitle() }}
       }
     </h1>
+    @if (!auth.loading() && !auth.user()) {
+      <a
+        routerLink="/login"
+        class="tap shrink-0 flex items-center gap-1.5 text-sm font-semibold px-3 py-1.5 rounded-full bg-brand-orange text-white active:opacity-80"
+      >
+        <svg lucideLogIn class="w-3.5 h-3.5"></svg>
+        Login
+      </a>
+    }
   </div>
 </header>
