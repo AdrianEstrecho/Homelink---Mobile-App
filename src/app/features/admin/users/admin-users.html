@@ -1,0 +1,137 @@
+<div class="px-4 py-4 pb-8">
+  <app-confirm-dialog
+    [open]="confirmArchiveId() !== null"
+    tone="archive"
+    title="Archive this user?"
+    message="They will no longer be able to sign in, but their data is kept and can be restored later."
+    confirmLabel="Archive"
+    (confirmed)="confirmArchive()"
+    (cancelled)="confirmArchiveId.set(null)"
+  >
+    <svg icon lucideArchive></svg>
+  </app-confirm-dialog>
+
+  <app-confirm-dialog
+    [open]="confirmDeleteId() !== null"
+    tone="delete"
+    title="Permanently delete this user?"
+    message="This cannot be undone."
+    confirmLabel="Delete"
+    (confirmed)="confirmDelete()"
+    (cancelled)="confirmDeleteId.set(null)"
+  >
+    <svg icon lucideTrash2></svg>
+  </app-confirm-dialog>
+
+  <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 mb-3 -mx-4 px-4">
+    @for (t of roleTabs; track t.key) {
+      <button type="button" (click)="setTab(t.key)" [class]="'shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition ' + (tab() === t.key ? 'bg-brand-navy text-white' : 'bg-white text-gray-600 border border-gray-200')">
+        {{ t.label }} ({{ counts()[t.key] || 0 }})
+      </button>
+    }
+    <button type="button" (click)="toggleArchivedView()" [class]="'shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5 ' + (archivedView() ? 'bg-brand-orange text-white' : 'bg-white text-gray-600 border border-gray-200')">
+      <svg lucideArchive class="w-3.5 h-3.5"></svg> Archived
+    </button>
+  </div>
+
+  <div class="flex items-center gap-2 mb-3">
+    <div class="card p-3 flex-1">
+      <input
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)"
+        placeholder="Search name or email..."
+        class="w-full text-sm outline-none"
+      />
+    </div>
+    @if (!archivedView()) {
+      <button type="button" (click)="openForm()" class="tap btn-primary flex items-center gap-1.5 text-xs py-2.5 px-3 shrink-0">
+        <svg lucidePlus class="w-3.5 h-3.5"></svg> Add
+      </button>
+    }
+  </div>
+
+  @if (filtered().length === 0) {
+    <p class="text-center text-gray-400 py-10 text-sm">No {{ archivedView() ? 'archived ' : '' }}{{ tab() }}s found.</p>
+  } @else {
+    <div class="space-y-2.5">
+      @for (u of filtered(); track u.id) {
+        <div class="card p-3">
+          <div class="flex items-start justify-between gap-2">
+            <div class="min-w-0">
+              <p class="font-semibold text-gray-800 text-sm truncate">{{ u.first_name }} {{ u.last_name }}</p>
+              <p class="text-xs text-gray-500 truncate">{{ u.email }}</p>
+              @if (u.staff_code) {
+                <p class="text-[11px] font-mono text-gray-400 mt-0.5">{{ u.staff_code }}</p>
+              }
+            </div>
+            <button type="button" (click)="toggleReveal(u.id)" class="tap p-1.5 rounded-lg bg-gray-100 text-gray-500 shrink-0">
+              @if (isRevealed(u.id)) { <svg lucideEyeOff class="w-3.5 h-3.5"></svg> } @else { <svg lucideEye class="w-3.5 h-3.5"></svg> }
+            </button>
+          </div>
+
+          <div class="mt-1.5 text-xs text-gray-500 space-y-0.5">
+            <p>{{ isRevealed(u.id) ? (u.phone || '—') : maskPhone(u.phone) }}</p>
+            <p>{{ isRevealed(u.id) ? (u.address || '—') : maskAddress(u.address) }}</p>
+          </div>
+
+          @if (!archivedView() && tab() === 'employee') {
+            <div class="mt-2">
+              @if (promotingId() === u.id) {
+                <app-select [value]="u.position || ''" [options]="positionOptions" placeholder="Choose position" (valueChange)="promote(u.id, $event)" />
+              } @else {
+                <button
+                  type="button"
+                  (click)="promotingId.set(u.id)"
+                  [class]="'badge transition ' + (u.position ? positionColors[u.position] : 'bg-white text-gray-400 border border-dashed border-gray-300')"
+                >
+                  {{ u.position ? (positionLabels[u.position] || u.position) : 'Set position...' }}
+                </button>
+              }
+            </div>
+          }
+
+          <div class="flex items-center gap-1.5 mt-2.5">
+            @if (!archivedView() && tab() === 'customer') {
+              @if (promotingId() === u.id) {
+                <app-select [value]="''" [options]="positionOptions" placeholder="Promote to..." (valueChange)="promote(u.id, $event)" class="flex-1" />
+              } @else {
+                <button type="button" (click)="promotingId.set(u.id)" class="tap p-1.5 rounded-lg bg-teal-50 text-[#00806f]" title="Promote to employee">
+                  <svg lucideArrowUpCircle class="w-3.5 h-3.5"></svg>
+                </button>
+              }
+            }
+            @if (archivedView()) {
+              <button type="button" (click)="restoreUser(u.id)" class="tap p-1.5 rounded-lg bg-teal-50 text-[#00806f]"><svg lucideArchiveRestore class="w-3.5 h-3.5"></svg></button>
+              <button type="button" (click)="confirmDeleteId.set(u.id)" class="tap p-1.5 rounded-lg bg-red-50 text-red-600"><svg lucideTrash2 class="w-3.5 h-3.5"></svg></button>
+            } @else if (u.role !== 'admin') {
+              <button type="button" (click)="confirmArchiveId.set(u.id)" class="tap p-1.5 rounded-lg bg-orange-50 text-brand-orange"><svg lucideArchive class="w-3.5 h-3.5"></svg></button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  @if (showForm()) {
+    <div class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center app-overlay-frame">
+      <div class="modal-scrim" (click)="closeForm()"></div>
+      <form (ngSubmit)="submitForm()" class="relative bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-h-[90vh] overflow-y-auto p-5 space-y-3.5 fade-up">
+        <div class="flex items-center justify-between">
+          <h3 class="font-semibold text-gray-800 text-lg">{{ tab() === 'admin' ? 'New Admin' : 'New Employee' }}</h3>
+          <button type="button" (click)="closeForm()" class="text-gray-400"><svg lucideX class="w-4 h-4"></svg></button>
+        </div>
+
+        <input placeholder="Email" type="email" required [ngModel]="form().email" (ngModelChange)="patchForm({ email: $event })" name="email" class="input-field" />
+        <input placeholder="Password" type="password" required [ngModel]="form().password" (ngModelChange)="patchForm({ password: $event })" name="password" class="input-field" />
+        <input placeholder="First Name" required [ngModel]="form().firstName" (ngModelChange)="patchForm({ firstName: $event })" name="firstName" class="input-field" />
+        <input placeholder="Last Name" required [ngModel]="form().lastName" (ngModelChange)="patchForm({ lastName: $event })" name="lastName" class="input-field" />
+        <input placeholder="Phone" [ngModel]="form().phone" (ngModelChange)="patchForm({ phone: $event })" name="phone" class="input-field" />
+        @if (tab() !== 'admin') {
+          <app-select [value]="form().position" [options]="positionOptions" (valueChange)="patchForm({ position: $event })" />
+        }
+
+        <button type="submit" class="tap btn-primary w-full">{{ tab() === 'admin' ? 'Save Admin' : 'Save User' }}</button>
+      </form>
+    </div>
+  }
+</div>

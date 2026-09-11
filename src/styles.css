@@ -166,6 +166,10 @@
     animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
+  .slide-in-left {
+    animation: slideInLeft 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
   .route-fade {
     animation: routeFadeIn 0.4s ease-out both;
   }
@@ -221,6 +225,7 @@
     .float-blob,
     .float-blob-delayed,
     .fade-up,
+    .slide-in-left,
     .toast-in,
     .route-fade {
       animation: none;
@@ -311,6 +316,16 @@
     max-width: 430px;
     margin-inline: auto;
   }
+
+  /* Same trick, for a full-screen `fixed inset-0` overlay (e.g. a
+     left/right drawer) whose content is pinned to an edge rather than
+     centered -- inset-0 already supplies left:0/right:0, so capping the
+     width here is enough to land the drawer's edge at .app-shell's edge
+     instead of the real browser window's edge. */
+  .app-overlay-frame {
+    max-width: 430px;
+    margin-inline: auto;
+  }
 }
 
 @keyframes shimmer {
@@ -327,6 +342,11 @@
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(18px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInLeft {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
 }
 
 @keyframes routeFadeIn {

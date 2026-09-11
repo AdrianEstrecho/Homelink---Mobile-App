@@ -3,14 +3,11 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
-  LucideAward,
   LucideBadgeCheck,
   LucideChevronRight,
   LucideLayoutGrid,
   LucideSearch,
-  LucideShieldCheck,
   LucideSlidersHorizontal,
-  LucideTag,
   LucideX,
 } from '@lucide/angular';
 
@@ -21,14 +18,8 @@ import { categoryAccent } from '../../shared/category-accent';
 import { ErrorState } from '../../shared/error-state/error-state';
 import { ServiceCard } from '../../shared/service-card/service-card';
 import { ServiceCategoryIcon } from '../../shared/service-category-icon/service-category-icon';
-import { CategorySkeleton } from '../../shared/skeleton/category-skeleton/category-skeleton';
+import { Skeleton } from '../../shared/skeleton/skeleton';
 import { ServiceCardSkeleton } from '../../shared/skeleton/service-card-skeleton/service-card-skeleton';
-
-const TRUST_POINTS = [
-  { icon: 'shield', label: 'Verified Technicians' },
-  { icon: 'tag', label: 'Upfront Pricing' },
-  { icon: 'award', label: 'Satisfaction Guaranteed' },
-] as const;
 
 type QuickFilterKey = 'quick' | 'halfDay' | 'fullDay';
 
@@ -52,13 +43,10 @@ interface LoadState<T> {
     ErrorState,
     ServiceCard,
     ServiceCategoryIcon,
-    CategorySkeleton,
+    Skeleton,
     ServiceCardSkeleton,
     LucideSearch,
     LucideLayoutGrid,
-    LucideShieldCheck,
-    LucideTag,
-    LucideAward,
     LucideX,
     LucideSlidersHorizontal,
     LucideBadgeCheck,
@@ -72,7 +60,6 @@ export class Services {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
-  protected readonly trustPoints = TRUST_POINTS;
   protected readonly quickFilters = QUICK_FILTERS;
 
   private queryParamMap = toSignal(this.route.queryParamMap, { requireSync: true });
@@ -84,6 +71,7 @@ export class Services {
 
   protected readonly activeFilters = signal<Set<QuickFilterKey>>(new Set());
   protected readonly showFilters = signal(false);
+  protected readonly showCategories = signal(false);
 
   protected readonly categories = signal<LoadState<string>>({ data: [], loading: true, error: false });
   protected readonly services = signal<LoadState<Service>>({ data: [], loading: true, error: false });
@@ -148,6 +136,12 @@ export class Services {
       queryParams: { category: value },
       queryParamsHandling: 'merge',
     });
+    this.showCategories.set(false);
+  }
+
+  toggleCategories(): void {
+    this.showFilters.set(false);
+    this.showCategories.update((v) => !v);
   }
 
   onSearchFocus(): void {
@@ -178,6 +172,7 @@ export class Services {
   }
 
   toggleFilterPanel(): void {
+    this.showCategories.set(false);
     this.showFilters.update((v) => !v);
   }
 }

@@ -6,9 +6,11 @@ import { UserRole } from './user.model';
 
 /**
  * Angular analog of frontend/src/components/ProtectedRoute.jsx, scoped to
- * `roles` only — the React version's `positions` gating is admin-portal-only
- * and out of scope here, since every user in this app is a customer (staff
- * accounts are rejected at login).
+ * `roles` only — the React version's `positions` gating is per-employee-position
+ * and stays out of scope here, since the mobile admin section (see
+ * features/admin/) is admin-role-only, not employee-position-scoped. The
+ * customer-facing routes below still reject staff accounts at login (see
+ * login.ts); only the `/admin/*` routes accept the `admin` role.
  */
 export function roleGuard(allowedRoles: UserRole[], redirectTo = '/login'): CanActivateFn {
   return async () => {

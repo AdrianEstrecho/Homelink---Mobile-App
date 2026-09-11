@@ -1,0 +1,87 @@
+<div class="min-h-screen flex flex-col bg-gray-50">
+  <header class="sticky top-0 z-30 bg-brand-navy text-white pt-safe elevation-2">
+    <div class="h-14 flex items-center gap-3 px-3">
+      <button type="button" (click)="toggleNav()" class="tap p-2 -ml-1 rounded-lg hover:bg-white/10" aria-label="Open menu">
+        <svg lucideMenu class="w-5 h-5"></svg>
+      </button>
+      <span class="font-display font-bold text-base flex-1 truncate">{{ pageTitle() }}</span>
+      <button
+        type="button"
+        (click)="confirmLogout.set(true)"
+        [class]="'tap w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ' + avatarColor()"
+        aria-label="Log out"
+      >
+        {{ initials() }}
+      </button>
+    </div>
+  </header>
+
+  @if (navOpen()) {
+    <div class="fixed inset-0 z-40 app-overlay-frame">
+      <div class="absolute inset-0 bg-brand-navy/50 backdrop-blur-sm" (click)="closeNav()"></div>
+      <nav class="absolute left-0 top-0 bottom-0 w-72 max-w-[82%] bg-brand-navy text-white flex flex-col slide-in-left pt-safe pb-safe">
+        <div class="flex items-center justify-between px-4 h-14 border-b border-white/10 shrink-0">
+          <span class="font-display font-bold text-lg">Home<span class="text-brand-orange">Link</span></span>
+          <button type="button" (click)="closeNav()" class="tap p-1.5 rounded-lg hover:bg-white/10" aria-label="Close menu">
+            <svg lucideX class="w-4 h-4"></svg>
+          </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto px-3 py-4 space-y-1 scrollbar-ghost">
+          @for (item of navItems; track item.to) {
+            <a
+              [routerLink]="item.to"
+              routerLinkActive="bg-white/10 text-white font-semibold"
+              [routerLinkActiveOptions]="{ exact: item.exact }"
+              (click)="closeNav()"
+              class="tap flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-300 hover:bg-white/5 hover:text-white transition"
+            >
+              @switch (item.icon) {
+                @case ('dashboard') { <svg lucideLayoutDashboard class="w-4 h-4 shrink-0"></svg> }
+                @case ('package') { <svg lucidePackage class="w-4 h-4 shrink-0"></svg> }
+                @case ('cart') { <svg lucideShoppingCart class="w-4 h-4 shrink-0"></svg> }
+                @case ('calendar') { <svg lucideCalendar class="w-4 h-4 shrink-0"></svg> }
+                @case ('users') { <svg lucideUsers class="w-4 h-4 shrink-0"></svg> }
+              }
+              {{ item.label }}
+            </a>
+          }
+        </div>
+
+        <div class="p-3 border-t border-white/10 shrink-0">
+          <div class="flex items-center gap-2.5 px-2 py-2">
+            <div [class]="'w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 ' + avatarColor()">
+              {{ initials() }}
+            </div>
+            <div class="min-w-0">
+              <p class="text-sm font-medium truncate">{{ user()?.firstName }} {{ user()?.lastName }}</p>
+              <p class="text-xs text-gray-400 truncate">Administrator</p>
+            </div>
+          </div>
+          <a routerLink="/" (click)="closeNav()" class="tap flex items-center gap-2.5 px-2 py-2 mt-1 rounded-lg text-sm text-gray-300 hover:bg-white/5 hover:text-white transition">
+            <svg lucideHouse class="w-4 h-4 shrink-0"></svg> View Website
+          </a>
+          <button type="button" (click)="confirmLogout.set(true)" class="tap flex items-center gap-2.5 px-2 py-2 mt-1 rounded-lg text-sm text-gray-300 hover:bg-white/5 hover:text-white transition w-full">
+            <svg lucideLogOut class="w-4 h-4 shrink-0"></svg> Log Out
+          </button>
+        </div>
+      </nav>
+    </div>
+  }
+
+  <main class="flex-1 min-w-0">
+    <router-outlet></router-outlet>
+  </main>
+
+  <app-confirm-dialog
+    [open]="confirmLogout()"
+    tone="login"
+    title="Log out?"
+    message="You'll need to sign in again to access the staff portal."
+    confirmLabel="Log Out"
+    (confirmed)="logout()"
+    (cancelled)="confirmLogout.set(false)"
+  >
+    <svg icon lucideLogOut></svg>
+  </app-confirm-dialog>
+</div>

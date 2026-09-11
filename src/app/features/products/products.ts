@@ -11,9 +11,9 @@ import { categoryAccent } from '../../shared/category-accent';
 import { CategoryIcon } from '../../shared/category-icon/category-icon';
 import { ErrorState } from '../../shared/error-state/error-state';
 import { ProductCard } from '../../shared/product-card/product-card';
-import { CategorySkeleton } from '../../shared/skeleton/category-skeleton/category-skeleton';
+import { Skeleton } from '../../shared/skeleton/skeleton';
 import { ProductCardSkeleton } from '../../shared/skeleton/product-card-skeleton/product-card-skeleton';
-import { Select, SelectOption } from '../../shared/select/select';
+import { SelectOption } from '../../shared/select/select';
 
 const SORT_OPTIONS: SelectOption[] = [
   { value: 'featured', label: 'Featured' },
@@ -44,9 +44,8 @@ interface LoadState<T> {
     CategoryIcon,
     ErrorState,
     ProductCard,
-    CategorySkeleton,
+    Skeleton,
     ProductCardSkeleton,
-    Select,
     LucideSearch,
     LucideLayoutGrid,
     LucideX,
@@ -75,6 +74,7 @@ export class Products {
 
   protected readonly activeFilters = signal<Set<QuickFilterKey>>(new Set());
   protected readonly showFilters = signal(false);
+  protected readonly showCategories = signal(false);
 
   protected readonly categories = signal<LoadState<Category>>({ data: [], loading: true, error: false });
   protected readonly products = signal<LoadState<Product>>({ data: [], loading: true, error: false });
@@ -146,6 +146,12 @@ export class Products {
 
   setCategory(slug: string | null): void {
     this.mergeQueryParams({ category: slug });
+    this.showCategories.set(false);
+  }
+
+  toggleCategories(): void {
+    this.showFilters.set(false);
+    this.showCategories.update((v) => !v);
   }
 
   setSort(value: string): void {
@@ -191,6 +197,7 @@ export class Products {
   }
 
   toggleFilterPanel(): void {
+    this.showCategories.set(false);
     this.showFilters.update((v) => !v);
   }
 }

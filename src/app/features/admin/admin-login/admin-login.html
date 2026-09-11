@@ -1,0 +1,54 @@
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-brand-navy via-[#0a1f42] to-black px-5 pt-safe pb-safe relative overflow-hidden">
+  <div class="absolute inset-0 opacity-20 pointer-events-none">
+    <div class="float-blob absolute -top-24 -left-24 w-72 h-72 bg-brand-orange rounded-full blur-3xl"></div>
+    <div class="float-blob-delayed absolute -bottom-24 -right-24 w-72 h-72 bg-brand-teal rounded-full blur-3xl"></div>
+  </div>
+
+  <div class="relative w-full max-w-sm">
+    <a routerLink="/" class="block text-center mb-6 text-white/70 hover:text-white transition text-sm tap">
+      Back to site
+    </a>
+
+    <div class="card overflow-hidden">
+      <div class="bg-brand-navy px-6 py-7 text-center">
+        <div class="w-12 h-12 mx-auto bg-brand-orange rounded-xl flex items-center justify-center mb-3">
+          <svg lucideShieldCheck class="w-6 h-6 text-white"></svg>
+        </div>
+        <h1 class="font-display text-xl font-bold text-white">Home<span class="text-brand-orange">Link</span></h1>
+        <p class="text-gray-300 text-xs mt-1 tracking-wide">STAFF PORTAL</p>
+      </div>
+
+      <form (ngSubmit)="onSubmit()" class="p-6 space-y-4">
+        <div>
+          <label class="block text-sm font-medium mb-1.5">Email</label>
+          <input
+            type="email"
+            required
+            autofocus
+            name="email"
+            [(ngModel)]="email"
+            class="input-field"
+            placeholder="you@homelink.com"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1.5">Password</label>
+          <input type="password" required name="password" [(ngModel)]="password" class="input-field" />
+        </div>
+
+        @if (error()) {
+          <p class="text-red-600 text-sm">{{ error() }}</p>
+        }
+
+        <button type="submit" [disabled]="loading()" class="btn-secondary w-full flex items-center justify-center gap-2 py-3 disabled:opacity-50">
+          @if (loading()) {
+            <svg lucideLoaderCircle class="w-4 h-4 animate-spin"></svg> Signing in...
+          } @else {
+            <svg lucideLogIn class="w-4 h-4"></svg> Sign In
+          }
+        </button>
+      </form>
+    </div>
+    <p class="text-center text-xs text-gray-400 mt-5">Restricted access &middot; Authorized personnel only</p>
+  </div>
+</div>

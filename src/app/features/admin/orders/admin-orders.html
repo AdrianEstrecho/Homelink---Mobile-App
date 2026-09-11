@@ -1,0 +1,81 @@
+<div class="px-4 py-4 pb-8">
+  <app-confirm-dialog
+    [open]="confirmStatus() !== null"
+    tone="update"
+    [title]="confirmStatus() ? 'Change status to \'' + statusLabel(confirmStatus()!.status) + '\'?' : ''"
+    message="This updates the status shown to the customer."
+    confirmLabel="Change Status"
+    (confirmed)="confirmStatusChange()"
+    (cancelled)="confirmStatus.set(null)"
+  >
+    <svg icon lucideChevronDown></svg>
+  </app-confirm-dialog>
+
+  <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 mb-3 -mx-4 px-4">
+    <button type="button" (click)="tab.set('all')" [class]="'shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition ' + (tab() === 'all' ? 'bg-brand-navy text-white' : 'bg-white text-gray-600 border border-gray-200')">
+      All ({{ counts()['all'] }})
+    </button>
+    @for (s of statuses; track s) {
+      <button type="button" (click)="tab.set(s)" [class]="'shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition ' + (tab() === s ? 'bg-brand-navy text-white' : 'bg-white text-gray-600 border border-gray-200')">
+        {{ s }} ({{ counts()[s] || 0 }})
+      </button>
+    }
+  </div>
+
+  <div class="card p-3 mb-3">
+    <div class="relative">
+      <svg lucideSearch class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></svg>
+      <input
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)"
+        placeholder="Search customer or order ID..."
+        class="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-orange focus:border-transparent outline-none transition"
+      />
+    </div>
+  </div>
+
+  @if (filtered().length === 0) {
+    <p class="text-center text-gray-400 py-10 text-sm">No orders found.</p>
+  } @else {
+    <div class="space-y-2.5">
+      @for (o of filtered(); track o.id) {
+        <div class="card overflow-hidden">
+          <button type="button" (click)="toggleExpand(o.id)" class="tap w-full p-3 flex items-center justify-between gap-3 text-left">
+            <div class="min-w-0">
+              <p class="font-medium text-gray-800 text-sm truncate">{{ o.first_name }} {{ o.last_name }}</p>
+              <p class="text-xs text-gray-400 font-mono">#{{ o.id.slice(0, 8).toUpperCase() }} &middot; {{ o.items?.length || 0 }} item{{ o.items?.length === 1 ? '' : 's' }}</p>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <span class="badge capitalize" [class]="statusColor(o.status)">{{ o.status }}</span>
+              <span class="font-semibold text-brand-navy text-sm">{{ formatPrice(o.total) }}</span>
+              <svg lucideChevronDown class="w-4 h-4 text-gray-400 transition-transform" [class.rotate-180]="expandedId() === o.id"></svg>
+            </div>
+          </button>
+
+          @if (expandedId() === o.id) {
+            <div class="px-3 pb-3 border-t border-gray-100 pt-3 space-y-3">
+              <p class="text-xs text-gray-400">{{ o.email }}</p>
+              @if (o.items?.length) {
+                <div class="space-y-1">
+                  @for (it of o.items; track it.id) {
+                    <div class="flex items-center justify-between text-sm">
+                      <span class="text-gray-600 truncate">{{ it.name }} &times; {{ it.quantity }}</span>
+                      <span class="text-gray-800 font-medium shrink-0 ml-2">{{ formatPrice(it.price * it.quantity) }}</span>
+                    </div>
+                  }
+                </div>
+              }
+              @if (o.shipping_address) {
+                <p class="text-xs text-gray-500">{{ o.shipping_address }}</p>
+              }
+              <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Change Status</label>
+                <app-select [value]="o.status" [options]="statusOptions" (valueChange)="requestStatusChange(o.id, $event)" />
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

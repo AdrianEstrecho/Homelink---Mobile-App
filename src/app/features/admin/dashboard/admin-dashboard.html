@@ -1,0 +1,132 @@
+<div class="px-4 py-4 pb-8">
+  @if (!data()) {
+    <div class="flex justify-center py-16">
+      <div class="animate-spin w-8 h-8 border-4 border-brand-orange border-t-transparent rounded-full"></div>
+    </div>
+  } @else {
+    <p class="text-sm text-gray-500 mb-4">Welcome back, {{ user()?.firstName || 'Admin' }}. Here's what's happening today.</p>
+
+    <div class="grid grid-cols-2 gap-3 mb-5">
+      @for (c of statCards(); track c.label) {
+        <div class="card p-4">
+          <div class="w-9 h-9 bg-brand-navy/10 rounded-lg flex items-center justify-center mb-2.5">
+            @switch (c.icon) {
+              @case ('revenue') { <svg lucideDollarSign class="w-4 h-4 text-brand-navy"></svg> }
+              @case ('customers') { <svg lucideUsers class="w-4 h-4 text-brand-navy"></svg> }
+              @case ('orders') { <svg lucideShoppingCart class="w-4 h-4 text-brand-navy"></svg> }
+              @case ('bookings') { <svg lucideCalendar class="w-4 h-4 text-brand-navy"></svg> }
+            }
+          </div>
+          <p class="text-xl font-bold text-gray-900 truncate">{{ c.value }}</p>
+          <p class="text-xs text-gray-500">{{ c.label }}</p>
+        </div>
+      }
+      <a routerLink="/admin/products" class="tap rounded-2xl p-4 bg-gradient-to-br from-brand-navy via-brand-blue to-brand-navy text-white flex flex-col justify-between elevation-1">
+        <div class="w-9 h-9 bg-white/15 rounded-lg flex items-center justify-center mb-2.5">
+          <svg lucideAlertTriangle class="w-4 h-4 text-brand-orange"></svg>
+        </div>
+        <div>
+          <p class="text-xl font-bold">{{ data()!.stats.lowStockCount }}</p>
+          <p class="text-xs text-gray-300">Low Stock Items</p>
+        </div>
+      </a>
+    </div>
+
+    @if (recentMonths().length > 0) {
+      <div class="card p-4 mb-4">
+        <h3 class="font-semibold text-gray-900 text-sm mb-0.5">Revenue Overview</h3>
+        <p class="text-xs text-gray-400 mb-3">Last {{ recentMonths().length }} months</p>
+        <div class="flex items-end gap-2 h-24">
+          @for (m of recentMonths(); track m.month) {
+            <div class="flex-1 flex flex-col items-center justify-end gap-1.5 h-full">
+              <div class="w-full rounded-t-md bg-brand-orange/80" [style.height.%]="m.pct"></div>
+              <span class="text-[10px] text-gray-400">{{ m.label }}</span>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    @if (statusRows().length > 0) {
+      <div class="card p-4 mb-4">
+        <h3 class="font-semibold text-gray-900 text-sm mb-0.5">Order Status</h3>
+        <p class="text-xs text-gray-400 mb-3">Breakdown of all orders</p>
+        <div class="space-y-3">
+          @for (r of statusRows(); track r.status) {
+            <div>
+              <div class="flex items-center justify-between text-xs mb-1">
+                <span class="capitalize font-medium text-gray-700">{{ r.status }}</span>
+                <span class="text-gray-500">{{ r.count }}</span>
+              </div>
+              <div class="h-2 rounded-full bg-gray-100 overflow-hidden">
+                <div [class]="'h-full rounded-full ' + r.fill" [style.width.%]="r.pct"></div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <div class="card p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-semibold text-gray-900 text-sm">Recent Activity</h3>
+        <div class="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+          <button
+            type="button"
+            (click)="recentTab.set('orders')"
+            [class]="'px-2.5 py-1 rounded-md text-xs font-semibold transition ' + (recentTab() === 'orders' ? 'bg-white text-brand-navy shadow-sm' : 'text-gray-500')"
+          >
+            Orders
+          </button>
+          <button
+            type="button"
+            (click)="recentTab.set('bookings')"
+            [class]="'px-2.5 py-1 rounded-md text-xs font-semibold transition ' + (recentTab() === 'bookings' ? 'bg-white text-brand-navy shadow-sm' : 'text-gray-500')"
+          >
+            Bookings
+          </button>
+        </div>
+      </div>
+
+      @if (recentTab() === 'orders') {
+        @if (data()!.recentOrders.length === 0) {
+          <p class="text-sm text-gray-400 py-6 text-center">No orders yet.</p>
+        } @else {
+          <div class="space-y-2.5">
+            @for (o of data()!.recentOrders; track o.id) {
+              <div class="flex items-center justify-between text-sm">
+                <div class="min-w-0">
+                  <p class="font-medium text-gray-800 truncate">{{ o.first_name }} {{ o.last_name }}</p>
+                  <span class="badge capitalize" [class]="statusColor(o.status)">{{ o.status }}</span>
+                </div>
+                <span class="font-semibold text-brand-navy shrink-0 ml-2">{{ formatPrice(o.total) }}</span>
+              </div>
+            }
+          </div>
+        }
+        <a routerLink="/admin/orders" class="tap flex items-center justify-center gap-1 text-xs font-semibold text-brand-navy mt-3 pt-3 border-t border-gray-100">
+          View all orders <svg lucideArrowRight class="w-3 h-3"></svg>
+        </a>
+      } @else {
+        @if (data()!.recentBookings.length === 0) {
+          <p class="text-sm text-gray-400 py-6 text-center">No bookings yet.</p>
+        } @else {
+          <div class="space-y-2.5">
+            @for (b of data()!.recentBookings; track b.id) {
+              <div class="flex items-center justify-between text-sm">
+                <div class="min-w-0">
+                  <p class="font-medium text-gray-800 truncate">{{ b.first_name }} {{ b.last_name }}</p>
+                  <p class="text-xs text-gray-500 truncate">{{ b.service_name }}</p>
+                </div>
+                <span class="font-semibold text-brand-navy shrink-0 ml-2">{{ formatPrice(b.price) }}</span>
+              </div>
+            }
+          </div>
+        }
+        <a routerLink="/admin/bookings" class="tap flex items-center justify-center gap-1 text-xs font-semibold text-brand-navy mt-3 pt-3 border-t border-gray-100">
+          View all bookings <svg lucideArrowRight class="w-3 h-3"></svg>
+        </a>
+      }
+    </div>
+  }
+</div>

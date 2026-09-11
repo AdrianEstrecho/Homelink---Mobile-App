@@ -101,6 +101,37 @@ export const routes: Routes = [
     loadComponent: () => import('./features/auth/terms/terms').then((m) => m.Terms),
   },
   {
+    path: 'admin/login',
+    loadComponent: () => import('./features/admin/admin-login/admin-login').then((m) => m.AdminLogin),
+  },
+  {
+    path: 'admin',
+    loadComponent: () => import('./features/admin/shell/admin-shell').then((m) => m.AdminShell),
+    canActivate: [roleGuard(['admin'], '/admin/login')],
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('./features/admin/dashboard/admin-dashboard').then((m) => m.AdminDashboard),
+      },
+      {
+        path: 'products',
+        loadComponent: () => import('./features/admin/products/admin-products').then((m) => m.AdminProducts),
+      },
+      {
+        path: 'orders',
+        loadComponent: () => import('./features/admin/orders/admin-orders').then((m) => m.AdminOrders),
+      },
+      {
+        path: 'bookings',
+        loadComponent: () => import('./features/admin/bookings/admin-bookings').then((m) => m.AdminBookings),
+      },
+      {
+        path: 'users',
+        loadComponent: () => import('./features/admin/users/admin-users').then((m) => m.AdminUsers),
+      },
+    ],
+  },
+  {
     path: '**',
     loadComponent: () => import('./features/not-found/not-found').then((m) => m.NotFound),
   },

@@ -1,0 +1,95 @@
+<div class="px-4 py-4 pb-8">
+  <app-confirm-dialog
+    [open]="confirmStatus() !== null"
+    tone="update"
+    [title]="confirmStatus() ? 'Change status to \'' + statusLabel(confirmStatus()!.status) + '\'?' : ''"
+    message="This updates the status shown to the customer."
+    confirmLabel="Change Status"
+    (confirmed)="confirmStatusChangeAction()"
+    (cancelled)="confirmStatus.set(null)"
+  >
+    <svg icon lucideChevronDown></svg>
+  </app-confirm-dialog>
+
+  <app-confirm-dialog
+    [open]="confirmAssign() !== null"
+    tone="update"
+    [title]="isUnassign() ? 'Unassign this booking?' : 'Assign to ' + assignTargetName() + '?'"
+    [message]="isUnassign() ? 'The technician will be removed from this booking.' : 'The booking will be marked confirmed and the technician assigned.'"
+    [confirmLabel]="isUnassign() ? 'Unassign' : 'Assign'"
+    (confirmed)="confirmAssignAction()"
+    (cancelled)="confirmAssign.set(null)"
+  >
+    <svg icon lucideWrench></svg>
+  </app-confirm-dialog>
+
+  <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 mb-3 -mx-4 px-4">
+    <button type="button" (click)="tab.set('all')" [class]="'shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition ' + (tab() === 'all' ? 'bg-brand-navy text-white' : 'bg-white text-gray-600 border border-gray-200')">
+      All ({{ counts()['all'] }})
+    </button>
+    @for (s of statuses; track s) {
+      <button type="button" (click)="tab.set(s)" [class]="'shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition ' + (tab() === s ? 'bg-brand-navy text-white' : 'bg-white text-gray-600 border border-gray-200')">
+        {{ s.replace('_', ' ') }} ({{ counts()[s] || 0 }})
+      </button>
+    }
+  </div>
+
+  @if (installers().length === 0) {
+    <p class="text-xs text-gray-500 mb-3">No employees are set as <strong>Installer</strong> yet — promote one from the Users page to make them assignable here.</p>
+  }
+
+  <div class="card p-3 mb-3">
+    <div class="relative">
+      <svg lucideSearch class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></svg>
+      <input
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)"
+        placeholder="Search customer or service..."
+        class="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-orange focus:border-transparent outline-none transition"
+      />
+    </div>
+  </div>
+
+  @if (filtered().length === 0) {
+    <p class="text-center text-gray-400 py-10 text-sm">No bookings found.</p>
+  } @else {
+    <div class="space-y-2.5">
+      @for (b of filtered(); track b.id) {
+        <div class="card overflow-hidden">
+          <button type="button" (click)="toggleExpand(b.id)" class="tap w-full p-3 flex items-center justify-between gap-3 text-left">
+            <div class="min-w-0">
+              <p class="font-medium text-gray-800 text-sm truncate">{{ b.first_name }} {{ b.last_name }}</p>
+              <p class="text-xs text-gray-400 truncate">{{ b.service_name }} &middot; {{ b.scheduled_date }} {{ b.scheduled_time }}</p>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <span class="badge capitalize" [class]="statusColor(b.status)">{{ b.status.replace('_', ' ') }}</span>
+              <span class="font-semibold text-brand-navy text-sm">{{ formatPrice(b.price) }}</span>
+              <svg lucideChevronDown class="w-4 h-4 text-gray-400 transition-transform" [class.rotate-180]="expandedId() === b.id"></svg>
+            </div>
+          </button>
+
+          @if (expandedId() === b.id) {
+            <div class="px-3 pb-3 border-t border-gray-100 pt-3 space-y-3">
+              @if (b.phone) {
+                <p class="text-xs text-gray-400">{{ b.phone }}</p>
+              }
+              @if (b.address) {
+                <p class="text-xs text-gray-500">{{ b.address }}</p>
+              }
+              <p class="text-xs text-gray-500">Technician: <span class="font-medium text-gray-700">{{ technicianName(b) }}</span></p>
+
+              <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Assign Technician</label>
+                <app-select [value]="b.employee_id || ''" [options]="installerOptions()" (valueChange)="requestAssign(b.id, $event)" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Change Status</label>
+                <app-select [value]="b.status" [options]="statusOptions" (valueChange)="requestStatusChange(b.id, $event)" />
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>
