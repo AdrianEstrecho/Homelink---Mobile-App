@@ -1,5 +1,5 @@
 @if (toasts().length > 0) {
-  <div class="app-toast-bar fixed inset-x-0 top-0 sm:inset-x-auto sm:top-5 sm:right-5 z-[300] flex flex-col items-center sm:items-end gap-2.5 p-4 pointer-events-none">
+  <div class="app-toast-bar fixed inset-x-0 top-0 sm:inset-x-auto sm:top-5 sm:right-5 z-[300] flex flex-col items-center sm:items-end gap-2.5 px-4 pb-4 pt-[calc(1rem+env(safe-area-inset-top))] sm:pt-4 pointer-events-none">
     @for (toast of toasts(); track toast.nonce) {
       <div class="toast-in pointer-events-auto w-[calc(100vw-2rem)] sm:w-96 modal-panel p-4 flex items-start gap-3 overflow-hidden relative">
         @if (toast.image) {

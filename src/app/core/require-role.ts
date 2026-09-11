@@ -49,6 +49,18 @@ export async function requireRole(
     return 'unauthenticated';
   }
 
+  if (!allowedRoles.includes(user.role)) {
+    toast.showToast({
+      id: AUTH_PROMPT_TOAST_ID,
+      icon: 'x-circle',
+      iconClass: 'bg-amber-100 text-amber-600',
+      title: 'Not available for this account',
+      description: 'This area is for customer accounts only.',
+      duration: 4000,
+    });
+    return 'forbidden';
+  }
+
   toast.dismissToast(AUTH_PROMPT_TOAST_ID);
-  return allowedRoles.includes(user.role) ? 'ok' : 'forbidden';
+  return 'ok';
 }
