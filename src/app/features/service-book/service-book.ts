@@ -132,7 +132,9 @@ export class ServiceBook {
       // same as Checkout uses for orders.
       if (payment.method === 'bank') {
         await this.api.post('/bookings', { ...bookingParams, paymentMethod: 'bank' });
-        this.router.navigateByUrl('/bookings');
+        // replaceUrl: the booking is placed, so this form is a dead end now — swap it
+        // out of history instead of leaving it for the back button to land on.
+        this.router.navigateByUrl('/bookings', { replaceUrl: true });
         return;
       }
 
@@ -164,7 +166,9 @@ export class ServiceBook {
     await Browser.close();
 
     if (result.status === 'succeeded') {
-      this.router.navigateByUrl('/bookings');
+      // replaceUrl: the booking is placed, so this form is a dead end now — swap it
+      // out of history instead of leaving it for the back button to land on.
+      this.router.navigateByUrl('/bookings', { replaceUrl: true });
     } else if (result.status === 'failed') {
       this.error.set(result.error || 'Payment could not be completed. Please try again.');
     } else {

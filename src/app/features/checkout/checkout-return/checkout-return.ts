@@ -63,6 +63,8 @@ export class CheckoutReturn {
   }
 
   goToOrders(): void {
-    this.router.navigateByUrl('/orders');
+    // replaceUrl: this return page (and the PayMongo redirect before it) is a dead end
+    // once payment is confirmed — swap it out of history so back doesn't land here again.
+    this.router.navigateByUrl('/orders', { replaceUrl: true });
   }
 }

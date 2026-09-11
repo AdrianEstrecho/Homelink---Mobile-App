@@ -53,6 +53,8 @@ export class BookingReturn {
   }
 
   goToBookings(): void {
-    this.router.navigateByUrl('/bookings');
+    // replaceUrl: this return page (and the PayMongo redirect before it) is a dead end
+    // once payment is confirmed — swap it out of history so back doesn't land here again.
+    this.router.navigateByUrl('/bookings', { replaceUrl: true });
   }
 }

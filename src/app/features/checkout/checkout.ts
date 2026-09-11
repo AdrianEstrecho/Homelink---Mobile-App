@@ -198,6 +198,8 @@ export class Checkout {
   }
 
   goToOrders(): void {
-    this.router.navigateByUrl('/orders');
+    // replaceUrl: the order is placed and the cart is cleared, so /checkout is a dead
+    // end now — swap it out of history instead of leaving it for the back button to land on.
+    this.router.navigateByUrl('/orders', { replaceUrl: true });
   }
 }
