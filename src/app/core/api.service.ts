@@ -38,7 +38,11 @@ export class ApiService {
   private async request<T>(method: string, path: string, body?: unknown): Promise<T> {
     try {
       return await firstValueFrom(
-        this.http.request<T>(method, `${this.base}${path}`, { body })
+        // The native Capacitor WebView often sends no usable Origin header on cross-origin
+        // requests, so the backend can't tell "this is the mobile app" from Origin alone
+        // (see backend/utils/frontendUrl.js) -- this header is a reliable stand-in, used to
+        // pick where PayMongo's hosted checkout redirects back to after payment.
+        this.http.request<T>(method, `${this.base}${path}`, { body, headers: { 'X-Homelink-Client': 'mobile' } })
       );
     } catch (e) {
       const err = e as HttpErrorResponse;
