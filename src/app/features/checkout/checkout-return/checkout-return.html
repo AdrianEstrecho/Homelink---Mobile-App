@@ -1,5 +1,5 @@
 @if (state() === 'succeeded' && order()) {
-  <app-order-details-modal [order]="order()!" [justConfirmed]="true" [person]="billedTo()" personLabel="Billed To" (closed)="goToOrders()" />
+  <app-order-details-modal [order]="order()!" [justConfirmed]="true" [person]="billedTo()" personLabel="Billed To" (closed)="goToHome()" (continued)="goToOrders()" />
 } @else {
   <div class="max-w-md mx-auto px-4 py-24 text-center">
     @if (state() === 'processing') {

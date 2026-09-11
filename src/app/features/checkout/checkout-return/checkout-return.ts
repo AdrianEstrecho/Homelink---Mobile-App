@@ -1,3 +1,4 @@
+import { Location } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -29,6 +30,7 @@ export class CheckoutReturn {
   private router = inject(Router);
   private auth = inject(AuthService);
   private cart = inject(CartService);
+  private location = inject(Location);
 
   private queryParamMap = toSignal(this.route.queryParamMap, { requireSync: true });
   private pendingCheckoutId = computed(() => this.queryParamMap().get('pcid'));
@@ -62,9 +64,17 @@ export class CheckoutReturn {
     });
   }
 
-  goToOrders(): void {
+  goToHome(): void {
     // replaceUrl: this return page (and the PayMongo redirect before it) is a dead end
     // once payment is confirmed — swap it out of history so back doesn't land here again.
-    this.router.navigateByUrl('/orders', { replaceUrl: true });
+    this.router.navigateByUrl('/', { replaceUrl: true });
+  }
+
+  goToOrders(): void {
+    // Make Orders' back button land on Profile, same as reaching it from Account — silently
+    // rewrite the current history entry to /account before pushing /orders on top, so back
+    // pops to /account instead of this now-dead return page.
+    this.location.replaceState('/account');
+    this.router.navigateByUrl('/orders');
   }
 }

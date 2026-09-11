@@ -4,7 +4,8 @@
     [justConfirmed]="true"
     [person]="billedTo()"
     personLabel="Billed To"
-    (closed)="goToOrders()"
+    (closed)="goToHome()"
+    (continued)="goToOrders()"
   />
 } @else if (pendingOrder()) {
   <app-order-details-modal

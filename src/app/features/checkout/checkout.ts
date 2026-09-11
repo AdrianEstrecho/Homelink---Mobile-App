@@ -1,5 +1,6 @@
 import { Browser } from '@capacitor/browser';
 import { Capacitor } from '@capacitor/core';
+import { Location } from '@angular/common';
 import { Component, computed, inject, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -32,6 +33,7 @@ export class Checkout {
   private auth = inject(AuthService);
   private cart = inject(CartService);
   private router = inject(Router);
+  private location = inject(Location);
 
   protected readonly items = this.cart.items;
   protected readonly subtotal = this.cart.total;
@@ -197,9 +199,18 @@ export class Checkout {
     }
   }
 
-  goToOrders(): void {
+  goToHome(): void {
     // replaceUrl: the order is placed and the cart is cleared, so /checkout is a dead
     // end now — swap it out of history instead of leaving it for the back button to land on.
-    this.router.navigateByUrl('/orders', { replaceUrl: true });
+    this.router.navigateByUrl('/', { replaceUrl: true });
+  }
+
+  goToOrders(): void {
+    // Make Orders' back button land on Profile, same as reaching it from Account — silently
+    // rewrite the current history entry to /account (Location.replaceState touches only the
+    // browser's history, it doesn't trigger a Router navigation/render) before pushing /orders
+    // on top, so back pops to /account instead of the now-dead /checkout screen.
+    this.location.replaceState('/account');
+    this.router.navigateByUrl('/orders');
   }
 }

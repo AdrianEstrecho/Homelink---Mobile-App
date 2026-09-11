@@ -73,6 +73,9 @@ export class OrderDetailsModal {
   readonly reviewsByProduct = input<Map<string, Review>>(new Map());
 
   readonly closed = output<void>();
+  /** Emitted by "Continue to My Orders" on the justConfirmed receipt — kept separate from
+   *  `closed` (the X button) since the two need to land on different screens. */
+  readonly continued = output<void>();
   readonly confirmed = output<void>();
   readonly cancelRequested = output<void>();
   readonly trackRequested = output<void>();
