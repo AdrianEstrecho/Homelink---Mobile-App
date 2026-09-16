@@ -1,4 +1,13 @@
-@if (loadError()) {
+@if (confirmedBooking()) {
+  <app-booking-details-modal
+    [booking]="confirmedBooking()!"
+    [justConfirmed]="true"
+    [person]="billedTo()"
+    personLabel="Billed To"
+    (closed)="goToHome()"
+    (continued)="goToBookings()"
+  />
+} @else if (loadError()) {
   <div class="px-4 py-16">
     <app-error-state message="Couldn't load this service right now." (retry)="retry()" />
   </div>

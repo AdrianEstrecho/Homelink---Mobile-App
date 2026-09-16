@@ -7,13 +7,15 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { LucideAward, LucideCalendar, LucideClock, LucideShieldCheck, LucideTimer } from '@lucide/angular';
 
 import { ApiService } from '../../core/api.service';
-import { AvailabilitySlot, DiscountPreview } from '../../core/booking.model';
+import { AuthService } from '../../core/auth.service';
+import { AvailabilitySlot, Booking, DiscountPreview } from '../../core/booking.model';
 import { formatTimeAmPm } from '../../core/format.util';
 import { pollBookingPaymentStatus } from '../../core/payment-polling.util';
 import { PricePipe } from '../../core/price.pipe';
 import { calcDiscount } from '../../core/promo.model';
 import { Service } from '../../core/product.model';
 import { AddressPicker } from '../../shared/address-picker/address-picker';
+import { BookingDetailsModal } from '../../shared/booking-details-modal/booking-details-modal';
 import { ErrorState } from '../../shared/error-state/error-state';
 import { PaymentMethodPicker } from '../../shared/payment-method-picker/payment-method-picker';
 import { SafeImage } from '../../shared/safe-image/safe-image';
@@ -26,12 +28,13 @@ interface BookingCheckoutSessionResponse {
 
 @Component({
   selector: 'app-service-book',
-  imports: [ErrorState, Skeleton, SafeImage, AddressPicker, PaymentMethodPicker, PricePipe, LucideCalendar, LucideClock, LucideShieldCheck, LucideAward, LucideTimer],
+  imports: [ErrorState, Skeleton, SafeImage, AddressPicker, PaymentMethodPicker, BookingDetailsModal, PricePipe, LucideCalendar, LucideClock, LucideShieldCheck, LucideAward, LucideTimer],
   templateUrl: './service-book.html',
   styleUrl: './service-book.css',
 })
 export class ServiceBook {
   private api = inject(ApiService);
+  private auth = inject(AuthService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private location = inject(Location);
@@ -54,6 +57,7 @@ export class ServiceBook {
 
   protected readonly loading = signal(false);
   protected readonly error = signal('');
+  protected readonly confirmedBooking = signal<Booking | null>(null);
 
   protected readonly todayIso = new Date().toISOString().split('T')[0];
 
@@ -61,6 +65,11 @@ export class ServiceBook {
   protected readonly firstTimeAmt = () => calcDiscount(this.base(), this.discounts()?.firstTime ?? null);
   protected readonly holidayAmt = () => calcDiscount(this.base() - this.firstTimeAmt(), this.discounts()?.holiday ?? null);
   protected readonly total = () => Math.max(0, this.base() - this.firstTimeAmt() - this.holidayAmt());
+
+  protected readonly billedTo = () => {
+    const u = this.auth.user();
+    return u ? { name: `${u.firstName} ${u.lastName}`, email: u.email } : null;
+  };
 
   constructor() {
     effect(() => {
@@ -133,8 +142,8 @@ export class ServiceBook {
       // gateway-verified charges and have to go through PayMongo's hosted Checkout Session,
       // same as Checkout uses for orders.
       if (payment.method === 'bank') {
-        await this.api.post('/bookings', { ...bookingParams, paymentMethod: 'bank' });
-        this.goToBookings();
+        const booking = await this.api.post<Booking>('/bookings', { ...bookingParams, paymentMethod: 'bank' });
+        this.confirmedBooking.set(booking);
         return;
       }
 
@@ -166,7 +175,7 @@ export class ServiceBook {
     await Browser.close();
 
     if (result.status === 'succeeded') {
-      this.goToBookings();
+      this.confirmedBooking.set(result.booking);
     } else if (result.status === 'failed') {
       this.error.set(result.error || 'Payment could not be completed. Please try again.');
     } else {
@@ -174,7 +183,13 @@ export class ServiceBook {
     }
   }
 
-  private goToBookings(): void {
+  goToHome(): void {
+    // replaceUrl: the booking is placed, so this form is a dead end now — swap it
+    // out of history instead of leaving it for the back button to land on.
+    this.router.navigateByUrl('/', { replaceUrl: true });
+  }
+
+  goToBookings(): void {
     // Make Bookings' back button land on Profile, same as reaching it from Account — silently
     // rewrite the current history entry to /account (Location.replaceState touches only the
     // browser's history, it doesn't trigger a Router navigation/render) before pushing

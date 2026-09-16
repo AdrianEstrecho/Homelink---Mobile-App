@@ -2,11 +2,13 @@ import { Location } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { LucideLoaderCircle, LucideCircleX, LucideCircleCheck } from '@lucide/angular';
+import { LucideLoaderCircle, LucideCircleX } from '@lucide/angular';
 
 import { ApiService } from '../../../core/api.service';
+import { AuthService } from '../../../core/auth.service';
 import { Booking } from '../../../core/booking.model';
 import { pollBookingPaymentStatus } from '../../../core/payment-polling.util';
+import { BookingDetailsModal } from '../../../shared/booking-details-modal/booking-details-modal';
 
 type ReturnState = 'processing' | 'succeeded' | 'failed' | 'timeout';
 
@@ -18,7 +20,7 @@ type ReturnState = 'processing' | 'succeeded' | 'failed' | 'timeout';
  */
 @Component({
   selector: 'app-booking-return',
-  imports: [RouterLink, LucideLoaderCircle, LucideCircleX, LucideCircleCheck],
+  imports: [RouterLink, BookingDetailsModal, LucideLoaderCircle, LucideCircleX],
   templateUrl: './booking-return.html',
   styleUrl: './booking-return.css',
 })
@@ -27,6 +29,7 @@ export class BookingReturn {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private location = inject(Location);
+  private auth = inject(AuthService);
 
   private queryParamMap = toSignal(this.route.queryParamMap, { requireSync: true });
   private pendingBookingId = computed(() => this.queryParamMap().get('pbid'));
@@ -34,6 +37,11 @@ export class BookingReturn {
   protected readonly state = signal<ReturnState>('processing');
   protected readonly booking = signal<Booking | null>(null);
   protected readonly errorMsg = signal('');
+
+  protected readonly billedTo = computed(() => {
+    const u = this.auth.user();
+    return u ? { name: `${u.firstName} ${u.lastName}`, email: u.email } : null;
+  });
 
   constructor() {
     const pbid = this.pendingBookingId();
@@ -52,6 +60,12 @@ export class BookingReturn {
         this.state.set('timeout');
       }
     });
+  }
+
+  goToHome(): void {
+    // replaceUrl: this return page (and the PayMongo redirect before it) is a dead end
+    // once payment is confirmed — swap it out of history so back doesn't land here again.
+    this.router.navigateByUrl('/', { replaceUrl: true });
   }
 
   goToBookings(): void {

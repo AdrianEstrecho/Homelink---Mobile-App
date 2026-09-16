@@ -1,30 +1,32 @@
-<div class="max-w-md mx-auto px-4 py-24 text-center">
-  @if (state() === 'processing') {
-    <svg lucideLoaderCircle class="w-12 h-12 text-brand-teal mx-auto mb-4 animate-spin"></svg>
-    <h2 class="font-display text-xl font-bold text-brand-ink mb-2">Confirming your payment…</h2>
-    <p class="text-gray-500">This usually only takes a few seconds. Please don't close this page.</p>
-  }
+@if (state() === 'succeeded' && booking()) {
+  <app-booking-details-modal
+    [booking]="booking()!"
+    [justConfirmed]="true"
+    [person]="billedTo()"
+    personLabel="Billed To"
+    (closed)="goToHome()"
+    (continued)="goToBookings()"
+  />
+} @else {
+  <div class="max-w-md mx-auto px-4 py-24 text-center">
+    @if (state() === 'processing') {
+      <svg lucideLoaderCircle class="w-12 h-12 text-brand-teal mx-auto mb-4 animate-spin"></svg>
+      <h2 class="font-display text-xl font-bold text-brand-ink mb-2">Confirming your payment…</h2>
+      <p class="text-gray-500">This usually only takes a few seconds. Please don't close this page.</p>
+    }
 
-  @if (state() === 'succeeded') {
-    <svg lucideCircleCheck class="w-12 h-12 text-green-500 mx-auto mb-4"></svg>
-    <h2 class="font-display text-xl font-bold text-brand-ink mb-2">Booking confirmed!</h2>
-    <p class="text-gray-500 mb-6">
-      {{ booking()?.service_name ? booking()!.service_name + ' is booked for ' + booking()!.scheduled_date + '.' : 'Your service has been booked.' }}
-    </p>
-    <button type="button" (click)="goToBookings()" class="btn-primary">View My Bookings</button>
-  }
+    @if (state() === 'failed') {
+      <svg lucideCircleX class="w-12 h-12 text-red-500 mx-auto mb-4"></svg>
+      <h2 class="font-display text-xl font-bold text-brand-ink mb-2">Payment didn't go through</h2>
+      <p class="text-gray-500 mb-6">{{ errorMsg() || "We couldn't confirm this payment. You can try booking again." }}</p>
+      <a routerLink="/services" class="btn-primary">Back to Services</a>
+    }
 
-  @if (state() === 'failed') {
-    <svg lucideCircleX class="w-12 h-12 text-red-500 mx-auto mb-4"></svg>
-    <h2 class="font-display text-xl font-bold text-brand-ink mb-2">Payment didn't go through</h2>
-    <p class="text-gray-500 mb-6">{{ errorMsg() || "We couldn't confirm this payment. You can try booking again." }}</p>
-    <a routerLink="/services" class="btn-primary">Back to Services</a>
-  }
-
-  @if (state() === 'timeout') {
-    <svg lucideLoaderCircle class="w-12 h-12 text-gray-300 mx-auto mb-4"></svg>
-    <h2 class="font-display text-xl font-bold text-brand-ink mb-2">Taking longer than expected</h2>
-    <p class="text-gray-500 mb-6">We'll email you a confirmation once it's through, or you can check your bookings in a moment.</p>
-    <a routerLink="/bookings" class="btn-primary">View My Bookings</a>
-  }
-</div>
+    @if (state() === 'timeout') {
+      <svg lucideLoaderCircle class="w-12 h-12 text-gray-300 mx-auto mb-4"></svg>
+      <h2 class="font-display text-xl font-bold text-brand-ink mb-2">Taking longer than expected</h2>
+      <p class="text-gray-500 mb-6">We'll email you a confirmation once it's through, or you can check your bookings in a moment.</p>
+      <a routerLink="/bookings" class="btn-primary">View My Bookings</a>
+    }
+  </div>
+}
