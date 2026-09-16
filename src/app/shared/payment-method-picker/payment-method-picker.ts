@@ -30,6 +30,14 @@ const PAYMENT_METHOD_OPTIONS: SelectOption[] = PAYMENT_METHODS.map((m) => ({ val
 
 const BANK_DETAILS = { bank: 'BDO Unibank', accountName: 'HomeLink Home Improvement Inc.', accountNumber: '0012 3456 7890' };
 
+const sanitizeGcashNumber = (raw: string): string => {
+  let digits = raw.replace(/\D/g, '').slice(0, 11);
+  while (digits && !'09'.startsWith(digits) && !digits.startsWith('09')) {
+    digits = digits.slice(0, -1);
+  }
+  return digits;
+};
+
 const emptyCardForm: CardForm = { cardNumber: '', expMonth: '', expYear: '', cvc: '' };
 const monthOptions: SelectOption[] = Array.from({ length: 12 }, (_, i) => ({ value: String(i + 1), label: String(i + 1).padStart(2, '0') }));
 const currentYear = new Date().getFullYear();
@@ -74,7 +82,7 @@ export class PaymentMethodPicker {
   }
 
   onGcashInput(value: string): void {
-    this.gcashNumber.set(value);
+    this.gcashNumber.set(sanitizeGcashNumber(value));
     this.gcashError.set('');
   }
 
