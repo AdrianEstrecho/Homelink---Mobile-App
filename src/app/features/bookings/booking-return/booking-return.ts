@@ -1,3 +1,4 @@
+import { Location } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -25,6 +26,7 @@ export class BookingReturn {
   private api = inject(ApiService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private location = inject(Location);
 
   private queryParamMap = toSignal(this.route.queryParamMap, { requireSync: true });
   private pendingBookingId = computed(() => this.queryParamMap().get('pbid'));
@@ -53,8 +55,10 @@ export class BookingReturn {
   }
 
   goToBookings(): void {
-    // replaceUrl: this return page (and the PayMongo redirect before it) is a dead end
-    // once payment is confirmed — swap it out of history so back doesn't land here again.
-    this.router.navigateByUrl('/bookings', { replaceUrl: true });
+    // Make Bookings' back button land on Profile, same as reaching it from Account — silently
+    // rewrite the current history entry to /account before pushing /bookings on top, so back
+    // pops to /account instead of this now-dead return page.
+    this.location.replaceState('/account');
+    this.router.navigateByUrl('/bookings');
   }
 }

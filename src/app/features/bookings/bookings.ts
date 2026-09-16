@@ -1,15 +1,18 @@
 import { Component, inject, signal, viewChild } from '@angular/core';
+import { LucideTruck } from '@lucide/angular';
 
 import { ApiService } from '../../core/api.service';
 import { Booking } from '../../core/booking.model';
 import { formatTimeAmPm, statusColor } from '../../core/format.util';
 import { PricePipe } from '../../core/price.pipe';
 import { ToastService } from '../../core/toast.service';
+import { BookingDetailsModal } from '../../shared/booking-details-modal/booking-details-modal';
 import { CancelReasonModal } from '../../shared/cancel-reason-modal/cancel-reason-modal';
+import { TrackingModal } from '../../shared/tracking-modal/tracking-modal';
 
 @Component({
   selector: 'app-bookings',
-  imports: [PricePipe, CancelReasonModal],
+  imports: [PricePipe, CancelReasonModal, BookingDetailsModal, TrackingModal, LucideTruck],
   templateUrl: './bookings.html',
   styleUrl: './bookings.css',
 })
@@ -20,6 +23,8 @@ export class Bookings {
   protected readonly statusColor = statusColor;
   protected readonly formatTimeAmPm = formatTimeAmPm;
   protected readonly bookings = signal<Booking[]>([]);
+  protected readonly selectedBooking = signal<Booking | null>(null);
+  protected readonly trackingBooking = signal<Booking | null>(null);
   protected readonly cancelTarget = signal<Booking | null>(null);
 
   protected readonly cancelModal = viewChild(CancelReasonModal);
@@ -41,6 +46,7 @@ export class Bookings {
     try {
       await this.api.put(`/bookings/${booking.id}/cancel`, { reason });
       this.bookings.update((prev) => prev.map((b) => (b.id === booking.id ? { ...b, status: 'cancelled', cancel_reason: reason } : b)));
+      this.selectedBooking.update((prev) => (prev && prev.id === booking.id ? { ...prev, status: 'cancelled', cancel_reason: reason } : prev));
       this.cancelTarget.set(null);
       this.toast.showToast({
         icon: 'x-circle',

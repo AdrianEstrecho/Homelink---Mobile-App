@@ -4,7 +4,14 @@
   } @else {
     <div class="space-y-4">
       @for (b of bookings(); track b.id) {
-        <div class="card p-4">
+        <div
+          (click)="selectedBooking.set(b)"
+          role="button"
+          tabindex="0"
+          (keydown.enter)="selectedBooking.set(b)"
+          (keydown.space)="$event.preventDefault(); selectedBooking.set(b)"
+          class="tap card p-4 cursor-pointer"
+        >
           <div class="flex flex-wrap justify-between items-start gap-2 mb-4 pb-4 border-b border-gray-100">
             <div>
               <h3 class="font-display font-bold text-brand-ink">{{ b.service_name }}</h3>
@@ -27,13 +34,40 @@
           }
           <div class="flex justify-between items-center">
             <span class="font-bold text-brand-navy">{{ b.price | homelinkPrice }}</span>
-            @if (b.status === 'pending') {
-              <button type="button" (click)="cancelTarget.set(b)" class="tap text-sm text-red-600 font-medium">Cancel</button>
-            }
+            <div class="flex items-center gap-4">
+              @if (b.status !== 'cancelled') {
+                <button type="button" (click)="$event.stopPropagation(); trackingBooking.set(b)" class="tap flex items-center gap-1.5 text-sm text-brand-teal font-medium">
+                  <svg lucideTruck class="w-4 h-4"></svg> Track
+                </button>
+              }
+              @if (b.status === 'pending') {
+                <button type="button" (click)="$event.stopPropagation(); cancelTarget.set(b)" class="tap text-sm text-red-600 font-medium">Cancel</button>
+              }
+            </div>
           </div>
         </div>
       }
     </div>
+  }
+
+  @if (selectedBooking(); as booking) {
+    <app-booking-details-modal
+      [booking]="booking"
+      [showCancel]="true"
+      [showTrack]="true"
+      (closed)="selectedBooking.set(null)"
+      (cancelRequested)="cancelTarget.set(booking)"
+      (trackRequested)="trackingBooking.set(booking)"
+    />
+  }
+
+  @if (trackingBooking(); as booking) {
+    <app-tracking-modal
+      kind="booking"
+      [id]="booking.id"
+      [title]="booking.service_name"
+      (closed)="trackingBooking.set(null)"
+    />
   }
 
   <app-cancel-reason-modal

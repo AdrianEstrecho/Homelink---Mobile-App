@@ -13,6 +13,8 @@ export interface Booking {
   discount: number;
   status: string;
   payment_status: string;
+  payment_method?: string | null;
+  completion_notes?: string | null;
   cancel_reason?: string | null;
   employee_first_name?: string | null;
   employee_last_name?: string | null;

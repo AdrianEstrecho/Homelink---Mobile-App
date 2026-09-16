@@ -1,5 +1,6 @@
 import { Browser } from '@capacitor/browser';
 import { Capacitor } from '@capacitor/core';
+import { Location } from '@angular/common';
 import { Component, effect, inject, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -33,6 +34,7 @@ export class ServiceBook {
   private api = inject(ApiService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private location = inject(Location);
 
   protected readonly formatTimeAmPm = formatTimeAmPm;
 
@@ -132,9 +134,7 @@ export class ServiceBook {
       // same as Checkout uses for orders.
       if (payment.method === 'bank') {
         await this.api.post('/bookings', { ...bookingParams, paymentMethod: 'bank' });
-        // replaceUrl: the booking is placed, so this form is a dead end now — swap it
-        // out of history instead of leaving it for the back button to land on.
-        this.router.navigateByUrl('/bookings', { replaceUrl: true });
+        this.goToBookings();
         return;
       }
 
@@ -166,13 +166,20 @@ export class ServiceBook {
     await Browser.close();
 
     if (result.status === 'succeeded') {
-      // replaceUrl: the booking is placed, so this form is a dead end now — swap it
-      // out of history instead of leaving it for the back button to land on.
-      this.router.navigateByUrl('/bookings', { replaceUrl: true });
+      this.goToBookings();
     } else if (result.status === 'failed') {
       this.error.set(result.error || 'Payment could not be completed. Please try again.');
     } else {
       this.error.set("We couldn't confirm this payment in time. Check My Bookings in a moment.");
     }
+  }
+
+  private goToBookings(): void {
+    // Make Bookings' back button land on Profile, same as reaching it from Account — silently
+    // rewrite the current history entry to /account (Location.replaceState touches only the
+    // browser's history, it doesn't trigger a Router navigation/render) before pushing
+    // /bookings on top, so back pops to /account instead of this now-dead booking form.
+    this.location.replaceState('/account');
+    this.router.navigateByUrl('/bookings');
   }
 }
