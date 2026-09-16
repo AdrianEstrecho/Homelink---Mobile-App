@@ -47,7 +47,7 @@
   @if (method() === 'gcash') {
     <div class="mt-5 pt-5 border-t border-gray-100">
       <label class="block text-sm font-medium mb-1.5 text-gray-700">GCash Mobile Number</label>
-      <input [ngModel]="gcashNumber()" (ngModelChange)="onGcashInput($event)" placeholder="09171234567" inputmode="numeric" maxlength="11" class="input-field max-w-xs" />
+      <input #gcashInput [ngModel]="gcashNumber()" (ngModelChange)="onGcashInput($event, gcashInput)" placeholder="09171234567" inputmode="numeric" maxlength="11" class="input-field max-w-xs" />
       @if (gcashError()) {
         <p class="text-red-600 text-sm mt-1.5">{{ gcashError() }}</p>
       }

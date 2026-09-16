@@ -81,9 +81,16 @@ export class PaymentMethodPicker {
     this.updateCard('cvc', value.replace(/\D/g, ''));
   }
 
-  onGcashInput(value: string): void {
-    this.gcashNumber.set(sanitizeGcashNumber(value));
+  onGcashInput(value: string, inputEl: HTMLInputElement): void {
+    const sanitized = sanitizeGcashNumber(value);
+    this.gcashNumber.set(sanitized);
     this.gcashError.set('');
+    // Angular's [ngModel] binding skips writing back to the DOM when the sanitized
+    // value equals what it last wrote (e.g. an invalid first digit sanitizes back to
+    // the empty string it already was) — force the input's own value to stay in sync.
+    if (inputEl.value !== sanitized) {
+      inputEl.value = sanitized;
+    }
   }
 
   copyBank(): void {
