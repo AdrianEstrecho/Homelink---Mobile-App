@@ -37,12 +37,14 @@
         }
 
         @if (d.origin || d.destination) {
-          <app-tracking-map
-            [origin]="d.origin"
-            [destination]="d.destination"
-            [movingPoint]="movingPoint()"
-            [technicianLocation]="technicianLocation()"
-          />
+          <div class="pt-2">
+            <app-tracking-map
+              [origin]="d.origin"
+              [destination]="d.destination"
+              [movingPoint]="movingPoint()"
+              [technicianLocation]="technicianLocation()"
+            />
+          </div>
         }
 
         @if (kind() === 'booking' && d.technician) {
