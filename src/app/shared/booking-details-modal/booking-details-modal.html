@@ -57,7 +57,9 @@
       }
 
       @if (b.service_image) {
-        <app-safe-image [src]="b.service_image" [alt]="b.service_name" class="w-full h-40 object-cover rounded-xl" />
+        <div class="pt-2">
+          <app-safe-image [src]="b.service_image" [alt]="b.service_name" class="w-full h-40 object-cover rounded-xl" />
+        </div>
       }
 
       <div>
