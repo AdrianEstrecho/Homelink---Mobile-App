@@ -1,0 +1,204 @@
+:host {
+  display: contents;
+}
+
+.splash {
+  position: fixed;
+  inset: 0;
+  /* Above the toast viewport (z-300): nothing shows through a launch curtain. */
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: #fff;
+  background: radial-gradient(120% 90% at 50% 8%, #1a4a8a 0%, #0f2b5b 48%, #0a1f42 100%);
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  transition: opacity 0.45s ease, transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Exit: the whole screen lifts and dissolves, revealing the app underneath. */
+.splash-out {
+  opacity: 0;
+  transform: scale(1.06);
+  pointer-events: none;
+}
+
+.splash-glow {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(70px);
+  pointer-events: none;
+}
+.splash-glow-a {
+  width: 20rem;
+  height: 20rem;
+  top: -5rem;
+  left: -6rem;
+  background: #ff6b35;
+  opacity: 0.28;
+  animation: splashDrift 9s ease-in-out infinite;
+}
+.splash-glow-b {
+  width: 22rem;
+  height: 22rem;
+  bottom: -7rem;
+  right: -7rem;
+  background: #00a896;
+  opacity: 0.24;
+  animation: splashDrift 11s ease-in-out infinite;
+  animation-delay: -3.5s;
+}
+.splash-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(75% 55% at 50% 42%, transparent 0%, rgba(6, 18, 40, 0.55) 100%);
+}
+
+/* --- Logo mark ------------------------------------------------------- */
+
+.splash-mark {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 6.5rem;
+  height: 6.5rem;
+  margin-bottom: 1.75rem;
+}
+
+.splash-tile {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 5.5rem;
+  height: 5.5rem;
+  border-radius: 1.75rem;
+  background-image: linear-gradient(140deg, #ff8354, #ff6b35 55%, #e2502090);
+  box-shadow: 0 18px 40px -12px rgba(255, 107, 53, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  animation: splashMarkIn 0.85s cubic-bezier(0.22, 1.2, 0.36, 1) both;
+}
+
+.splash-badge {
+  position: absolute;
+  z-index: 2;
+  right: 0.1rem;
+  bottom: 0.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 0.75rem;
+  background: #00a896;
+  box-shadow: 0 8px 18px -6px rgba(0, 168, 150, 0.8);
+  animation: splashBadgeIn 0.6s cubic-bezier(0.22, 1.2, 0.36, 1) 0.45s both;
+}
+
+/* Two offset rings breathing outward, so the mark never looks frozen while
+   the session bootstraps. */
+.splash-pulse {
+  position: absolute;
+  inset: 0;
+  border-radius: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  animation: splashPulse 2.6s ease-out infinite;
+}
+.splash-pulse-late {
+  animation-delay: 1.3s;
+}
+
+/* --- Type ------------------------------------------------------------ */
+
+.splash-wordmark {
+  font-size: 2.125rem;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  animation: splashRise 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.28s both;
+}
+
+.splash-tagline {
+  margin-top: 0.7rem;
+  font-size: 0.8125rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+  animation: splashRise 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.42s both;
+}
+
+/* --- Indeterminate progress ------------------------------------------ */
+
+.splash-bar {
+  position: relative;
+  width: 7.5rem;
+  height: 3px;
+  margin-top: 2.75rem;
+  overflow: hidden;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.12);
+  animation: splashRise 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.55s both;
+}
+.splash-bar > span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 45%;
+  border-radius: 9999px;
+  background-image: linear-gradient(90deg, transparent, #ff6b35, transparent);
+  animation: splashSweep 1.35s ease-in-out infinite;
+}
+
+.splash-foot {
+  position: relative;
+  padding: 0 2rem 2.25rem;
+  text-align: center;
+  animation: splashRise 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.7s both;
+}
+
+@keyframes splashMarkIn {
+  0% { opacity: 0; transform: scale(0.6) rotate(-10deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+@keyframes splashBadgeIn {
+  0% { opacity: 0; transform: scale(0.3) translate(-6px, -6px); }
+  100% { opacity: 1; transform: scale(1) translate(0, 0); }
+}
+@keyframes splashPulse {
+  0% { opacity: 0.5; transform: scale(0.82); }
+  70% { opacity: 0; transform: scale(1.35); }
+  100% { opacity: 0; transform: scale(1.35); }
+}
+@keyframes splashRise {
+  0% { opacity: 0; transform: translateY(14px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes splashSweep {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(340%); }
+}
+@keyframes splashDrift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(6%, -5%) scale(1.12); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .splash-tile,
+  .splash-badge,
+  .splash-wordmark,
+  .splash-tagline,
+  .splash-bar,
+  .splash-foot,
+  .splash-glow {
+    animation: none;
+  }
+  .splash-pulse {
+    display: none;
+  }
+  .splash-bar > span {
+    width: 100%;
+    animation: none;
+  }
+}

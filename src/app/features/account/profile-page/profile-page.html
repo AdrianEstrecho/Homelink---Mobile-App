@@ -1,5 +1,146 @@
-<div class="px-4 py-4">
-  <div class="card p-6">
-    <app-profile-tab />
-  </div>
+<div class="route-fade pb-10">
+  <!-- Identity -->
+  <section class="relative overflow-hidden bg-gradient-to-br from-brand-navy via-brand-blue to-brand-navy text-white px-4 pt-6 pb-16">
+    <div class="absolute inset-0 opacity-30 pointer-events-none" aria-hidden="true">
+      <div class="float-blob absolute -top-16 -right-10 w-48 h-48 bg-brand-orange rounded-full blur-3xl"></div>
+      <div class="float-blob-delayed absolute -bottom-20 -left-12 w-48 h-48 bg-brand-teal rounded-full blur-3xl"></div>
+    </div>
+
+    <div class="relative flex flex-col items-center text-center">
+      <div class="relative">
+        <div
+          class="w-[4.5rem] h-[4.5rem] rounded-[1.5rem] bg-gradient-to-br flex items-center justify-center font-display font-extrabold text-2xl ring-4 ring-white/15 elevation-3"
+          [class]="avatarGradient()"
+        >
+          {{ initials() }}
+        </div>
+        <span class="absolute -bottom-1.5 -right-1.5 w-7 h-7 rounded-xl bg-brand-teal flex items-center justify-center ring-4 ring-brand-navy">
+          <svg lucideShieldCheck class="w-3.5 h-3.5 text-white"></svg>
+        </span>
+      </div>
+
+      <h1 class="font-display text-xl font-extrabold tracking-tight mt-4">
+        {{ user()?.firstName }} {{ user()?.lastName }}
+      </h1>
+      <p class="text-white/55 text-[13px] mt-1 break-all px-6">{{ user()?.email }}</p>
+
+      <div class="flex items-center gap-1.5 mt-3">
+        <span class="badge bg-white/15 text-white">Verified customer</span>
+        <span class="badge bg-white/10 text-white/70">Since {{ memberSince() }}</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Activity, overlapping the header -->
+  <section class="px-4 -mt-10 relative z-10">
+    <div appReveal class="grid grid-cols-3 gap-2.5">
+      <a routerLink="/orders" class="tap bg-white rounded-2xl border border-gray-100 elevation-2 px-2 py-3.5 flex flex-col items-center gap-1.5">
+        <span class="w-8 h-8 rounded-xl bg-brand-navy/10 flex items-center justify-center"><svg lucidePackage class="w-4 h-4 text-brand-navy"></svg></span>
+        @if (ordersCount() === null) {
+          <span class="font-display font-bold text-lg text-brand-ink leading-none">—</span>
+        } @else {
+          <app-count-up [value]="ordersCount()!.toString()" class="font-display font-bold text-lg text-brand-ink leading-none" />
+        }
+        <span class="text-[10px] uppercase tracking-wide text-gray-400">Orders</span>
+      </a>
+      <a routerLink="/bookings" class="tap bg-white rounded-2xl border border-gray-100 elevation-2 px-2 py-3.5 flex flex-col items-center gap-1.5">
+        <span class="w-8 h-8 rounded-xl bg-brand-teal/10 flex items-center justify-center"><svg lucideCalendar class="w-4 h-4 text-brand-teal"></svg></span>
+        @if (bookingsCount() === null) {
+          <span class="font-display font-bold text-lg text-brand-ink leading-none">—</span>
+        } @else {
+          <app-count-up [value]="bookingsCount()!.toString()" class="font-display font-bold text-lg text-brand-ink leading-none" />
+        }
+        <span class="text-[10px] uppercase tracking-wide text-gray-400">Bookings</span>
+      </a>
+      <a routerLink="/account/reviews" class="tap bg-white rounded-2xl border border-gray-100 elevation-2 px-2 py-3.5 flex flex-col items-center gap-1.5">
+        <span class="w-8 h-8 rounded-xl bg-amber-100 flex items-center justify-center"><svg lucideStar class="w-4 h-4 text-amber-600"></svg></span>
+        @if (reviewsCount() === null) {
+          <span class="font-display font-bold text-lg text-brand-ink leading-none">—</span>
+        } @else {
+          <app-count-up [value]="reviewsCount()!.toString()" class="font-display font-bold text-lg text-brand-ink leading-none" />
+        }
+        <span class="text-[10px] uppercase tracking-wide text-gray-400">Reviews</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- Profile strength -->
+  <section class="px-4 pt-5">
+    <div appReveal [revealDelay]="60" class="card p-4">
+      <div class="flex items-center gap-3 mb-3">
+        <span
+          class="flex items-center justify-center w-9 h-9 rounded-xl shrink-0"
+          [class]="completeness() === 100 ? 'bg-brand-teal/10 text-brand-teal' : 'bg-brand-orange/10 text-brand-orange'"
+        >
+          @if (completeness() === 100) {
+            <svg lucideCircleCheck class="w-4 h-4"></svg>
+          } @else {
+            <svg lucideSparkles class="w-4 h-4"></svg>
+          }
+        </span>
+        <div class="min-w-0 flex-1">
+          <h2 class="font-display font-bold text-sm text-brand-ink">Profile strength</h2>
+          <p class="text-[11px] text-gray-400 mt-0.5">{{ completedCount() }} of {{ requirements().length }} complete</p>
+        </div>
+        <span class="font-display font-extrabold text-xl tabular-nums shrink-0" [class]="completeness() === 100 ? 'text-brand-teal' : 'text-brand-orange'">
+          {{ completeness() }}%
+        </span>
+      </div>
+
+      <!-- One segment per requirement, so progress reads as "which ones", not just "how far" -->
+      <div class="flex items-center gap-1 mb-3" role="img" [attr.aria-label]="'Profile ' + completeness() + ' percent complete'">
+        @for (r of requirements(); track r.key) {
+          <span
+            class="h-1.5 flex-1 rounded-full transition-colors duration-500"
+            [class]="r.done ? (completeness() === 100 ? 'bg-brand-teal' : 'bg-brand-orange') : 'bg-gray-200'"
+          ></span>
+        }
+      </div>
+
+      <p class="text-xs text-gray-500 leading-relaxed">{{ completeMessage() }}</p>
+
+      @if (missing().length > 0) {
+        <ul class="flex flex-wrap gap-1.5 mt-3">
+          @for (m of missing(); track m.key) {
+            @if (m.to) {
+              <li>
+                <a [routerLink]="m.to" class="tap badge bg-gray-50 border border-gray-200 text-gray-500">{{ m.label }}</a>
+              </li>
+            } @else {
+              <li class="badge bg-gray-50 border border-gray-200 text-gray-500">{{ m.label }}</li>
+            }
+          }
+        </ul>
+      }
+    </div>
+  </section>
+
+  <!-- Details / editor -->
+  <section class="px-4 pt-4">
+    <div appReveal [revealDelay]="90" class="card p-4">
+      <app-profile-tab />
+    </div>
+  </section>
+
+  <!-- Related settings -->
+  <section class="px-4 pt-5">
+    <p class="text-[11px] uppercase tracking-[0.14em] text-gray-400 font-semibold px-1 mb-2">Account settings</p>
+    <div appReveal [revealDelay]="110" class="card divide-y divide-gray-100">
+      @for (l of quickLinks; track l.to) {
+        <a [routerLink]="l.to" class="tap flex items-center gap-3 px-4 py-3 active:bg-gray-50">
+          <span class="flex items-center justify-center w-8 h-8 rounded-lg shrink-0" [class]="l.accent">
+            @switch (l.icon) {
+              @case ('address') { <svg lucideMapPinned class="w-4 h-4"></svg> }
+              @case ('payment') { <svg lucideCreditCard class="w-4 h-4"></svg> }
+              @case ('bell') { <svg lucideBell class="w-4 h-4"></svg> }
+              @case ('lock') { <svg lucideLock class="w-4 h-4"></svg> }
+              @case ('star') { <svg lucideStar class="w-4 h-4"></svg> }
+            }
+          </span>
+          <span class="flex-1 text-sm font-medium text-gray-700">{{ l.label }}</span>
+          <svg lucideChevronRight class="w-4 h-4 text-gray-300"></svg>
+        </a>
+      }
+    </div>
+  </section>
 </div>

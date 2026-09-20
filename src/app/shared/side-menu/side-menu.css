@@ -1,0 +1,178 @@
+:host {
+  display: contents;
+}
+
+/* --- Scrim ------------------------------------------------------------ */
+
+.drawer-scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 22, 48, 0.55);
+  backdrop-filter: blur(3px);
+  animation: drawerScrimIn 0.25s ease-out both;
+}
+
+/* --- Panel ------------------------------------------------------------ */
+
+.drawer-panel {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  width: 19rem;
+  max-width: 86%;
+  color: #fff;
+  background: linear-gradient(175deg, #143562 0%, #0f2b5b 45%, #0b2148 100%);
+  box-shadow: 14px 0 44px -18px rgba(5, 16, 36, 0.85);
+  animation: drawerPanelIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Exit — both layers reverse together, then the host unmounts the drawer. */
+.drawer-out .drawer-scrim {
+  animation: drawerScrimIn 0.22s ease-in reverse both;
+}
+.drawer-out .drawer-panel {
+  animation: drawerPanelIn 0.23s cubic-bezier(0.4, 0, 1, 1) reverse both;
+}
+
+/* --- Header ----------------------------------------------------------- */
+
+.drawer-header {
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: env(safe-area-inset-top);
+}
+.drawer-glow {
+  position: absolute;
+  top: -5rem;
+  right: -4rem;
+  width: 13rem;
+  height: 13rem;
+  border-radius: 9999px;
+  background: #ff6b35;
+  opacity: 0.22;
+  filter: blur(52px);
+  pointer-events: none;
+}
+
+/* --- Rows ------------------------------------------------------------- */
+
+.drawer-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-block: 0.75rem 0.5rem;
+}
+
+.drawer-section-title {
+  padding: 0.625rem 1.25rem 0.25rem;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.32);
+}
+
+/* Rows are deliberately compact: the drawer carries ~18 destinations, and at
+   a roomier rhythm the Discover HomeLink section fell below the fold on a
+   normal phone. */
+.drawer-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.6875rem;
+  padding: 0.4375rem 0.75rem;
+  border-radius: 0.625rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.72);
+}
+.drawer-row:active {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.drawer-row-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.72);
+  flex-shrink: 0;
+  transition: background-color 0.18s ease, color 0.18s ease;
+}
+
+/* The orange indicator sits just inside the panel's left edge on the active
+   row (the row list is inset 0.625rem, so this lands 2px off the edge). */
+.drawer-row-rail {
+  position: absolute;
+  left: -0.5rem;
+  top: 50%;
+  width: 3px;
+  height: 0;
+  border-radius: 9999px;
+  background: #ff6b35;
+  transform: translateY(-50%);
+  transition: height 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.drawer-row-active {
+  color: #fff;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.09);
+}
+.drawer-row-active .drawer-row-icon {
+  background: rgba(255, 107, 53, 0.16);
+  color: #ff8354;
+}
+.drawer-row-active .drawer-row-rail {
+  height: 1.25rem;
+}
+
+.drawer-row-badge {
+  flex-shrink: 0;
+  min-width: 1.375rem;
+  padding: 0 0.375rem;
+  border-radius: 9999px;
+  background: #ff6b35;
+  color: #fff;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1.375rem;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Footer ----------------------------------------------------------- */
+
+.drawer-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.5rem 0.625rem 0.75rem;
+  padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+}
+
+@keyframes drawerScrimIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes drawerPanelIn {
+  from { opacity: 0.4; transform: translateX(-100%); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drawer-scrim,
+  .drawer-panel,
+  .drawer-out .drawer-scrim,
+  .drawer-out .drawer-panel {
+    animation-duration: 0.01ms;
+  }
+  .drawer-row-rail {
+    transition: none;
+  }
+}

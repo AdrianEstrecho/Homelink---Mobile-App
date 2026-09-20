@@ -71,6 +71,27 @@ export const routes: Routes = [
     loadComponent: () => import('./features/gallery/gallery').then((m) => m.Gallery),
   },
   {
+    path: 'about',
+    loadComponent: () => import('./features/about/about').then((m) => m.About),
+  },
+  {
+    path: 'about/history',
+    loadComponent: () =>
+      import('./features/about/company-history/company-history').then((m) => m.CompanyHistory),
+  },
+  {
+    path: 'about/services',
+    loadComponent: () => import('./features/about/about-services/about-services').then((m) => m.AboutServices),
+  },
+  {
+    path: 'about/app',
+    loadComponent: () => import('./features/about/about-app/about-app').then((m) => m.AboutApp),
+  },
+  {
+    path: 'about/developers',
+    loadComponent: () => import('./features/about/developers/developers').then((m) => m.Developers),
+  },
+  {
     path: 'location',
     loadComponent: () => import('./features/location/location').then((m) => m.Location),
   },

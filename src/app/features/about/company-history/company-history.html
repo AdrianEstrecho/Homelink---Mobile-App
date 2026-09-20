@@ -1,0 +1,95 @@
+<div class="route-fade pb-10">
+  <!-- Opening -->
+  <section class="relative overflow-hidden bg-brand-light px-4 pt-7 pb-8 border-b border-gray-100">
+    <div class="relative">
+      <p class="eyebrow mb-3"><svg lucideFlag class="w-3.5 h-3.5"></svg> Est. 2021</p>
+      <h1 class="font-display text-[26px] leading-[1.18] font-extrabold tracking-tight text-brand-ink mb-3">
+        From a list of vendors<br />to a marketplace
+      </h1>
+      <p class="text-gray-500 text-sm leading-relaxed max-w-[20rem]">
+        HomeLink was not founded on a business plan. It started with a problem the founders kept running
+        into in their own homes — and the slow realisation that everyone else had it too.
+      </p>
+    </div>
+  </section>
+
+  <!-- Pull quote -->
+  <section class="px-4 pt-7">
+    <div appReveal class="relative rounded-2xl bg-brand-navy text-white px-5 py-6 elevation-2 overflow-hidden">
+      <svg lucideQuote class="absolute -right-3 -top-2 w-20 h-20 text-white/5" stroke-width="1"></svg>
+      <p class="relative font-display text-[17px] leading-relaxed font-semibold">
+        “Buying an air conditioner is easy. Finding someone reliable to install it, on time and without
+        surprises, is the hard part.”
+      </p>
+      <p class="relative text-white/40 text-xs mt-3.5 uppercase tracking-[0.14em]">The problem we started with</p>
+    </div>
+  </section>
+
+  <!-- Timeline -->
+  <section class="px-4 pt-9">
+    <div appReveal class="mb-5">
+      <p class="eyebrow mb-1.5">The Road So Far</p>
+      <h2 class="font-display text-xl font-extrabold tracking-tight text-brand-ink">Milestones</h2>
+    </div>
+
+    <ol class="relative">
+      <!-- The spine the nodes sit on -->
+      <span class="absolute left-[7px] top-2 bottom-2 w-px bg-gradient-to-b from-brand-navy/25 via-gray-200 to-brand-orange/30" aria-hidden="true"></span>
+
+      @for (m of milestones; track m.year; let i = $index; let last = $last) {
+        <li appReveal [revealDelay]="i * 60" class="relative pl-7" [class.pb-6]="!last">
+          <span
+            class="absolute left-0 top-1.5 w-[15px] h-[15px] rounded-full ring-4 ring-white"
+            [class]="accent(m.accent).dot"
+            aria-hidden="true"
+          ></span>
+          <p class="font-display font-extrabold text-sm tabular-nums mb-1" [class]="accent(m.accent).year">{{ m.year }}</p>
+          <div class="rounded-2xl border border-gray-100 bg-white elevation-1 p-4">
+            <h3 class="font-display font-bold text-[15px] text-brand-ink mb-1.5 leading-snug">{{ m.title }}</h3>
+            <p class="text-gray-500 text-[13px] leading-relaxed">{{ m.desc }}</p>
+          </div>
+        </li>
+      }
+    </ol>
+  </section>
+
+  <!-- Where that leaves us -->
+  <section class="px-4 pt-9">
+    <div appReveal class="rounded-2xl bg-brand-light border border-gray-100 p-5">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="relative w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-navy to-brand-blue flex items-center justify-center shrink-0">
+          <svg lucideHouse class="w-5 h-5 text-white" stroke-width="1.7"></svg>
+          <span class="absolute -bottom-1 -right-1 w-5 h-5 rounded-lg bg-brand-orange flex items-center justify-center">
+            <svg lucideWrench class="w-2.5 h-2.5 text-white"></svg>
+          </span>
+        </div>
+        <div class="min-w-0">
+          <p class="eyebrow mb-0.5">Where That Leaves Us</p>
+          <h2 class="font-display font-extrabold text-base text-brand-ink leading-snug">HomeLink today</h2>
+        </div>
+      </div>
+      <p class="text-gray-500 text-[13px] leading-relaxed mb-5">
+        Every product we list can be paired with a verified technician, booked in a few taps, and tracked
+        from order to completed job. Five years on, that is still the whole idea.
+      </p>
+      <div class="grid grid-cols-2 gap-2.5">
+        @for (s of stats; track s.label; let i = $index) {
+          <div class="bg-white rounded-xl border border-gray-100 px-3 py-3 text-center">
+            <app-count-up [value]="s.value" [delay]="i * 90" class="font-display text-lg font-extrabold text-brand-navy block leading-none" />
+            <p class="text-[10px] text-gray-400 mt-1 leading-tight">{{ s.label }}</p>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="px-4 pt-7">
+    <a routerLink="/about/services" class="tap card flex items-center gap-3 px-4 py-3.5 active:bg-gray-50">
+      <span class="flex-1 min-w-0">
+        <span class="block text-[11px] uppercase tracking-[0.14em] text-gray-400">Next</span>
+        <span class="block font-display font-bold text-sm text-brand-ink mt-0.5">About Our Services</span>
+      </span>
+      <svg lucideArrowRight class="w-4 h-4 text-brand-orange shrink-0"></svg>
+    </a>
+  </section>
+</div>

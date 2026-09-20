@@ -1,0 +1,141 @@
+<div class="route-fade pb-10">
+  <!-- Masthead -->
+  <section class="relative overflow-hidden bg-brand-navy text-white px-4 pt-7 pb-24">
+    <div class="absolute inset-0 opacity-30 pointer-events-none" aria-hidden="true">
+      <div class="float-blob absolute -top-16 -left-12 w-56 h-56 bg-brand-orange rounded-full blur-3xl"></div>
+      <div class="float-blob-delayed absolute -bottom-20 -right-10 w-56 h-56 bg-brand-teal rounded-full blur-3xl"></div>
+    </div>
+
+    <div class="relative">
+      <p class="eyebrow mb-3"><svg lucideHouse class="w-3.5 h-3.5"></svg> About HomeLink</p>
+      <h1 class="font-display text-[28px] leading-[1.15] font-extrabold tracking-tight mb-3">
+        Home improvement,<br />done right.
+      </h1>
+      <p class="text-white/65 text-sm leading-relaxed max-w-[19rem]">
+        We bring home improvement products and the professionals who install them into one place — so you
+        can shop, book and get the job done without juggling vendors.
+      </p>
+
+      <div class="mt-6 flex items-center gap-2.5">
+        <a routerLink="/products" class="tap inline-flex items-center gap-1.5 bg-white text-brand-navy text-sm font-semibold px-4 py-2.5 rounded-xl elevation-2">
+          Browse Products
+        </a>
+        <a routerLink="/services" class="tap inline-flex items-center gap-1.5 border border-white/25 text-white text-sm font-semibold px-4 py-2.5 rounded-xl active:bg-white/10">
+          Book a Service <svg lucideArrowRight class="w-4 h-4"></svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Numbers, overlapping the masthead -->
+  <section class="px-4 -mt-16 relative z-10">
+    <div appReveal class="grid grid-cols-2 gap-2.5">
+      @for (s of stats; track s.label; let i = $index) {
+        <div class="bg-white rounded-2xl border border-gray-100 elevation-2 px-3 py-4 text-center">
+          <app-count-up [value]="s.value" [delay]="i * 90" class="font-display text-xl font-extrabold text-brand-navy block leading-none" />
+          <p class="text-[10.5px] text-gray-400 mt-1.5 leading-tight">{{ s.label }}</p>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Story teaser -->
+  <section class="px-4 pt-8">
+    <div appReveal class="relative overflow-hidden rounded-2xl bg-brand-light border border-gray-100 p-5">
+      <div class="relative flex items-start gap-4">
+        <div class="relative w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-navy to-brand-blue flex items-center justify-center shrink-0 elevation-2">
+          <svg lucideHouse class="w-7 h-7 text-white" stroke-width="1.6"></svg>
+          <span class="absolute -bottom-1.5 -right-1.5 w-7 h-7 rounded-xl bg-brand-orange flex items-center justify-center elevation-1">
+            <svg lucideWrench class="w-3.5 h-3.5 text-white"></svg>
+          </span>
+        </div>
+        <div class="min-w-0">
+          <p class="eyebrow mb-1.5">Our Story</p>
+          <h2 class="font-display text-lg font-extrabold tracking-tight text-brand-ink leading-snug mb-2">Why we started HomeLink</h2>
+          <p class="text-gray-500 text-[13px] leading-relaxed">
+            Homeowners were stitching together a purchase from one place and an installer from somewhere
+            else, hoping the two would line up. We built the platform we wished existed.
+          </p>
+        </div>
+      </div>
+      <a routerLink="/about/history" class="tap mt-4 flex items-center justify-center gap-1.5 w-full bg-white border border-gray-100 elevation-1 rounded-xl py-2.5 text-sm font-semibold text-brand-navy">
+        Read the full story <svg lucideArrowRight class="w-4 h-4"></svg>
+      </a>
+    </div>
+  </section>
+
+  <!-- Values -->
+  <section class="px-4 pt-9">
+    <div appReveal class="mb-4">
+      <p class="eyebrow mb-1.5">What We Stand For</p>
+      <h2 class="font-display text-xl font-extrabold tracking-tight text-brand-ink">The values behind HomeLink</h2>
+    </div>
+    <div class="grid grid-cols-2 gap-3 items-start">
+      @for (v of values; track v.title; let i = $index) {
+        <div appReveal [revealDelay]="i * 70" class="rounded-2xl border border-gray-100 bg-white elevation-1 p-4 h-full">
+          <div class="w-9 h-9 rounded-xl bg-brand-orange/10 flex items-center justify-center mb-3">
+            @switch (v.icon) {
+              @case ('shield') { <svg lucideShield class="w-4 h-4 text-brand-orange"></svg> }
+              @case ('sparkles') { <svg lucideSparkles class="w-4 h-4 text-brand-orange"></svg> }
+              @case ('handshake') { <svg lucideHandshake class="w-4 h-4 text-brand-orange"></svg> }
+              @case ('target') { <svg lucideTarget class="w-4 h-4 text-brand-orange"></svg> }
+              @case ('star') { <svg lucideStar class="w-4 h-4 text-brand-orange"></svg> }
+              @case ('gem') { <svg lucideGem class="w-4 h-4 text-brand-orange"></svg> }
+              @case ('compass') { <svg lucideCompass class="w-4 h-4 text-brand-orange"></svg> }
+              @default { <svg lucideWrench class="w-4 h-4 text-brand-orange"></svg> }
+            }
+          </div>
+          <h3 class="font-display font-bold text-sm text-brand-ink mb-1.5">{{ v.title }}</h3>
+          <p class="text-gray-500 text-xs leading-relaxed">{{ v.desc }}</p>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Detail pages -->
+  <section class="px-4 pt-9">
+    <div appReveal class="mb-4">
+      <p class="eyebrow mb-1.5">Go Deeper</p>
+      <h2 class="font-display text-xl font-extrabold tracking-tight text-brand-ink">More about us</h2>
+    </div>
+    <div class="card divide-y divide-gray-100">
+      @for (l of hubLinks; track l.to) {
+        <a [routerLink]="l.to" class="tap flex items-center gap-3.5 px-4 py-3.5 active:bg-gray-50">
+          <span class="flex items-center justify-center w-10 h-10 rounded-xl shrink-0" [class]="l.accent">
+            @switch (l.icon) {
+              @case ('history') { <svg lucideMilestone class="w-[18px] h-[18px]"></svg> }
+              @case ('services') { <svg lucideSparkles class="w-[18px] h-[18px]"></svg> }
+              @case ('app') { <svg lucideSmartphone class="w-[18px] h-[18px]"></svg> }
+              @case ('devs') { <svg lucideCode class="w-[18px] h-[18px]"></svg> }
+            }
+          </span>
+          <span class="flex-1 min-w-0">
+            <span class="block font-display font-bold text-sm text-brand-ink">{{ l.label }}</span>
+            <span class="block text-xs text-gray-400 leading-snug mt-0.5">{{ l.desc }}</span>
+          </span>
+          <svg lucideChevronRight class="w-4 h-4 text-gray-300 shrink-0"></svg>
+        </a>
+      }
+    </div>
+  </section>
+
+  <!-- Closer -->
+  <section class="px-4 pt-8">
+    <div appReveal class="relative overflow-hidden rounded-2xl bg-brand-navy text-white px-5 py-7 text-center elevation-2">
+      <div class="absolute inset-0 opacity-25 pointer-events-none" aria-hidden="true">
+        <div class="float-blob absolute -top-12 left-1/4 w-44 h-44 bg-brand-orange rounded-full blur-3xl"></div>
+        <div class="float-blob-delayed absolute -bottom-16 right-1/4 w-44 h-44 bg-brand-teal rounded-full blur-3xl"></div>
+      </div>
+      <div class="relative">
+        <p class="text-[10px] uppercase tracking-[0.24em] text-white/40 mb-2.5">{{ tagline }}</p>
+        <h2 class="font-display text-2xl font-extrabold tracking-tight mb-2.5">Let's get your home sorted</h2>
+        <p class="text-white/60 text-sm mb-6 max-w-[17rem] mx-auto leading-relaxed">
+          Browse products or book a verified technician, and see why homeowners choose HomeLink.
+        </p>
+        <a routerLink="/services" class="btn-primary inline-flex items-center gap-2">
+          Book a Service <svg lucideArrowRight class="w-4 h-4"></svg>
+        </a>
+      </div>
+    </div>
+  </section>
+</div>

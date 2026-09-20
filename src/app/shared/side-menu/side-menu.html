@@ -1,0 +1,128 @@
+@if (menu.isOpen()) {
+  <div class="fixed inset-0 z-50 app-overlay-frame" [class.drawer-out]="closing()">
+    <div class="drawer-scrim" (click)="close()" aria-hidden="true"></div>
+
+    <nav class="drawer-panel" aria-label="Main menu">
+      <!-- Identity header -->
+      <div class="drawer-header shrink-0">
+        <span class="drawer-glow" aria-hidden="true"></span>
+
+        <div class="relative flex items-start justify-between gap-3 px-5 pt-4">
+          <a routerLink="/" (click)="close()" class="tap flex items-center gap-2">
+            <span class="w-8 h-8 rounded-xl bg-brand-orange flex items-center justify-center shrink-0 elevation-2">
+              <svg lucideHouse class="w-4 h-4 text-white"></svg>
+            </span>
+            <span class="font-display font-extrabold text-lg tracking-tight text-white">Home<span class="text-brand-orange">Link</span></span>
+          </a>
+          <button type="button" (click)="close()" aria-label="Close menu" class="tap -mr-1.5 -mt-0.5 p-2 rounded-full text-white/70 active:bg-white/10">
+            <svg lucideX class="w-5 h-5"></svg>
+          </button>
+        </div>
+
+        @if (user(); as u) {
+          <a routerLink="/account/profile" (click)="close()" class="tap relative flex items-center gap-3 px-5 py-3.5 mt-0.5 active:bg-white/5">
+            <span
+              class="w-12 h-12 rounded-2xl flex items-center justify-center font-display font-bold text-base text-white ring-2 ring-white/20 shrink-0"
+              [class]="avatarColor()"
+            >{{ initials() }}</span>
+            <span class="flex-1 min-w-0">
+              <span class="flex items-center gap-1.5">
+                <span class="font-display font-bold text-[15px] text-white truncate">{{ u.firstName }} {{ u.lastName }}</span>
+                <svg lucideShieldCheck class="w-3.5 h-3.5 text-brand-teal shrink-0"></svg>
+              </span>
+              <span class="block text-xs text-white/50 truncate">{{ u.email }}</span>
+              <span class="block text-[10px] uppercase tracking-[0.12em] text-white/35 mt-1">Member since {{ memberSince() }}</span>
+            </span>
+            <svg lucideChevronRight class="w-4 h-4 text-white/30 shrink-0"></svg>
+          </a>
+        } @else {
+          <div class="relative px-5 py-3.5 mt-0.5">
+            <p class="text-sm text-white/75 leading-snug mb-3">Sign in to track orders, book technicians and save your favourites.</p>
+            <div class="flex items-center gap-2">
+              <a routerLink="/login" (click)="close()" class="tap flex-1 inline-flex items-center justify-center gap-1.5 bg-brand-orange text-white text-sm font-semibold px-3 py-2 rounded-xl elevation-1">
+                <svg lucideLogIn class="w-4 h-4"></svg> Sign In
+              </a>
+              <a routerLink="/register" (click)="close()" class="tap flex-1 inline-flex items-center justify-center gap-1.5 border border-white/25 text-white text-sm font-semibold px-3 py-2 rounded-xl active:bg-white/10">
+                <svg lucideUserPlus class="w-4 h-4"></svg> Register
+              </a>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Destinations -->
+      <div class="drawer-body scrollbar-ghost">
+        @for (section of sections; track section.title) {
+          @if (sectionVisible(section)) {
+            <p class="drawer-section-title">{{ section.title }}</p>
+            <ul class="px-2.5 pb-1">
+              @for (item of section.items; track item.to) {
+                <li>
+                  <a
+                    [routerLink]="item.to"
+                    routerLinkActive="drawer-row-active"
+                    [routerLinkActiveOptions]="{ exact: !!item.exact }"
+                    (click)="close()"
+                    class="drawer-row tap"
+                  >
+                    <span class="drawer-row-rail" aria-hidden="true"></span>
+                    <span class="drawer-row-icon">
+                      @switch (item.icon) {
+                        @case ('house') { <svg lucideHouse class="w-4 h-4"></svg> }
+                        @case ('grid') { <svg lucideLayoutGrid class="w-4 h-4"></svg> }
+                        @case ('wrench') { <svg lucideWrench class="w-4 h-4"></svg> }
+                        @case ('image') { <svg lucideImage class="w-4 h-4"></svg> }
+                        @case ('cart') { <svg lucideShoppingCart class="w-4 h-4"></svg> }
+                        @case ('heart') { <svg lucideHeart class="w-4 h-4"></svg> }
+                        @case ('package') { <svg lucidePackage class="w-4 h-4"></svg> }
+                        @case ('calendar') { <svg lucideCalendar class="w-4 h-4"></svg> }
+                        @case ('account') { <svg lucideCircleUser class="w-4 h-4"></svg> }
+                        @case ('support') { <svg lucideLifeBuoy class="w-4 h-4"></svg> }
+                        @case ('info') { <svg lucideInfo class="w-4 h-4"></svg> }
+                        @case ('history') { <svg lucideMilestone class="w-4 h-4"></svg> }
+                        @case ('sparkles') { <svg lucideSparkles class="w-4 h-4"></svg> }
+                        @case ('app') { <svg lucideSmartphone class="w-4 h-4"></svg> }
+                        @case ('code') { <svg lucideCode class="w-4 h-4"></svg> }
+                        @case ('location') { <svg lucideMapPin class="w-4 h-4"></svg> }
+                        @case ('policies') { <svg lucideFileText class="w-4 h-4"></svg> }
+                        @case ('terms') { <svg lucideScrollText class="w-4 h-4"></svg> }
+                      }
+                    </span>
+                    <span class="flex-1 truncate">{{ item.label }}</span>
+                    @if (badgeCount(item) > 0) {
+                      <span class="drawer-row-badge">{{ badgeCount(item) > 99 ? '99+' : badgeCount(item) }}</span>
+                    }
+                  </a>
+                </li>
+              }
+            </ul>
+          }
+        }
+      </div>
+
+      <!-- Footer -->
+      <div class="drawer-footer shrink-0">
+        @if (user()) {
+          <button type="button" (click)="confirmLogout.set(true)" class="drawer-row tap w-full text-left text-red-300">
+            <span class="drawer-row-rail" aria-hidden="true"></span>
+            <span class="drawer-row-icon"><svg lucideLogOut class="w-4 h-4"></svg></span>
+            <span class="flex-1">Log Out</span>
+          </button>
+        }
+        <p class="px-4 pt-2 text-[10px] text-white/25 tabular-nums">HomeLink for Android · v{{ version }}</p>
+      </div>
+    </nav>
+  </div>
+
+  <app-confirm-dialog
+    [open]="confirmLogout()"
+    tone="login"
+    title="Log out of HomeLink?"
+    message="You'll need to sign in again to access your account, orders, and bookings."
+    confirmLabel="Log Out"
+    (confirmed)="handleLogout()"
+    (cancelled)="confirmLogout.set(false)"
+  >
+    <svg icon lucideLogOut></svg>
+  </app-confirm-dialog>
+}

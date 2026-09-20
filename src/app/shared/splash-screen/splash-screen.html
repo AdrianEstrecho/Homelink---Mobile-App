@@ -1,0 +1,28 @@
+<div class="splash app-overlay-frame" [class.splash-out]="leaving()" role="status" aria-label="HomeLink is starting">
+  <span class="splash-glow splash-glow-a" aria-hidden="true"></span>
+  <span class="splash-glow splash-glow-b" aria-hidden="true"></span>
+  <span class="splash-vignette" aria-hidden="true"></span>
+
+  <div class="relative flex flex-1 flex-col items-center justify-center px-10">
+    <div class="splash-mark">
+      <span class="splash-pulse" aria-hidden="true"></span>
+      <span class="splash-pulse splash-pulse-late" aria-hidden="true"></span>
+      <div class="splash-tile">
+        <svg lucideHouse class="w-11 h-11 text-white" stroke-width="1.6"></svg>
+      </div>
+      <div class="splash-badge">
+        <svg lucideWrench class="w-4 h-4 text-white"></svg>
+      </div>
+    </div>
+
+    <h1 class="splash-wordmark font-display">Home<span class="text-brand-orange">Link</span></h1>
+    <p class="splash-tagline">Shop it. Book it. Done.</p>
+
+    <div class="splash-bar" aria-hidden="true"><span></span></div>
+  </div>
+
+  <div class="splash-foot">
+    <p class="text-[11px] text-white/45 tracking-wide">Products &amp; verified technicians, in one app</p>
+    <p class="text-[10px] text-white/25 mt-1 tabular-nums">Version {{ version }}</p>
+  </div>
+</div>

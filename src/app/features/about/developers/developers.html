@@ -1,0 +1,100 @@
+<div class="route-fade pb-10">
+  <!-- Opening -->
+  <section class="relative overflow-hidden bg-brand-light px-4 pt-7 pb-8 border-b border-gray-100">
+    <p class="eyebrow mb-3"><svg lucideCode class="w-3.5 h-3.5"></svg> Credits</p>
+    <h1 class="font-display text-[26px] leading-[1.18] font-extrabold tracking-tight text-brand-ink mb-3">
+      The people behind<br />HomeLink
+    </h1>
+    <p class="text-gray-500 text-sm leading-relaxed max-w-[20rem]">{{ teamNote }}</p>
+  </section>
+
+  <!-- Team -->
+  <section class="px-4 pt-8">
+    <div appReveal class="mb-4">
+      <p class="eyebrow mb-1.5">The Team</p>
+      <h2 class="font-display text-xl font-extrabold tracking-tight text-brand-ink">Who built what</h2>
+    </div>
+
+    <div class="flex flex-col gap-3.5">
+      @for (d of developers; track d.name; let i = $index) {
+        <div appReveal [revealDelay]="i * 70" class="relative overflow-hidden rounded-2xl border border-gray-100 bg-white elevation-1 p-4">
+          <div class="flex items-start gap-3.5">
+            <div
+              class="w-14 h-14 rounded-2xl bg-gradient-to-br flex items-center justify-center shrink-0 elevation-2"
+              [class]="accent(d.accent).avatar"
+            >
+              <span class="font-display font-extrabold text-white text-base tracking-tight">{{ d.initials }}</span>
+            </div>
+            <div class="min-w-0 flex-1">
+              <h3 class="font-display font-extrabold text-[15px] text-brand-ink leading-snug">{{ d.name }}</h3>
+              <p class="text-xs font-semibold mt-0.5" [class]="d.accent === 'orange' ? 'text-brand-orange' : 'text-brand-teal'">{{ d.role }}</p>
+              <p class="text-gray-500 text-[13px] leading-relaxed mt-2">{{ d.focus }}</p>
+            </div>
+          </div>
+          <ul class="flex flex-wrap gap-1.5 mt-3.5">
+            @for (t of d.tags; track t) {
+              <li class="badge" [class]="accent(d.accent).chip">{{ t }}</li>
+            }
+          </ul>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- What shipped -->
+  <section class="px-4 pt-9">
+    <div appReveal class="mb-4">
+      <p class="eyebrow mb-1.5">The Scope</p>
+      <h2 class="font-display text-xl font-extrabold tracking-tight text-brand-ink">Four surfaces, one system</h2>
+    </div>
+    <div class="card divide-y divide-gray-100">
+      @for (b of built; track b.label) {
+        <div class="flex items-start gap-3 px-4 py-3.5">
+          <span class="flex items-center justify-center w-9 h-9 rounded-xl bg-brand-navy/[0.07] text-brand-navy shrink-0">
+            @switch (b.icon) {
+              @case ('layers') { <svg lucideLayers class="w-4 h-4"></svg> }
+              @case ('database') { <svg lucideDatabase class="w-4 h-4"></svg> }
+              @case ('smartphone') { <svg lucideSmartphone class="w-4 h-4"></svg> }
+              @case ('sparkles') { <svg lucideSparkles class="w-4 h-4"></svg> }
+            }
+          </span>
+          <div class="min-w-0">
+            <h3 class="font-display font-bold text-sm text-brand-ink">{{ b.label }}</h3>
+            <p class="text-gray-500 text-xs leading-relaxed mt-0.5">{{ b.desc }}</p>
+          </div>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Acknowledgement -->
+  <section class="px-4 pt-8">
+    <div appReveal class="relative overflow-hidden rounded-2xl bg-brand-navy text-white px-5 py-6 elevation-2">
+      <div class="absolute inset-0 opacity-25 pointer-events-none" aria-hidden="true">
+        <div class="float-blob absolute -top-14 -right-10 w-44 h-44 bg-brand-orange rounded-full blur-3xl"></div>
+      </div>
+      <div class="relative flex items-start gap-3.5">
+        <span class="flex items-center justify-center w-10 h-10 rounded-xl bg-white/10 shrink-0">
+          <svg lucideGraduationCap class="w-5 h-5 text-white"></svg>
+        </span>
+        <div class="min-w-0">
+          <h2 class="font-display font-extrabold text-base leading-snug mb-1.5">An academic build, shipped for real</h2>
+          <p class="text-white/60 text-[13px] leading-relaxed">
+            HomeLink runs on a live backend, a real database and a real payment gateway — built to be
+            demonstrated, not mocked up. Thanks to everyone who tested it and told us what was broken.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="px-4 pt-7">
+    <a routerLink="/about" class="tap card flex items-center gap-3 px-4 py-3.5 active:bg-gray-50">
+      <span class="flex-1 min-w-0">
+        <span class="block text-[11px] uppercase tracking-[0.14em] text-gray-400">Back to</span>
+        <span class="block font-display font-bold text-sm text-brand-ink mt-0.5">About HomeLink</span>
+      </span>
+      <svg lucideArrowRight class="w-4 h-4 text-brand-orange shrink-0"></svg>
+    </a>
+  </section>
+</div>

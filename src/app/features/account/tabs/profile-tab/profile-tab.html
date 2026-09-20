@@ -1,70 +1,173 @@
 <div>
-  <div class="flex items-center justify-between mb-6">
-    <h2 class="font-display font-bold text-lg text-brand-ink">Profile Details</h2>
+  <div class="flex items-center justify-between gap-3 mb-4">
+    <div class="min-w-0">
+      <h2 class="font-display font-bold text-base text-brand-ink">Personal details</h2>
+      <p class="text-xs text-gray-400 mt-0.5">Used for delivery, bookings and receipts.</p>
+    </div>
     @if (!editing()) {
-      <button type="button" (click)="startEdit()" class="flex items-center gap-1.5 text-sm font-semibold text-brand-navy hover:text-brand-orange transition">
-        <svg lucidePencil class="w-4 h-4"></svg> Edit Profile
+      <button type="button" (click)="startEdit()" class="tap shrink-0 flex items-center gap-1.5 text-xs font-semibold text-brand-navy bg-brand-navy/[0.07] px-3 py-2 rounded-lg">
+        <svg lucidePencil class="w-3.5 h-3.5"></svg> Edit
       </button>
     } @else {
-      <button type="button" (click)="cancelEdit()" class="flex items-center gap-1.5 text-sm font-semibold text-gray-500 hover:text-gray-700 transition">
-        <svg lucideX class="w-4 h-4"></svg> Cancel
+      <button type="button" (click)="cancelEdit()" class="tap shrink-0 flex items-center gap-1.5 text-xs font-semibold text-gray-500 bg-gray-100 px-3 py-2 rounded-lg">
+        <svg lucideX class="w-3.5 h-3.5"></svg> Cancel
       </button>
     }
   </div>
 
   @if (editing()) {
-    <form (submit)="$event.preventDefault(); handleSave()" class="space-y-4">
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <form (submit)="$event.preventDefault(); handleSave()" class="flex flex-col gap-3.5">
+      @if (saveError()) {
+        <div class="flex items-start gap-2 rounded-xl bg-red-50 border border-red-100 px-3 py-2.5">
+          <svg lucideTriangleAlert class="w-4 h-4 text-red-500 shrink-0 mt-0.5"></svg>
+          <p class="text-xs text-red-600 leading-relaxed">{{ saveError() }}</p>
+        </div>
+      }
+
+      <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="block text-sm font-medium mb-1.5 text-gray-700">First Name</label>
-          <input [ngModel]="form().firstName" (ngModelChange)="updateField('firstName', $event)" name="firstName" class="input-field" required />
+          <label for="pf-first" class="block text-[11px] font-semibold uppercase tracking-wide text-gray-400 mb-1.5">First name</label>
+          <input
+            id="pf-first"
+            [ngModel]="form().firstName"
+            (ngModelChange)="updateField('firstName', $event)"
+            (blur)="markTouched('firstName')"
+            name="firstName"
+            autocomplete="given-name"
+            class="input-field"
+            [class.border-red-300]="showError('firstName')"
+          />
+          @if (showError('firstName')) {
+            <p class="text-[11px] text-red-500 mt-1">{{ showError('firstName') }}</p>
+          }
         </div>
         <div>
-          <label class="block text-sm font-medium mb-1.5 text-gray-700">Last Name</label>
-          <input [ngModel]="form().lastName" (ngModelChange)="updateField('lastName', $event)" name="lastName" class="input-field" required />
+          <label for="pf-last" class="block text-[11px] font-semibold uppercase tracking-wide text-gray-400 mb-1.5">Last name</label>
+          <input
+            id="pf-last"
+            [ngModel]="form().lastName"
+            (ngModelChange)="updateField('lastName', $event)"
+            (blur)="markTouched('lastName')"
+            name="lastName"
+            autocomplete="family-name"
+            class="input-field"
+            [class.border-red-300]="showError('lastName')"
+          />
+          @if (showError('lastName')) {
+            <p class="text-[11px] text-red-500 mt-1">{{ showError('lastName') }}</p>
+          }
         </div>
       </div>
+
       <div>
-        <label class="block text-sm font-medium mb-1.5 text-gray-700">Phone Number</label>
-        <input [ngModel]="form().phone" (ngModelChange)="updateField('phone', $event)" name="phone" class="input-field" placeholder="09XXXXXXXXX" />
+        <label class="block text-[11px] font-semibold uppercase tracking-wide text-gray-400 mb-1.5">Email address</label>
+        <div class="flex items-center gap-2 w-full px-4 py-2.5 border border-gray-200 rounded-lg bg-gray-50">
+          <span class="text-sm text-gray-500 truncate flex-1">{{ user()?.email }}</span>
+          <svg lucideLock class="w-3.5 h-3.5 text-gray-400 shrink-0"></svg>
+        </div>
+        <p class="text-[11px] text-gray-400 mt-1">Your email is your sign-in — contact support to change it.</p>
       </div>
+
       <div>
-        <label class="block text-sm font-medium mb-1.5 text-gray-700">Address</label>
-        <textarea [ngModel]="form().address" (ngModelChange)="updateField('address', $event)" name="address" rows="2" class="input-field"></textarea>
+        <label for="pf-phone" class="block text-[11px] font-semibold uppercase tracking-wide text-gray-400 mb-1.5">Mobile number</label>
+        <input
+          id="pf-phone"
+          [ngModel]="form().phone"
+          (ngModelChange)="updateField('phone', $event)"
+          (blur)="markTouched('phone')"
+          name="phone"
+          type="tel"
+          inputmode="tel"
+          autocomplete="tel"
+          placeholder="09XXXXXXXXX"
+          class="input-field"
+          [class.border-red-300]="showError('phone')"
+        />
+        @if (showError('phone')) {
+          <p class="text-[11px] text-red-500 mt-1">{{ showError('phone') }}</p>
+        } @else {
+          <p class="text-[11px] text-gray-400 mt-1">Technicians use this to reach you on the day.</p>
+        }
       </div>
-      <button type="submit" [disabled]="saving()" class="btn-primary flex items-center gap-2 disabled:opacity-60">
-        <svg lucideSave class="w-4 h-4"></svg> {{ saving() ? 'Saving...' : 'Save Changes' }}
+
+      <div>
+        <label for="pf-address" class="block text-[11px] font-semibold uppercase tracking-wide text-gray-400 mb-1.5">Default address</label>
+        <textarea
+          id="pf-address"
+          [ngModel]="form().address"
+          (ngModelChange)="updateField('address', $event)"
+          name="address"
+          rows="3"
+          autocomplete="street-address"
+          placeholder="House no., street, barangay, city"
+          class="input-field resize-none"
+        ></textarea>
+      </div>
+
+      <button
+        type="submit"
+        [disabled]="saving() || !isDirty()"
+        class="btn-primary w-full flex items-center justify-center gap-2 py-3 disabled:opacity-50 disabled:pointer-events-none"
+      >
+        @if (saving()) {
+          <span class="w-4 h-4 rounded-full border-2 border-white/40 border-t-white animate-spin"></span> Saving…
+        } @else {
+          <svg lucideSave class="w-4 h-4"></svg> Save changes
+        }
       </button>
     </form>
   } @else {
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <div class="flex items-start gap-3 p-4 rounded-xl bg-gray-50 border border-gray-100">
-        <div class="w-9 h-9 rounded-lg bg-white flex items-center justify-center shrink-0 border border-gray-100"><svg lucideUser class="w-4 h-4 text-brand-navy"></svg></div>
-        <div class="min-w-0">
-          <p class="text-[11px] uppercase tracking-wide text-gray-400 font-medium mb-0.5">Full Name</p>
-          <p class="text-sm font-semibold text-gray-800 truncate">{{ ((user()?.firstName ?? '') + ' ' + (user()?.lastName ?? '')).trim() || 'Not set' }}</p>
+    <div class="flex flex-col divide-y divide-gray-100 -mx-1">
+      <div class="flex items-start gap-3 px-1 py-3">
+        <span class="flex items-center justify-center w-9 h-9 rounded-xl bg-brand-navy/[0.07] text-brand-navy shrink-0">
+          <svg lucideUser class="w-4 h-4"></svg>
+        </span>
+        <div class="min-w-0 flex-1">
+          <p class="text-[11px] uppercase tracking-wide text-gray-400 font-semibold">Full name</p>
+          <p class="text-sm font-semibold text-brand-ink mt-0.5 break-words">{{ fullName() || 'Not set' }}</p>
         </div>
+        @if (fullName()) { <svg lucideCheck class="w-4 h-4 text-brand-teal shrink-0 mt-4"></svg> }
       </div>
-      <div class="flex items-start gap-3 p-4 rounded-xl bg-gray-50 border border-gray-100">
-        <div class="w-9 h-9 rounded-lg bg-white flex items-center justify-center shrink-0 border border-gray-100"><svg lucideMail class="w-4 h-4 text-brand-navy"></svg></div>
-        <div class="min-w-0">
-          <p class="text-[11px] uppercase tracking-wide text-gray-400 font-medium mb-0.5">Email Address</p>
-          <p class="text-sm font-semibold text-gray-800 truncate">{{ user()?.email }}</p>
+
+      <div class="flex items-start gap-3 px-1 py-3">
+        <span class="flex items-center justify-center w-9 h-9 rounded-xl bg-brand-blue/10 text-brand-blue shrink-0">
+          <svg lucideMail class="w-4 h-4"></svg>
+        </span>
+        <div class="min-w-0 flex-1">
+          <p class="text-[11px] uppercase tracking-wide text-gray-400 font-semibold">Email address</p>
+          <p class="text-sm font-semibold text-brand-ink mt-0.5 break-all">{{ user()?.email }}</p>
         </div>
+        <svg lucideLock class="w-4 h-4 text-gray-300 shrink-0 mt-4"></svg>
       </div>
-      <div class="flex items-start gap-3 p-4 rounded-xl bg-gray-50 border border-gray-100">
-        <div class="w-9 h-9 rounded-lg bg-white flex items-center justify-center shrink-0 border border-gray-100"><svg lucidePhone class="w-4 h-4 text-brand-navy"></svg></div>
-        <div class="min-w-0">
-          <p class="text-[11px] uppercase tracking-wide text-gray-400 font-medium mb-0.5">Phone Number</p>
-          <p class="text-sm font-semibold text-gray-800 truncate">{{ user()?.phone || 'Not set' }}</p>
+
+      <div class="flex items-start gap-3 px-1 py-3">
+        <span class="flex items-center justify-center w-9 h-9 rounded-xl bg-brand-teal/10 text-brand-teal shrink-0">
+          <svg lucidePhone class="w-4 h-4"></svg>
+        </span>
+        <div class="min-w-0 flex-1">
+          <p class="text-[11px] uppercase tracking-wide text-gray-400 font-semibold">Mobile number</p>
+          @if (user()?.phone) {
+            <p class="text-sm font-semibold text-brand-ink mt-0.5">{{ user()?.phone }}</p>
+          } @else {
+            <button type="button" (click)="startEdit()" class="text-sm font-semibold text-brand-orange mt-0.5">Add a number</button>
+          }
         </div>
+        @if (user()?.phone) { <svg lucideCheck class="w-4 h-4 text-brand-teal shrink-0 mt-4"></svg> }
       </div>
-      <div class="flex items-start gap-3 p-4 rounded-xl bg-gray-50 border border-gray-100">
-        <div class="w-9 h-9 rounded-lg bg-white flex items-center justify-center shrink-0 border border-gray-100"><svg lucideMapPin class="w-4 h-4 text-brand-navy"></svg></div>
-        <div class="min-w-0">
-          <p class="text-[11px] uppercase tracking-wide text-gray-400 font-medium mb-0.5">Address</p>
-          <p class="text-sm font-semibold text-gray-800 truncate">{{ user()?.address || 'Not set' }}</p>
+
+      <div class="flex items-start gap-3 px-1 py-3">
+        <span class="flex items-center justify-center w-9 h-9 rounded-xl bg-brand-orange/10 text-brand-orange shrink-0">
+          <svg lucideMapPin class="w-4 h-4"></svg>
+        </span>
+        <div class="min-w-0 flex-1">
+          <p class="text-[11px] uppercase tracking-wide text-gray-400 font-semibold">Default address</p>
+          @if (user()?.address) {
+            <p class="text-sm font-semibold text-brand-ink mt-0.5 leading-relaxed">{{ user()?.address }}</p>
+          } @else {
+            <button type="button" (click)="startEdit()" class="text-sm font-semibold text-brand-orange mt-0.5">Add an address</button>
+          }
         </div>
+        @if (user()?.address) { <svg lucideCheck class="w-4 h-4 text-brand-teal shrink-0 mt-4"></svg> }
       </div>
     </div>
   }

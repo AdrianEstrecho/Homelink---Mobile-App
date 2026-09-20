@@ -19,7 +19,6 @@
   }
   :root {
     --topbar-h: 3.5rem;
-    --bottomnav-h: 4rem;
   }
   body {
     @apply bg-white text-gray-900 font-sans antialiased;
@@ -33,21 +32,15 @@
 }
 
 @layer components {
-  /* Native app shell: fixed top app bar + bottom nav, safe-area aware. */
+  /* Native app shell: fixed top app bar, safe-area aware. Navigation itself
+     lives in the side menu drawer (shared/side-menu), which overlays the
+     shell rather than claiming layout space. */
   .app-topbar {
     @apply fixed top-0 inset-x-0 z-40 bg-brand-navy text-white;
     padding-top: env(safe-area-inset-top);
   }
-  .app-bottomnav {
-    @apply fixed bottom-0 inset-x-0 z-40 bg-white border-t border-gray-100;
-    padding-bottom: env(safe-area-inset-bottom);
-    box-shadow: 0 -2px 12px -4px rgba(15, 43, 91, 0.14);
-  }
   .app-main {
     padding-top: calc(var(--topbar-h) + env(safe-area-inset-top));
-  }
-  .app-main-tabbed {
-    padding-bottom: calc(var(--bottomnav-h) + env(safe-area-inset-bottom));
   }
   .pt-safe {
     padding-top: env(safe-area-inset-top);
@@ -238,20 +231,17 @@
    Without this, the app has no max-width and stretches full-bleed on any
    wider window. .app-shell sizes/centers the app to a phone-width column.
 
-   The top bar and bottom nav are position:fixed on real devices, where body
-   is the only scroll surface -- but a fixed/sticky element only stays
-   visually anchored while its containing block IS the thing scrolling, and
-   .app-shell isn't the viewport here, so neither trick holds up (a
-   transformed ancestor drags its position:fixed descendants along with its
-   own scroll, and this bottom nav's natural flow position -- at the very
-   end of a long page -- means `sticky` wouldn't engage until you'd already
-   scrolled nearly to the bottom). So instead of trying to keep them
-   fixed/sticky, .app-scroll-frame takes them out of any scrolling
-   context entirely: topbar and bottom nav become plain in-flow flex items
-   (position:static) bookending the column, and only .app-scroll-region
-   (the routed page content) scrolls internally between them -- the classic
+   The top bar is position:fixed on real devices, where body is the only
+   scroll surface -- but a fixed element only stays visually anchored while
+   its containing block IS the thing scrolling, and .app-shell isn't the
+   viewport here, so that doesn't hold up (a transformed ancestor drags its
+   position:fixed descendants along with its own scroll). So instead of
+   trying to keep it fixed, .app-scroll-frame takes it out of any scrolling
+   context entirely: the topbar becomes a plain in-flow flex item
+   (position:static) at the head of the column, and only .app-scroll-region
+   (the routed page content) scrolls internally beneath it -- the classic
    native-app-shell layout. .app-main's fixed-bar padding compensation is
-   zeroed out here too, since static flex items already claim their own
+   zeroed out here too, since a static flex item already claims its own
    space; that padding would otherwise double it up. */
 @media (min-width: 481px) {
   html,
@@ -286,19 +276,15 @@
   .app-scroll-region::-webkit-scrollbar {
     display: none;
   }
-  .app-topbar,
-  .app-bottomnav {
+  .app-topbar {
     position: static;
   }
   .app-main {
     padding-top: 0;
   }
-  .app-main-tabbed {
-    padding-bottom: 0;
-  }
 
   /* Page-level fixed bars (product-detail's buy bar, toasts) use plain
-     position:fixed with inset-x-0, so -- same as the topbar/bottomnav
+     position:fixed with inset-x-0, so -- same as the topbar
      dilemma above -- they escape .app-shell entirely and span the real
      browser window. left:0 + right:0 + max-width + auto margins is the
      classic over-constrained-box centering trick: with both edges pinned,

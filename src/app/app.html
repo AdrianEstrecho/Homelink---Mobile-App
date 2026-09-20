@@ -15,13 +15,15 @@
       @if (showChrome()) {
         <app-navbar></app-navbar>
       }
-      <main class="app-scroll-region flex-1" [class.app-main]="showChrome()" [class.app-main-tabbed]="showTabs()">
+      <main class="app-scroll-region flex-1" [class.app-main]="showChrome()">
         <router-outlet></router-outlet>
       </main>
-      @if (showTabs()) {
-        <app-bottom-nav></app-bottom-nav>
-      }
     </div>
+    <app-side-menu></app-side-menu>
     <app-toast-viewport></app-toast-viewport>
+  }
+
+  @if (splashVisible()) {
+    <app-splash-screen [leaving]="splashLeaving()" />
   }
 </div>

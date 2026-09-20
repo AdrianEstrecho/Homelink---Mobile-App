@@ -1,0 +1,123 @@
+<div class="route-fade pb-10">
+  <!-- App card -->
+  <section class="relative overflow-hidden bg-brand-navy text-white px-4 pt-8 pb-9">
+    <div class="absolute inset-0 opacity-30 pointer-events-none" aria-hidden="true">
+      <div class="float-blob absolute -top-20 -left-10 w-52 h-52 bg-brand-orange rounded-full blur-3xl"></div>
+      <div class="float-blob-delayed absolute -bottom-24 -right-8 w-52 h-52 bg-brand-blue rounded-full blur-3xl"></div>
+    </div>
+
+    <div class="relative flex items-center gap-4">
+      <div class="relative w-[4.5rem] h-[4.5rem] rounded-[1.4rem] bg-gradient-to-br from-[#ff8354] to-[#e25020] flex items-center justify-center shrink-0 elevation-3">
+        <svg lucideHouse class="w-8 h-8 text-white" stroke-width="1.6"></svg>
+        <span class="absolute -bottom-1.5 -right-1.5 w-7 h-7 rounded-xl bg-brand-teal flex items-center justify-center elevation-2">
+          <svg lucideWrench class="w-3.5 h-3.5 text-white"></svg>
+        </span>
+      </div>
+      <div class="min-w-0">
+        <h1 class="font-display text-2xl font-extrabold tracking-tight leading-none">Home<span class="text-brand-orange">Link</span></h1>
+        <p class="text-[10px] uppercase tracking-[0.2em] text-white/40 mt-2">{{ tagline }}</p>
+        <p class="text-xs text-white/55 mt-2 tabular-nums">{{ platform }} · Version {{ version }}</p>
+      </div>
+    </div>
+
+    <p class="relative text-white/65 text-sm leading-relaxed mt-5">
+      The whole HomeLink marketplace, rebuilt for a phone — not a shrunken website, but an app with its own
+      navigation, offline-tolerant loading and touch-first screens.
+    </p>
+  </section>
+
+  <!-- What it does -->
+  <section class="px-4 pt-8">
+    <div appReveal class="mb-4">
+      <p class="eyebrow mb-1.5">Inside the App</p>
+      <h2 class="font-display text-xl font-extrabold tracking-tight text-brand-ink">What you can do here</h2>
+    </div>
+    <div class="grid grid-cols-2 gap-3 items-start">
+      @for (f of features; track f.title; let i = $index) {
+        <div appReveal [revealDelay]="(i % 4) * 55" class="rounded-2xl border border-gray-100 bg-white elevation-1 p-4 h-full">
+          <div class="w-9 h-9 rounded-xl bg-brand-navy/[0.07] flex items-center justify-center mb-3">
+            @switch (f.icon) {
+              @case ('grid') { <svg lucideLayoutGrid class="w-4 h-4 text-brand-navy"></svg> }
+              @case ('wrench') { <svg lucideWrench class="w-4 h-4 text-brand-navy"></svg> }
+              @case ('cart') { <svg lucideShoppingCart class="w-4 h-4 text-brand-navy"></svg> }
+              @case ('package') { <svg lucidePackage class="w-4 h-4 text-brand-navy"></svg> }
+              @case ('heart') { <svg lucideHeart class="w-4 h-4 text-brand-navy"></svg> }
+              @case ('bell') { <svg lucideBell class="w-4 h-4 text-brand-navy"></svg> }
+              @case ('lock') { <svg lucideLock class="w-4 h-4 text-brand-navy"></svg> }
+              @case ('map') { <svg lucideMapPin class="w-4 h-4 text-brand-navy"></svg> }
+            }
+          </div>
+          <h3 class="font-display font-bold text-sm text-brand-ink mb-1.5 leading-snug">{{ f.title }}</h3>
+          <p class="text-gray-500 text-xs leading-relaxed">{{ f.desc }}</p>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Under the hood -->
+  <section class="px-4 pt-9">
+    <div appReveal class="mb-4">
+      <p class="eyebrow mb-1.5">Under the Hood</p>
+      <h2 class="font-display text-xl font-extrabold tracking-tight text-brand-ink">How it's built</h2>
+    </div>
+    <div appReveal class="card divide-y divide-gray-100">
+      @for (t of tech; track t.label) {
+        <div class="flex items-baseline gap-3 px-4 py-3">
+          <span class="text-[11px] uppercase tracking-wide text-gray-400 font-semibold w-[6.5rem] shrink-0 leading-snug">{{ t.label }}</span>
+          <span class="text-[13px] font-medium text-brand-ink flex-1 min-w-0 leading-snug">{{ t.value }}</span>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Build info -->
+  <section class="px-4 pt-7">
+    <div appReveal class="rounded-2xl bg-brand-light border border-gray-100 p-4">
+      <div class="flex items-center gap-2 mb-3">
+        <svg lucideSmartphone class="w-4 h-4 text-brand-navy"></svg>
+        <p class="text-[11px] uppercase tracking-[0.14em] text-gray-400 font-semibold">This build</p>
+      </div>
+      <dl class="grid grid-cols-3 gap-2 mb-4">
+        <div class="bg-white rounded-xl border border-gray-100 px-2.5 py-2.5 text-center">
+          <dt class="text-[9.5px] uppercase tracking-wide text-gray-400">Version</dt>
+          <dd class="font-display font-bold text-sm text-brand-ink mt-0.5 tabular-nums">{{ version }}</dd>
+        </div>
+        <div class="bg-white rounded-xl border border-gray-100 px-2.5 py-2.5 text-center">
+          <dt class="text-[9.5px] uppercase tracking-wide text-gray-400">Build</dt>
+          <dd class="font-display font-bold text-sm text-brand-ink mt-0.5 tabular-nums">{{ build }}</dd>
+        </div>
+        <div class="bg-white rounded-xl border border-gray-100 px-2.5 py-2.5 text-center">
+          <dt class="text-[9.5px] uppercase tracking-wide text-gray-400">Platform</dt>
+          <dd class="font-display font-bold text-sm text-brand-ink mt-0.5">{{ platform }}</dd>
+        </div>
+      </dl>
+      <button type="button" (click)="copyBuildInfo()" class="tap w-full bg-white border border-gray-200 rounded-xl py-2.5 text-sm font-semibold text-brand-navy">
+        Copy build details
+      </button>
+      <p class="text-[11px] text-gray-400 leading-relaxed mt-3">
+        Support will ask for these if something goes wrong — {{ supportPhone }} or {{ supportEmail }}.
+      </p>
+    </div>
+  </section>
+
+  <!-- Next -->
+  <section class="px-4 pt-7 flex flex-col gap-2.5">
+    <a routerLink="/account/support" class="tap card flex items-center gap-3 px-4 py-3.5 active:bg-gray-50">
+      <span class="flex items-center justify-center w-9 h-9 rounded-xl bg-brand-teal/10 text-brand-teal shrink-0">
+        <svg lucideLifeBuoy class="w-4 h-4"></svg>
+      </span>
+      <span class="flex-1 min-w-0">
+        <span class="block font-display font-bold text-sm text-brand-ink">Report a problem</span>
+        <span class="block text-xs text-gray-400 mt-0.5">Open a support ticket from your account.</span>
+      </span>
+      <svg lucideArrowRight class="w-4 h-4 text-gray-300 shrink-0"></svg>
+    </a>
+    <a routerLink="/about/developers" class="tap card flex items-center gap-3 px-4 py-3.5 active:bg-gray-50">
+      <span class="flex-1 min-w-0">
+        <span class="block text-[11px] uppercase tracking-[0.14em] text-gray-400">Next</span>
+        <span class="block font-display font-bold text-sm text-brand-ink mt-0.5">The Developers</span>
+      </span>
+      <svg lucideArrowRight class="w-4 h-4 text-brand-orange shrink-0"></svg>
+    </a>
+  </section>
+</div>

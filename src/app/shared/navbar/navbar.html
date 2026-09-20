@@ -1,21 +1,40 @@
 <header class="app-topbar">
-  <div class="h-14 flex items-center gap-2 px-4">
-    @if (!isTabRoot()) {
-      <button type="button" (click)="goBack()" aria-label="Go back" class="tap -ml-2 mr-1 p-2 rounded-full active:bg-white/10">
+  <div class="h-14 flex items-center gap-1.5 px-3">
+    @if (isRoot()) {
+      <button type="button" (click)="openMenu()" aria-label="Open menu" class="tap -ml-1 p-2 rounded-full active:bg-white/10">
+        <svg lucideMenu class="w-5 h-5"></svg>
+      </button>
+    } @else {
+      <button type="button" (click)="goBack()" aria-label="Go back" class="tap -ml-1 p-2 rounded-full active:bg-white/10">
         <svg lucideArrowLeft class="w-5 h-5"></svg>
       </button>
-    } @else if (isHome()) {
-      <div class="w-8 h-8 bg-brand-orange rounded-lg flex items-center justify-center shrink-0 mr-0.5">
-        <svg lucideHouse class="w-4.5 h-4.5 text-white"></svg>
+    }
+
+    @if (isHome()) {
+      <div class="w-7 h-7 bg-brand-orange rounded-lg flex items-center justify-center shrink-0 ml-0.5">
+        <svg lucideHouse class="w-4 h-4 text-white"></svg>
       </div>
     }
-    <h1 class="font-display font-bold text-lg truncate flex-1">
+
+    <h1 class="font-display font-bold text-lg truncate flex-1 ml-1">
       @if (isHome()) {
         Home<span class="text-brand-orange">Link</span>
       } @else {
         {{ pageTitle() }}
       }
     </h1>
+
+    @if (showCart() && auth.user()) {
+      <a routerLink="/cart" aria-label="Cart" class="tap relative shrink-0 p-2 rounded-full active:bg-white/10">
+        <svg lucideShoppingCart class="w-5 h-5"></svg>
+        @if (cartCount() > 0) {
+          <span class="absolute top-0.5 right-0.5 bg-brand-orange text-white text-[10px] font-bold min-w-[1.05rem] h-[1.05rem] px-1 rounded-full flex items-center justify-center ring-2 ring-brand-navy">
+            {{ cartCount() > 9 ? '9+' : cartCount() }}
+          </span>
+        }
+      </a>
+    }
+
     @if (!auth.loading() && !auth.user()) {
       <a
         routerLink="/login"

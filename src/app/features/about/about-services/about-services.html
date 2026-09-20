@@ -1,0 +1,127 @@
+<div class="route-fade pb-10">
+  <!-- Opening -->
+  <section class="relative overflow-hidden bg-brand-navy text-white px-4 pt-7 pb-8">
+    <div class="absolute inset-0 opacity-25 pointer-events-none" aria-hidden="true">
+      <div class="float-blob absolute -top-20 -right-12 w-56 h-56 bg-brand-teal rounded-full blur-3xl"></div>
+    </div>
+    <div class="relative">
+      <p class="eyebrow mb-3"><svg lucideSparkles class="w-3.5 h-3.5"></svg> Our Services</p>
+      <h1 class="font-display text-[26px] leading-[1.18] font-extrabold tracking-tight mb-3">
+        A product is half<br />the job
+      </h1>
+      <p class="text-white/65 text-sm leading-relaxed max-w-[20rem]">
+        The other half is the person who fits it. HomeLink technicians handle installation, maintenance and
+        repair across six categories — booked, paid and tracked in the same app you bought the unit in.
+      </p>
+    </div>
+  </section>
+
+  <!-- What we cover -->
+  <section class="px-4 pt-8">
+    <div appReveal class="mb-4">
+      <p class="eyebrow mb-1.5">What We Cover</p>
+      <h2 class="font-display text-xl font-extrabold tracking-tight text-brand-ink">Six service categories</h2>
+    </div>
+
+    <div class="flex flex-col gap-3">
+      @for (p of pillars; track p.category; let i = $index) {
+        <div appReveal [revealDelay]="i * 55" class="rounded-2xl border border-gray-100 bg-white elevation-1 p-4">
+          <div class="flex items-start gap-3">
+            <span class="flex items-center justify-center w-10 h-10 rounded-xl shrink-0" [class]="accent(p.accent)">
+              @switch (icon(p.category)) {
+                @case ('snowflake') { <svg lucideSnowflake class="w-[18px] h-[18px]"></svg> }
+                @case ('sun') { <svg lucideSun class="w-[18px] h-[18px]"></svg> }
+                @case ('cctv') { <svg lucideCctv class="w-[18px] h-[18px]"></svg> }
+                @case ('zap') { <svg lucideZap class="w-[18px] h-[18px]"></svg> }
+                @case ('droplets') { <svg lucideDroplets class="w-[18px] h-[18px]"></svg> }
+                @default { <svg lucideWrench class="w-[18px] h-[18px]"></svg> }
+              }
+            </span>
+            <div class="min-w-0 flex-1">
+              <h3 class="font-display font-bold text-[15px] text-brand-ink leading-snug">{{ p.category }}</h3>
+              <p class="text-gray-500 text-xs leading-relaxed mt-1">{{ p.tagline }}</p>
+            </div>
+          </div>
+          <ul class="mt-3 flex flex-wrap gap-1.5">
+            @for (e of p.examples; track e) {
+              <li class="badge bg-gray-50 text-gray-500 border border-gray-100">{{ e }}</li>
+            }
+          </ul>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- How booking works -->
+  <section class="px-4 pt-9">
+    <div appReveal class="mb-4">
+      <p class="eyebrow mb-1.5">How It Works</p>
+      <h2 class="font-display text-xl font-extrabold tracking-tight text-brand-ink">Booking, start to finish</h2>
+    </div>
+
+    <ol class="relative">
+      <span class="absolute left-[15px] top-4 bottom-6 w-px bg-gray-200" aria-hidden="true"></span>
+      @for (s of steps; track s.title; let i = $index; let last = $last) {
+        <li appReveal [revealDelay]="i * 60" class="relative pl-11" [class.pb-5]="!last">
+          <span class="absolute left-0 top-0 w-8 h-8 rounded-full bg-brand-navy text-white font-display font-bold text-xs flex items-center justify-center ring-4 ring-white">
+            {{ i + 1 }}
+          </span>
+          <h3 class="font-display font-bold text-sm text-brand-ink pt-1.5">{{ s.title }}</h3>
+          <p class="text-gray-500 text-[13px] leading-relaxed mt-1">{{ s.desc }}</p>
+        </li>
+      }
+    </ol>
+  </section>
+
+  <!-- Tracking stages -->
+  <section class="px-4 pt-7">
+    <div appReveal class="rounded-2xl bg-brand-light border border-gray-100 p-4">
+      <p class="text-[11px] uppercase tracking-[0.14em] text-gray-400 font-semibold mb-3">Every booking moves through</p>
+      <div class="grid" [style.grid-template-columns]="'repeat(' + stages.length + ', minmax(0, 1fr))'">
+        @for (stage of stages; track stage; let i = $index; let last = $last) {
+          <div class="relative flex flex-col items-center gap-1.5">
+            @if (i > 0) {
+              <!-- Connector reaches back to the previous node's centre. -->
+              <span class="absolute right-1/2 top-[5px] w-full h-px bg-gray-300" aria-hidden="true"></span>
+            }
+            <span class="relative w-2.5 h-2.5 rounded-full" [class]="last ? 'bg-brand-teal' : 'bg-brand-navy'"></span>
+            <span class="text-[10px] text-center leading-tight text-gray-500 px-0.5">{{ stage }}</span>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Promises -->
+  <section class="px-4 pt-9">
+    <div appReveal class="mb-4">
+      <p class="eyebrow mb-1.5">Our Commitment</p>
+      <h2 class="font-display text-xl font-extrabold tracking-tight text-brand-ink">What you can count on</h2>
+    </div>
+    <div class="card divide-y divide-gray-100">
+      @for (p of promises; track p.title) {
+        <div class="flex items-start gap-3 px-4 py-3.5">
+          <span class="flex items-center justify-center w-9 h-9 rounded-xl bg-brand-teal/10 text-brand-teal shrink-0">
+            @switch (p.icon) {
+              @case ('shield') { <svg lucideShield class="w-4 h-4"></svg> }
+              @case ('clock') { <svg lucideClock class="w-4 h-4"></svg> }
+              @case ('star') { <svg lucideStar class="w-4 h-4"></svg> }
+              @case ('gem') { <svg lucideGem class="w-4 h-4"></svg> }
+              @default { <svg lucideSparkles class="w-4 h-4"></svg> }
+            }
+          </span>
+          <div class="min-w-0">
+            <h3 class="font-display font-bold text-sm text-brand-ink">{{ p.title }}</h3>
+            <p class="text-gray-500 text-xs leading-relaxed mt-0.5">{{ p.desc }}</p>
+          </div>
+        </div>
+      }
+    </div>
+  </section>
+
+  <section class="px-4 pt-8">
+    <a routerLink="/services" class="tap btn-primary w-full flex items-center justify-center gap-2 py-3">
+      Browse all services <svg lucideArrowRight class="w-4 h-4"></svg>
+    </a>
+  </section>
+</div>

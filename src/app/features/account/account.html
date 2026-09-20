@@ -112,6 +112,11 @@
     </div>
 
     <div appReveal [revealDelay]="160" class="card divide-y divide-gray-100">
+      <a routerLink="/about" class="tap group flex items-center gap-3 px-4 py-3 text-gray-700 active:bg-gray-50">
+        <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-brand-navy/10 text-brand-navy shrink-0"><svg lucideInfo class="w-4 h-4"></svg></span>
+        <span class="flex-1 text-sm font-medium">About HomeLink</span>
+        <svg lucideChevronRight class="w-4 h-4 text-gray-300"></svg>
+      </a>
       <a routerLink="/gallery" class="tap group flex items-center gap-3 px-4 py-3 text-gray-700 active:bg-gray-50">
         <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 text-gray-500 shrink-0"><svg lucideImage class="w-4 h-4"></svg></span>
         <span class="flex-1 text-sm font-medium">Gallery</span>

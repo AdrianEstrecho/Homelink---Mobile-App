@@ -14,8 +14,55 @@
   <!-- Google Identity Services: renders the "Sign in with Google" button on login (web only —
        see login.ts, which never initializes it inside the native Capacitor WebView). -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <!-- Pre-boot splash. Everything inside <app-root> is discarded the moment Angular
+       bootstraps, so this only ever covers the gap between first paint and the real
+       SplashScreen component — matched to it (same navy field, same orange mark) so
+       the handoff is invisible. Inline because a stylesheet request would land too
+       late to prevent the white flash it exists to prevent. -->
+  <style>
+    html, body { margin: 0; background: #0f2b5b; }
+    #boot-splash {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.75rem;
+      background: radial-gradient(120% 90% at 50% 8%, #1a4a8a 0%, #0f2b5b 48%, #0a1f42 100%);
+      font-family: Archivo, system-ui, sans-serif;
+    }
+    #boot-splash .boot-tile {
+      width: 5.5rem;
+      height: 5.5rem;
+      border-radius: 1.75rem;
+      background-image: linear-gradient(140deg, #ff8354, #ff6b35 55%, #e25020);
+      box-shadow: 0 18px 40px -12px rgba(255, 107, 53, 0.65);
+      animation: bootPulse 1.6s ease-in-out infinite;
+    }
+    #boot-splash .boot-word {
+      font-size: 2.125rem;
+      font-weight: 800;
+      letter-spacing: -0.035em;
+      color: #fff;
+    }
+    #boot-splash .boot-word span { color: #ff6b35; }
+    @keyframes bootPulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(0.94); opacity: 0.82; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #boot-splash .boot-tile { animation: none; }
+    }
+  </style>
 </head>
 <body>
-  <app-root></app-root>
+  <app-root>
+    <div id="boot-splash">
+      <div class="boot-tile"></div>
+      <p class="boot-word">Home<span>Link</span></p>
+    </div>
+  </app-root>
 </body>
 </html>
