@@ -62,6 +62,10 @@ describe('SideMenu', () => {
     expect(titles).toContain('My HomeLink');
     expect(el.textContent).toContain('My Orders');
     expect(el.textContent).toContain('Log Out');
+    // The identity card is the only route into the account — there is
+    // deliberately no separate "Account Settings" row duplicating it.
+    expect(el.textContent).not.toContain('Account Settings');
+    expect([...el.querySelectorAll('a[href]')].map((a) => a.getAttribute('href'))).toContain('/account/profile');
   });
 
   it('links to every Discover HomeLink page', () => {

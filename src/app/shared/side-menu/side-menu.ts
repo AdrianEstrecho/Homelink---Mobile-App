@@ -4,7 +4,6 @@ import { filter } from 'rxjs/operators';
 import {
   LucideCalendar,
   LucideChevronRight,
-  LucideCircleUser,
   LucideCode,
   LucideFileText,
   LucideHeart,
@@ -44,7 +43,6 @@ type MenuIcon =
   | 'heart'
   | 'package'
   | 'calendar'
-  | 'account'
   | 'support'
   | 'info'
   | 'history'
@@ -89,7 +87,9 @@ const SECTIONS: MenuSection[] = [
       { to: '/wishlist', label: 'Wishlist', icon: 'heart', badge: 'wishlist' },
       { to: '/orders', label: 'My Orders', icon: 'package' },
       { to: '/bookings', label: 'My Bookings', icon: 'calendar' },
-      { to: '/account', label: 'Account Settings', icon: 'account', exact: true },
+      // No "Account Settings" row: the identity card at the top of the drawer
+      // is the way into the account, and it lands on the profile page, which
+      // carries the links to addresses/payment/notifications/security.
       { to: '/account/support', label: 'Help & Support', icon: 'support' },
     ],
   },
@@ -147,7 +147,6 @@ const EXIT_MS = 230;
     LucideHeart,
     LucidePackage,
     LucideCalendar,
-    LucideCircleUser,
     LucideLifeBuoy,
     LucideInfo,
     LucideMilestone,
