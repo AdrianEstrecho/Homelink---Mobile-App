@@ -67,6 +67,11 @@ export const routes: Routes = [
     canActivate: [roleGuard(['customer'])],
   },
   {
+    path: 'services/:slug',
+    loadComponent: () =>
+      import('./features/services/service-detail/service-detail').then((m) => m.ServiceDetail),
+  },
+  {
     path: 'gallery',
     loadComponent: () => import('./features/gallery/gallery').then((m) => m.Gallery),
   },

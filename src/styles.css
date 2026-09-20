@@ -167,6 +167,33 @@
     animation: routeFadeIn 0.4s ease-out both;
   }
 
+  /* Drill-down transition for detail screens (product detail, service
+     detail): the page rises from below the fold as it fades in, so opening a
+     card reads as a sheet being pulled up rather than an instant page swap.
+     The travel is viewport-relative rather than 100% of the element, because
+     the element is the whole scrolling page -- translating it by its own
+     (arbitrarily tall) height would start it kilometers down and shoot past
+     the viewport in one frame.
+
+     `backwards` (not the `both` used above) is deliberate: the fill has to
+     stop applying the moment the animation ends, leaving a real
+     `transform: none` behind. A lingering `translateY(0)` still counts as a
+     transform, which would make this element a containing block for its
+     `position: fixed` descendants -- the same trap documented on .reveal-in
+     above, which strands confirm dialogs inside the page box. */
+  .sheet-up {
+    animation: sheetUp 0.42s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  }
+
+  /* A detail page's own fixed action bar has to stay *outside* .sheet-up for
+     exactly that reason (a transformed ancestor would re-anchor it to the
+     bottom of the content instead of the viewport), so it rises on its own.
+     100% here is the bar's own height -- it slides up off its bottom edge --
+     and the delay lands it just after the page it belongs to. */
+  .sheet-up-bar {
+    animation: sheetUpBar 0.34s cubic-bezier(0.16, 1, 0.3, 1) 0.1s backwards;
+  }
+
   .toast-in {
     animation: toastIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
@@ -220,7 +247,9 @@
     .fade-up,
     .slide-in-left,
     .toast-in,
-    .route-fade {
+    .route-fade,
+    .sheet-up,
+    .sheet-up-bar {
       animation: none;
     }
   }
@@ -338,6 +367,16 @@
 @keyframes routeFadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+@keyframes sheetUp {
+  from { opacity: 0; transform: translateY(22vh); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes sheetUpBar {
+  from { opacity: 0; transform: translateY(100%); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes toastIn {

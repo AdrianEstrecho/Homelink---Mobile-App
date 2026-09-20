@@ -10,6 +10,7 @@ import { CartService } from '../../../core/cart.service';
 import { PricePipe } from '../../../core/price.pipe';
 import { Product } from '../../../core/product.model';
 import { requireRole } from '../../../core/require-role';
+import { scrollAppToTop } from '../../../core/scroll-top.util';
 import { ToastService } from '../../../core/toast.service';
 import { WishlistService } from '../../../core/wishlist.service';
 import { ConfirmDialog } from '../../../shared/confirm-dialog/confirm-dialog';
@@ -85,6 +86,10 @@ export class ProductDetail {
   protected readonly confirmAddToCart = signal(false);
 
   constructor() {
+    // The page rises into view (.sheet-up); starting it halfway down the
+    // previous screen's scroll position would clip that entrance.
+    scrollAppToTop();
+
     effect(() => {
       const slugValue = this.slug().get('slug');
       if (!slugValue) return;

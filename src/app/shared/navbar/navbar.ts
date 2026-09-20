@@ -38,7 +38,8 @@ const SECTION_TITLES: { test: (url: string) => boolean; title: string }[] = [
   { test: (u) => u.startsWith('/about/app'), title: 'About the App' },
   { test: (u) => u.startsWith('/about/developers'), title: 'The Developers' },
   { test: (u) => u.startsWith('/products/'), title: 'Product Details' },
-  { test: (u) => u.startsWith('/services/'), title: 'Book Service' },
+  { test: (u) => u.startsWith('/services/') && u.endsWith('/book'), title: 'Book Service' },
+  { test: (u) => u.startsWith('/services/'), title: 'Service Details' },
   { test: (u) => u.startsWith('/checkout'), title: 'Checkout' },
 ];
 

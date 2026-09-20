@@ -1,0 +1,137 @@
+<div class="sheet-up">
+  @if (error()) {
+    <div class="px-4 py-16">
+      <app-error-state message="Couldn't load this service right now." (retry)="retry()" />
+    </div>
+  } @else if (!service()) {
+    <div class="px-4 py-4">
+      <app-skeleton class="w-full h-64 rounded-2xl mb-4" />
+      <div class="space-y-3">
+        <app-skeleton class="h-3 w-24" />
+        <app-skeleton class="h-8 w-2/3" />
+        <app-skeleton class="h-6 w-32" />
+        <app-skeleton class="h-16 w-full" />
+        <app-skeleton class="h-24 w-full rounded-xl" />
+      </div>
+    </div>
+  } @else {
+    @let s = service()!;
+    <div class="px-4 py-4 pb-28">
+      <div class="card relative mb-5">
+        <app-safe-image [src]="s.image" [alt]="s.name" class="w-full h-64 object-cover" />
+        <div class="absolute inset-0 bg-gradient-to-t from-brand-navy/70 to-transparent"></div>
+        <span class="absolute top-3 left-3 badge bg-brand-teal text-white flex items-center gap-1.5">
+          <app-service-category-icon [category]="s.category" class="w-3 h-3" />
+          {{ s.category }}
+        </span>
+        <span class="absolute top-3 right-3 badge bg-white/90 text-brand-navy flex items-center gap-1">
+          <svg lucideClock class="w-3 h-3"></svg> ~{{ s.duration_hours | number: '1.1-1' }}h
+        </span>
+      </div>
+
+      <div appReveal [revealDelay]="80">
+        <p class="eyebrow text-brand-teal mb-2">{{ durationLabel(s.duration_hours) }}</p>
+        <h1 class="font-display text-2xl font-extrabold tracking-tight text-brand-ink mb-2">{{ s.name }}</h1>
+
+        <div class="flex items-baseline gap-2 mb-4">
+          <p class="text-2xl font-bold text-brand-navy">{{ s.base_price | homelinkPrice }}</p>
+          <span class="text-sm text-gray-400">starting price</span>
+        </div>
+
+        <p class="text-gray-500 mb-5 leading-relaxed text-sm">
+          {{ s.description || 'Book a verified HomeLink technician for this service.' }}
+        </p>
+
+        <div class="grid grid-cols-3 gap-2.5 mb-6 text-center">
+          <div class="rounded-xl bg-gray-50 border border-gray-100 px-2 py-3">
+            <svg lucideShieldCheck class="w-5 h-5 text-brand-teal mx-auto mb-1.5"></svg>
+            <p class="text-[11px] text-gray-500 leading-tight">Verified Technicians</p>
+          </div>
+          <div class="rounded-xl bg-gray-50 border border-gray-100 px-2 py-3">
+            <svg lucideAward class="w-5 h-5 text-brand-teal mx-auto mb-1.5"></svg>
+            <p class="text-[11px] text-gray-500 leading-tight">Satisfaction Guarantee</p>
+          </div>
+          <div class="rounded-xl bg-gray-50 border border-gray-100 px-2 py-3">
+            <svg lucideTimer class="w-5 h-5 text-brand-teal mx-auto mb-1.5"></svg>
+            <p class="text-[11px] text-gray-500 leading-tight">On-Time Arrival</p>
+          </div>
+        </div>
+      </div>
+
+      <div appReveal class="mb-6">
+        <h2 class="font-display text-lg font-extrabold tracking-tight text-brand-ink mb-3">How It Works</h2>
+        <div class="card divide-y divide-gray-100">
+          @for (step of steps; track step.title; let i = $index) {
+            <div class="flex gap-3 p-4">
+              <span class="w-6 h-6 rounded-full bg-brand-navy text-white text-xs font-bold flex items-center justify-center shrink-0">
+                {{ i + 1 }}
+              </span>
+              <div class="min-w-0">
+                <p class="text-sm font-semibold text-brand-ink mb-0.5">{{ step.title }}</p>
+                <p class="text-xs text-gray-500 leading-relaxed">{{ step.body }}</p>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div appReveal class="mb-6">
+        <h2 class="font-display text-lg font-extrabold tracking-tight text-brand-ink mb-3">At a Glance</h2>
+        <dl class="card p-4 space-y-3 text-sm">
+          <div class="flex justify-between gap-4 border-b border-gray-100 pb-2">
+            <dt class="text-gray-400">Category</dt>
+            <dd class="font-medium text-brand-ink text-right">{{ s.category }}</dd>
+          </div>
+          <div class="flex justify-between gap-4 border-b border-gray-100 pb-2">
+            <dt class="text-gray-400">Typical duration</dt>
+            <dd class="font-medium text-brand-ink text-right">~{{ s.duration_hours | number: '1.1-1' }} hours</dd>
+          </div>
+          <div class="flex justify-between gap-4">
+            <dt class="text-gray-400">Starting price</dt>
+            <dd class="font-medium text-brand-ink text-right">{{ s.base_price | homelinkPrice }}</dd>
+          </div>
+        </dl>
+        <p class="text-[11px] text-gray-400 mt-2 leading-relaxed">
+          Final pricing is confirmed on the booking screen, where any discounts you qualify for are applied.
+        </p>
+      </div>
+
+      <a routerLink="/products" class="tap block text-center text-sm text-brand-teal mb-2">
+        Need parts or fixtures for this job? Browse products →
+      </a>
+
+      @if (related().length > 0) {
+        <div class="mt-6">
+          <h2 class="font-display text-xl font-extrabold tracking-tight text-brand-ink mb-4">More {{ s.category }} Services</h2>
+          <div class="grid grid-cols-2 gap-3">
+            @for (rs of related(); track rs.id; let i = $index) {
+              <div appReveal [revealDelay]="i * 60" class="h-full">
+                <app-service-card [service]="rs" />
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- Outside .sheet-up on purpose: a transformed ancestor would re-anchor this
+     fixed bar to the bottom of the page content instead of the viewport, so it
+     runs its own matching rise (see .sheet-up-bar in styles.css). -->
+@if (service(); as s) {
+  <div class="app-bottom-bar sheet-up-bar fixed bottom-0 inset-x-0 z-30 bg-white border-t border-gray-100 elevation-3 pb-safe">
+    <div class="flex items-center gap-3 px-4 py-3">
+      <div class="min-w-0 shrink-0">
+        <p class="text-[11px] text-gray-400 leading-none mb-1">Starting at</p>
+        <p class="text-base font-bold text-brand-navy leading-none">{{ s.base_price | homelinkPrice }}</p>
+      </div>
+      <a
+        [routerLink]="['/services', s.slug, 'book']"
+        class="tap btn-primary flex items-center justify-center gap-1.5 flex-1 py-3 text-sm"
+      >
+        <svg lucideCalendarCheck class="w-4 h-4"></svg> Book Service
+      </a>
+    </div>
+  </div>
+}
