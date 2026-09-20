@@ -29,7 +29,8 @@
         </span>
       </div>
 
-      <div appReveal [revealDelay]="80">
+      <!-- No appReveal above the fold -- see the note in product-detail.html. -->
+      <div>
         <p class="eyebrow text-brand-teal mb-2">{{ durationLabel(s.duration_hours) }}</p>
         <h1 class="font-display text-2xl font-extrabold tracking-tight text-brand-ink mb-2">{{ s.name }}</h1>
 

@@ -17,7 +17,11 @@
   } @else {
     @let p = product()!;
     <div class="px-4 py-4 pb-28">
-      <div appReveal class="card relative mb-5">
+      <!-- No appReveal above the fold: .sheet-up already carries this content
+           up from the bottom edge, and a reveal here would sit out the whole
+           rise (it starts a viewport below, so nothing intersects) and only
+           fade in once the page had already landed. -->
+      <div class="card relative mb-5">
         <app-safe-image [src]="p.image" [alt]="p.name" class="w-full h-72 object-cover" />
         @if (p.featured) {
           <span class="absolute top-3 left-3 badge bg-brand-orange text-white flex items-center gap-1">
@@ -31,7 +35,7 @@
         }
       </div>
 
-      <div appReveal [revealDelay]="80">
+      <div>
         <p class="eyebrow text-brand-teal mb-2">{{ p.category_name }}</p>
         <h1 class="font-display text-2xl font-extrabold tracking-tight text-brand-ink mb-2">{{ p.name }}</h1>
 

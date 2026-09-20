@@ -168,12 +168,16 @@
   }
 
   /* Drill-down transition for detail screens (product detail, service
-     detail): the page rises from below the fold as it fades in, so opening a
-     card reads as a sheet being pulled up rather than an instant page swap.
-     The travel is viewport-relative rather than 100% of the element, because
-     the element is the whole scrolling page -- translating it by its own
-     (arbitrarily tall) height would start it kilometers down and shoot past
-     the viewport in one frame.
+     detail): the whole page starts a full viewport below the fold and is
+     carried up into place, so opening a card reads as a sheet being pushed
+     up from the bottom edge of the screen rather than an instant page swap.
+     No fade -- the page arrives as a solid surface, which is what sells the
+     travel; fading it in just makes it look like it materialised in place.
+
+     The travel is viewport-relative, not 100% of the element: the element is
+     the whole scrolling page, so its own height is arbitrary (often several
+     screens) and would start the page kilometers down, then shoot it past
+     the viewport in a single frame.
 
      `backwards` (not the `both` used above) is deliberate: the fill has to
      stop applying the moment the animation ends, leaving a real
@@ -182,16 +186,17 @@
      `position: fixed` descendants -- the same trap documented on .reveal-in
      above, which strands confirm dialogs inside the page box. */
   .sheet-up {
-    animation: sheetUp 0.42s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+    animation: sheetUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) backwards;
   }
 
   /* A detail page's own fixed action bar has to stay *outside* .sheet-up for
      exactly that reason (a transformed ancestor would re-anchor it to the
      bottom of the content instead of the viewport), so it rises on its own.
-     100% here is the bar's own height -- it slides up off its bottom edge --
-     and the delay lands it just after the page it belongs to. */
+     It is pinned to the viewport rather than carried by the page, so it
+     travels only its own height (100% here) off the bottom edge, timed to
+     land on the same frame as the page it belongs to. */
   .sheet-up-bar {
-    animation: sheetUpBar 0.34s cubic-bezier(0.16, 1, 0.3, 1) 0.1s backwards;
+    animation: sheetUpBar 0.3s cubic-bezier(0.16, 1, 0.3, 1) 0.15s backwards;
   }
 
   .toast-in {
@@ -370,8 +375,8 @@
 }
 
 @keyframes sheetUp {
-  from { opacity: 0; transform: translateY(22vh); }
-  to { opacity: 1; transform: translateY(0); }
+  from { transform: translateY(100vh); }
+  to { transform: translateY(0); }
 }
 
 @keyframes sheetUpBar {
