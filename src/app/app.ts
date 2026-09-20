@@ -15,8 +15,13 @@ import { SideMenu } from './shared/side-menu/side-menu';
 import { SplashScreen } from './shared/splash-screen/splash-screen';
 import { ToastViewport } from './shared/toast-viewport/toast-viewport';
 
-/** Floor for how long the branded splash stays up, so a warm start still reads as a launch. */
-const SPLASH_MIN_MS = 1700;
+/**
+ * Floor for how long the branded splash stays up, so a warm start still reads
+ * as a launch. Sized to the splash's own build sequence (house drawn, wrench
+ * set, trades arrived, type wiped in — see splash-screen.css), which finishes
+ * at ~1.95s; cutting away before that would show a half-built house.
+ */
+const SPLASH_MIN_MS = 2200;
 /** Matches the .splash transition in splash-screen.css. */
 const SPLASH_FADE_MS = 450;
 
