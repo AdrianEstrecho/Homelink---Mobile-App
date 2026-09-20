@@ -21,6 +21,13 @@ import { APP_FEATURES, APP_TECH } from '../about.data';
 import { RevealDirective } from '../../../shared/reveal.directive';
 import { ToastService } from '../../../core/toast.service';
 
+function webPlatform(): string {
+  const installed =
+    (typeof matchMedia === 'function' && matchMedia('(display-mode: standalone)').matches) ||
+    (navigator as Navigator & { standalone?: boolean }).standalone === true;
+  return installed ? 'Home Screen' : 'Web';
+}
+
 /**
  * The app's own "about" card: what it does, what it runs on, and which build
  * the user is looking at — the details support asks for first when something
@@ -58,8 +65,13 @@ export class AboutApp {
   protected readonly supportEmail = SUPPORT_EMAIL;
   protected readonly supportPhone = SUPPORT_PHONE;
 
-  /** "Android" inside the Capacitor shell, "Web" when the same build is served in a browser. */
-  protected readonly platform = Capacitor.isNativePlatform() ? 'Android' : 'Web';
+  /**
+   * "Android" inside the Capacitor shell; otherwise this is the same build
+   * served over the web, either installed to a home screen (iOS reports that
+   * through `navigator.standalone`, everyone else through the display-mode
+   * media query) or running in a browser tab.
+   */
+  protected readonly platform = Capacitor.isNativePlatform() ? 'Android' : webPlatform();
 
   async copyBuildInfo(): Promise<void> {
     const text = `HomeLink ${this.platform} · v${this.version} (build ${this.build})`;
