@@ -177,6 +177,9 @@
   .slide-in-left {
     animation: slideInLeft 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
+  .slide-in-right {
+    animation: slideInRight 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
 
   .route-fade {
     animation: routeFadeIn 0.4s ease-out both;
@@ -266,6 +269,7 @@
     .float-blob-delayed,
     .fade-up,
     .slide-in-left,
+    .slide-in-right,
     .toast-in,
     .route-fade,
     .sheet-up,
@@ -391,6 +395,10 @@
 
 @keyframes slideInLeft {
   from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
   to { transform: translateX(0); }
 }
 

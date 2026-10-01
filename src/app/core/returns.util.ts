@@ -51,7 +51,7 @@ export interface ReturnableLine {
 /** GET /returns/eligibility/:orderId */
 export interface ReturnEligibility {
   eligible: boolean;
-  reason?: 'not_delivered' | 'window_closed' | 'fully_returned' | null;
+  reason?: 'not_delivered' | 'completed' | 'window_closed' | 'fully_returned' | null;
   windowClosesAt?: string | null;
   refundable?: boolean;
   lines: ReturnableLine[];
@@ -140,6 +140,7 @@ export const refundStatusLabel = (kind: ReturnKind, refundStatus: RefundStatus) 
 /** Reason codes from GET /returns/eligibility/:orderId. */
 export const INELIGIBLE_MESSAGE: Record<string, string> = {
   not_delivered: 'This order can be returned once it has been delivered.',
+  completed: 'You marked this order as completed, so it can no longer be returned or refunded.',
   window_closed: `The ${RETURN_WINDOW_DAYS}-day return window for this order has closed.`,
   fully_returned: 'Every item on this order has already been requested for return.',
 };

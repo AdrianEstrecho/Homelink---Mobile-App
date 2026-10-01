@@ -5,6 +5,9 @@ export interface OrderItem {
   image: string;
   slug: string;
   brand?: string | null;
+  /** The product's top-level catalog category (name and slug), for the My Orders filter. */
+  category?: string | null;
+  category_slug?: string | null;
   price: number;
   quantity: number;
 }
@@ -27,6 +30,8 @@ export interface Order {
   canReturn?: boolean;
   /** Server-computed: a live return or a full refund — files the order under Returns. */
   returned?: boolean;
+  /** Set when the customer marks a delivered order completed; it can't be returned after that. */
+  completed_at?: string | null;
 }
 
 /** A not-yet-placed order preview, built client-side for the review step. */

@@ -2,17 +2,39 @@ import { DatePipe } from '@angular/common';
 import { Component, computed, inject, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
-import { LucideChevronRight, LucideShoppingBag, LucideStar } from '@lucide/angular';
+import {
+  LucideBadgeCheck,
+  LucideBanknote,
+  LucideChevronRight,
+  LucideCircleCheckBig,
+  LucideCircleX,
+  LucideClock,
+  LucideCreditCard,
+  LucideLandmark,
+  LucidePackage,
+  LucidePackageCheck,
+  LucideQrCode,
+  LucideRotateCcw,
+  LucideSearch,
+  LucideShoppingBag,
+  LucideSlidersHorizontal,
+  LucideSmartphone,
+  LucideStar,
+  LucideTruck,
+  LucideX,
+} from '@lucide/angular';
 
 import { ApiService } from '../../core/api.service';
 import { AuthService } from '../../core/auth.service';
 import { Review, ReviewableProduct } from '../../core/account.model';
-import { formatPrice, statusColor } from '../../core/format.util';
+import { formatPrice } from '../../core/format.util';
 import { Order } from '../../core/order.model';
 import { paymentMethodLabel } from '../../core/payment-methods';
 import { PricePipe } from '../../core/price.pipe';
 import { ToastService } from '../../core/toast.service';
 import { CancelReasonModal } from '../../shared/cancel-reason-modal/cancel-reason-modal';
+import { ConfirmDialog } from '../../shared/confirm-dialog/confirm-dialog';
+import { FilterDrawer, FilterOption } from '../../shared/filter-drawer/filter-drawer';
 import { OrderDetailsModal } from '../../shared/order-details-modal/order-details-modal';
 import { OrderReviewModal } from '../../shared/order-review-modal/order-review-modal';
 import { CreatedReturn, ReturnRequestModal } from '../../shared/return-request-modal/return-request-modal';
@@ -20,40 +42,53 @@ import { SafeImage } from '../../shared/safe-image/safe-image';
 import { StarRating } from '../../shared/star-rating/star-rating';
 import { TrackingModal } from '../../shared/tracking-modal/tracking-modal';
 
-/** A card lists its first few products in full and folds the rest into "+N more", so a
+/** A card lists its first couple of products in full and folds the rest into "+N more", so a
  *  ten-item order can't push the total off the screen. */
-const ITEMS_SHOWN = 3;
+const ITEMS_SHOWN = 2;
 
-// A hairline of status colour along the top edge, so a column of cards reads by colour first.
-// Whole class strings, because Tailwind only sees class names written out in source.
-const STATUS_ACCENTS: Record<string, string> = {
-  pending: 'from-yellow-400 to-yellow-400/20',
-  processing: 'from-blue-500 to-blue-500/20',
-  shipped: 'from-purple-500 to-purple-500/20',
-  delivered: 'from-green-500 to-green-500/20',
-  cancelled: 'from-red-400 to-red-400/20',
-  returned: 'from-orange-400 to-orange-400/20',
+type DisplayStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'completed' | 'returned' | 'cancelled';
+
+/** Badge, icon tile and wording per status. Whole class strings, because Tailwind only sees class
+ *  names written out in source. */
+const STATUS_META: Record<DisplayStatus, { label: string; pill: string; tile: string }> = {
+  pending: { label: 'Pending', pill: 'bg-amber-100 text-amber-800', tile: 'bg-amber-100 text-amber-700' },
+  processing: { label: 'Processing', pill: 'bg-blue-100 text-blue-800', tile: 'bg-blue-100 text-blue-700' },
+  shipped: { label: 'On the way', pill: 'bg-purple-100 text-purple-800', tile: 'bg-purple-100 text-purple-700' },
+  delivered: { label: 'Delivered', pill: 'bg-green-100 text-green-800', tile: 'bg-green-100 text-green-700' },
+  completed: { label: 'Completed', pill: 'bg-emerald-600 text-white', tile: 'bg-emerald-600 text-white' },
+  returned: { label: 'Returned', pill: 'bg-orange-100 text-orange-800', tile: 'bg-orange-100 text-orange-700' },
+  cancelled: { label: 'Cancelled', pill: 'bg-red-100 text-red-700', tile: 'bg-red-100 text-red-600' },
 };
-const DEFAULT_ACCENT = 'from-gray-300 to-gray-300/20';
+
+/** The journey a card's progress strip draws: the four ORDER_STEPS the backend tracks, then the
+ *  customer's own sign-off as the last step. */
+const PROGRESS_STEPS = ['Placed', 'Processing', 'Shipped', 'Delivered', 'Completed'];
+const PROGRESS_INDEX: Partial<Record<DisplayStatus, number>> = { pending: 0, processing: 1, shipped: 2, delivered: 3, completed: 4 };
 
 interface OrderTab {
   key: string;
   label: string;
+  dot: string;
   match: (o: Order) => boolean;
   empty: string;
 }
 
-// Every tab but All is exclusive: a returned order is filed under Returns only and does not also
-// sit in To Review waiting to be rated. Mirrors frontend/src/pages/Orders.jsx.
+// Every tab but All is exclusive: a returned order is filed under Returns only, and a completed
+// one under Completed only rather than also sitting in To Review. Cancelled wins over returned:
+// the backend also flags a cancelled order `returned` once its refund has been paid out.
 const TABS: OrderTab[] = [
-  { key: 'all', label: 'All', match: () => true, empty: 'No orders yet.' },
-  { key: 'to-ship', label: 'To Ship', match: (o) => o.status === 'pending' || o.status === 'processing', empty: 'Nothing waiting to be shipped.' },
-  { key: 'to-receive', label: 'To Receive', match: (o) => o.status === 'shipped', empty: 'Nothing on its way right now.' },
-  { key: 'to-review', label: 'To Review', match: (o) => o.status === 'delivered' && !o.returned, empty: 'No delivered orders to review yet.' },
-  { key: 'returns', label: 'Returns', match: (o) => !!o.returned, empty: 'No returns yet. Cancellation refunds are tracked under Returns & Cancellations in your account.' },
-  { key: 'cancelled', label: 'Cancelled', match: (o) => o.status === 'cancelled', empty: 'No cancelled orders.' },
+  { key: 'all', label: 'All orders', dot: 'bg-brand-navy', match: () => true, empty: 'No orders yet.' },
+  { key: 'to-ship', label: 'To Ship', dot: 'bg-amber-400', match: (o) => o.status === 'pending' || o.status === 'processing', empty: 'Nothing waiting to be shipped.' },
+  { key: 'to-receive', label: 'To Receive', dot: 'bg-purple-500', match: (o) => o.status === 'shipped', empty: 'Nothing on its way right now.' },
+  { key: 'to-review', label: 'To Review', dot: 'bg-green-500', match: (o) => o.status === 'delivered' && !o.returned && !o.completed_at, empty: 'No delivered orders waiting on you.' },
+  { key: 'returns', label: 'Returns', dot: 'bg-orange-400', match: (o) => !!o.returned && o.status !== 'cancelled', empty: 'No returns yet. Cancellation refunds are tracked under Returns & Cancellations in your account.' },
+  { key: 'completed', label: 'Completed', dot: 'bg-emerald-600', match: (o) => o.status === 'delivered' && !!o.completed_at && !o.returned, empty: 'No completed orders yet. Mark a delivered order as completed once you’re happy with it.' },
+  { key: 'cancelled', label: 'Cancelled', dot: 'bg-red-500', match: (o) => o.status === 'cancelled', empty: 'No cancelled orders.' },
 ];
 const DEFAULT_TAB = TABS[0].key;
+
+/** An item with no category files under this key, so it can still be filtered to. */
+const NO_CATEGORY = 'other';
 
 @Component({
   selector: 'app-orders',
@@ -64,12 +99,30 @@ const DEFAULT_TAB = TABS[0].key;
     OrderReviewModal,
     ReturnRequestModal,
     CancelReasonModal,
+    ConfirmDialog,
+    FilterDrawer,
     TrackingModal,
     SafeImage,
     StarRating,
+    LucideBadgeCheck,
+    LucideBanknote,
     LucideChevronRight,
+    LucideCircleCheckBig,
+    LucideCircleX,
+    LucideClock,
+    LucideCreditCard,
+    LucideLandmark,
+    LucidePackage,
+    LucidePackageCheck,
+    LucideQrCode,
+    LucideRotateCcw,
+    LucideSearch,
     LucideShoppingBag,
+    LucideSlidersHorizontal,
+    LucideSmartphone,
     LucideStar,
+    LucideTruck,
+    LucideX,
   ],
   templateUrl: './orders.html',
   styleUrl: './orders.css',
@@ -81,10 +134,9 @@ export class Orders {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
-  protected readonly statusColor = statusColor;
   protected readonly paymentMethodLabel = paymentMethodLabel;
-  protected readonly tabs = TABS;
   protected readonly itemsShown = ITEMS_SHOWN;
+  protected readonly progressSteps = PROGRESS_STEPS;
 
   protected readonly orders = signal<Order[]>([]);
   protected readonly loaded = signal(false);
@@ -93,6 +145,11 @@ export class Orders {
   protected readonly cancelTarget = signal<Order | null>(null);
   protected readonly returnTarget = signal<Order | null>(null);
   protected readonly reviewTarget = signal<Order | null>(null);
+  protected readonly completeTarget = signal<Order | null>(null);
+  protected readonly completing = signal(false);
+
+  protected readonly search = signal('');
+  protected readonly filtersOpen = signal(false);
 
   /** Product IDs the signed-in user has purchased but not yet reviewed — lets
    *  the order details modal offer a "Write a Review" per item, without a
@@ -105,18 +162,54 @@ export class Orders {
 
   protected readonly cancelModal = viewChild(CancelReasonModal);
 
-  // The tab lives in the URL so a filtered view survives back navigation; anything unrecognised
-  // falls back to All.
+  // Status and category live in the URL so a filtered view survives back navigation; anything
+  // unrecognised falls back to everything.
   private queryParamMap = toSignal(this.route.queryParamMap, { requireSync: true });
   protected readonly activeTab = computed(() => {
     const requested = this.queryParamMap().get('tab');
     return TABS.find((t) => t.key === requested) ?? TABS[0];
   });
-  protected readonly counts = computed(() => {
-    const list = this.orders();
-    return Object.fromEntries(TABS.map((t) => [t.key, list.filter(t.match).length])) as Record<string, number>;
+  protected readonly activeCategory = computed(() => this.queryParamMap().get('category') ?? '');
+
+  /** Every product category across the customer's orders, counted by orders that carry it. */
+  protected readonly categoryOptions = computed<FilterOption[]>(() => {
+    const byKey = new Map<string, FilterOption>();
+    for (const o of this.orders()) {
+      const seen = new Set<string>();
+      for (const i of o.items || []) {
+        const key = i.category_slug || NO_CATEGORY;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        const entry = byKey.get(key) ?? { key, label: i.category || 'Other', count: 0 };
+        entry.count += 1;
+        byKey.set(key, entry);
+      }
+    }
+    return [...byKey.values()].sort((a, b) => a.label.localeCompare(b.label));
   });
-  protected readonly visible = computed(() => this.orders().filter(this.activeTab().match));
+  protected readonly activeCategoryLabel = computed(
+    () => this.categoryOptions().find((c) => c.key === this.activeCategory())?.label ?? '',
+  );
+
+  /** Search and category narrow the list first; the status counts are taken over what's left, so
+   *  the side panel always says how many of each the current search would show. */
+  private readonly searched = computed(() => {
+    const terms = this.search().trim().toLowerCase().split(/\s+/).filter(Boolean);
+    const category = this.activeCategory();
+    return this.orders().filter((o) => {
+      if (category && !(o.items || []).some((i) => (i.category_slug || NO_CATEGORY) === category)) return false;
+      if (!terms.length) return true;
+      const haystack = this.searchText(o);
+      return terms.every((t) => haystack.includes(t));
+    });
+  });
+  protected readonly statusOptions = computed<FilterOption[]>(() => {
+    const list = this.searched();
+    return TABS.map((t) => ({ key: t.key, label: t.label, dot: t.dot, count: list.filter(t.match).length }));
+  });
+  protected readonly visible = computed(() => this.searched().filter(this.activeTab().match));
+  protected readonly activeFilterCount = computed(() => (this.activeTab().key !== DEFAULT_TAB ? 1 : 0) + (this.activeCategory() ? 1 : 0));
+  protected readonly isFiltering = computed(() => this.activeFilterCount() > 0 || !!this.search().trim());
 
   /** What the cancel dialog says depends on whether money has to travel back — payment_status,
    *  not payment_method: an unverified bank transfer has taken nothing and cancels like COD. */
@@ -153,22 +246,61 @@ export class Orders {
       .finally(() => this.loaded.set(true));
   }
 
+  private searchText(o: Order): string {
+    const ref = o.id.slice(0, 8);
+    return [
+      ref,
+      `#${ref}`,
+      paymentMethodLabel(o.payment_method),
+      this.meta(o).label,
+      ...(o.items || []).flatMap((i) => [i.name, i.brand ?? '', i.category ?? '']),
+    ]
+      .join(' ')
+      .toLowerCase();
+  }
+
+  private setQuery(params: Record<string, string | null>): void {
+    this.router.navigate([], { relativeTo: this.route, queryParams: params, queryParamsHandling: 'merge', replaceUrl: true });
+  }
+
   selectTab(key: string): void {
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: { tab: key === DEFAULT_TAB ? null : key },
-      queryParamsHandling: 'merge',
-      replaceUrl: true,
-    });
+    this.setQuery({ tab: key === DEFAULT_TAB ? null : key });
   }
 
-  /** A live return outranks the order's own status everywhere the customer sees it. */
-  displayStatus(o: Order): string {
-    return o.returned ? 'returned' : o.status;
+  selectCategory(key: string): void {
+    this.setQuery({ category: key || null });
   }
 
-  accentFor(o: Order): string {
-    return STATUS_ACCENTS[this.displayStatus(o)] ?? DEFAULT_ACCENT;
+  resetFilters(): void {
+    this.setQuery({ tab: null, category: null });
+  }
+
+  clearAll(): void {
+    this.search.set('');
+    this.resetFilters();
+  }
+
+  emptyMessage(): string {
+    if (this.search().trim() || this.activeCategory()) return 'No orders match your search and filters.';
+    return this.activeTab().empty;
+  }
+
+  /** Cancelled first (a paid-out cancellation refund also sets `returned`); then a live return;
+   *  then the customer's own sign-off; then the order row. Same rules as the web Orders page. */
+  displayStatus(o: Order): DisplayStatus {
+    if (o.status === 'cancelled') return 'cancelled';
+    if (o.returned) return 'returned';
+    if (o.status === 'delivered' && o.completed_at) return 'completed';
+    return (o.status as DisplayStatus) in STATUS_META ? (o.status as DisplayStatus) : 'pending';
+  }
+
+  meta(o: Order) {
+    return STATUS_META[this.displayStatus(o)];
+  }
+
+  /** -1 for orders that left the normal journey (cancelled, returned): they get a notice instead. */
+  progressIndex(o: Order): number {
+    return PROGRESS_INDEX[this.displayStatus(o)] ?? -1;
   }
 
   /** Units, not line count — "3 items" should mean three things in the box. */
@@ -182,6 +314,11 @@ export class Orders {
     return (o.items || []).some((i) => !reviewed.has(i.product_id));
   }
 
+  /** Delivered, not sent back, and not signed off yet. */
+  canComplete(o: Order): boolean {
+    return o.status === 'delivered' && !o.returned && !o.completed_at;
+  }
+
   /** A review belongs to the product, not to one order of it, so it shows on any delivered
    *  order carrying that product. */
   ratingFor(o: Order, productId: string): Review | undefined {
@@ -192,6 +329,40 @@ export class Orders {
     // The card underneath opens the order details; rating is its own errand.
     event.stopPropagation();
     this.reviewTarget.set(o);
+  }
+
+  openComplete(event: Event, o: Order): void {
+    event.stopPropagation();
+    this.completeTarget.set(o);
+  }
+
+  async confirmComplete(): Promise<void> {
+    const order = this.completeTarget();
+    if (!order || this.completing()) return;
+    this.completing.set(true);
+    try {
+      const res = await this.api.put<{ completed_at?: string; order?: { completed_at?: string } }>(`/orders/${order.id}/complete`, {});
+      const completedAt = res?.completed_at ?? res?.order?.completed_at ?? new Date().toISOString();
+      const patch = (o: Order): Order => (o.id === order.id ? { ...o, completed_at: completedAt, canReturn: false } : o);
+      this.orders.update((prev) => prev.map(patch));
+      this.selectedOrder.update((prev) => (prev ? patch(prev) : prev));
+      this.toast.showToast({
+        icon: 'check',
+        iconClass: 'bg-emerald-100 text-emerald-700',
+        title: 'Order completed',
+        description: `Order #${order.id.slice(0, 8).toUpperCase()} · thanks for confirming`,
+      });
+    } catch (err) {
+      this.toast.showToast({
+        icon: 'x-circle',
+        iconClass: 'bg-red-100 text-red-600',
+        title: 'Couldn’t complete the order',
+        description: (err as Error).message,
+      });
+    } finally {
+      this.completing.set(false);
+      this.completeTarget.set(null);
+    }
   }
 
   private recordReviews(reviews: Review[]): void {

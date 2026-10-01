@@ -1,97 +1,201 @@
 <div class="px-4 py-4">
-  <!-- Same underline tabs and count badges as My Orders, so the two read as one pair. Shown from
-       the first booking on: with one category it reads as a count rather than a choice. -->
   @if (bookings().length > 0) {
-    <div class="relative -mx-4 mb-4">
-      <div class="flex gap-5 border-b border-gray-200 overflow-x-auto no-scrollbar px-4">
-        <button
-          type="button"
-          (click)="selectCategory(all)"
-          [attr.aria-pressed]="activeCategory() === all"
-          class="tap flex items-center gap-1.5 pb-3 text-sm font-semibold transition border-b-2 -mb-px whitespace-nowrap"
-          [class]="activeCategory() === all ? 'border-brand-orange text-brand-navy' : 'border-transparent text-gray-400'"
-        >
-          <svg lucideLayoutGrid class="w-4 h-4"></svg>
-          All
-          <span class="rounded-full px-1.5 py-0.5 text-[11px] font-bold leading-none" [class]="activeCategory() === all ? 'bg-brand-orange/10 text-brand-orange' : 'bg-gray-100 text-gray-500'">
-            {{ bookings().length }}
-          </span>
-        </button>
-        @for (c of categories(); track c.category) {
-          @let active = c.category === activeCategory();
-          <button
-            type="button"
-            (click)="selectCategory(c.category)"
-            [attr.aria-pressed]="active"
-            class="tap flex items-center gap-1.5 pb-3 text-sm font-semibold transition border-b-2 -mb-px whitespace-nowrap"
-            [class]="active ? 'border-brand-orange text-brand-navy' : 'border-transparent text-gray-400'"
-          >
-            <app-service-category-icon [category]="c.category" class="w-4 h-4" />
-            {{ c.category }}
-            <span class="rounded-full px-1.5 py-0.5 text-[11px] font-bold leading-none" [class]="active ? 'bg-brand-orange/10 text-brand-orange' : 'bg-gray-100 text-gray-500'">
-              {{ c.count }}
-            </span>
+    <div class="flex items-center gap-2 mb-3">
+      <div class="relative flex-1 min-w-0">
+        <svg lucideSearch class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></svg>
+        <input
+          type="text"
+          inputmode="search"
+          enterkeyhint="search"
+          autocomplete="off"
+          [value]="search()"
+          (input)="onSearch($any($event.target).value)"
+          placeholder="Search services, addresses…"
+          aria-label="Search bookings"
+          class="w-full bg-white border border-gray-200 rounded-2xl pl-10 pr-9 py-2.5 text-sm text-brand-ink placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-brand-orange/40 focus:border-brand-orange/40"
+        />
+        @if (search()) {
+          <button type="button" (click)="onSearch('')" aria-label="Clear search" class="tap absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+            <svg lucideX class="w-4 h-4"></svg>
           </button>
         }
       </div>
-      <div class="pointer-events-none absolute right-0 top-0 bottom-px w-8 bg-gradient-to-l from-white to-transparent"></div>
+      <button
+        type="button"
+        (click)="filtersOpen.set(true)"
+        aria-label="Filter bookings"
+        class="tap relative shrink-0 w-11 h-11 rounded-2xl flex items-center justify-center"
+        [class]="activeFilterCount() > 0 ? 'bg-brand-navy text-white' : 'bg-white border border-gray-200 text-brand-navy'"
+      >
+        <svg lucideSlidersHorizontal class="w-4 h-4"></svg>
+        @if (activeFilterCount() > 0) {
+          <span class="absolute -top-1 -right-1 min-w-[1.1rem] h-[1.1rem] px-1 rounded-full bg-brand-orange text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white">
+            {{ activeFilterCount() }}
+          </span>
+        }
+      </button>
+    </div>
+
+    <div class="flex items-center gap-2 flex-wrap mb-4 min-h-[1.5rem]">
+      <span class="text-xs font-medium text-gray-500">{{ visible().length }} booking{{ visible().length === 1 ? '' : 's' }}</span>
+      @if (activeStatus() !== 'all') {
+        <button type="button" (click)="selectStatus('all')" class="tap inline-flex items-center gap-1 rounded-full bg-brand-navy/10 text-brand-navy pl-2.5 pr-1.5 py-1 text-xs font-semibold">
+          {{ activeStatusLabel() }} <svg lucideX class="w-3 h-3"></svg>
+        </button>
+      }
+      @if (activeCategory()) {
+        <button type="button" (click)="selectCategory('')" class="tap inline-flex items-center gap-1 rounded-full bg-brand-teal/10 text-brand-teal pl-2.5 pr-1.5 py-1 text-xs font-semibold">
+          {{ activeCategory() }} <svg lucideX class="w-3 h-3"></svg>
+        </button>
+      }
+      @if (isFiltering()) {
+        <button type="button" (click)="clearAll()" class="tap ml-auto text-xs font-semibold text-brand-orange">Clear all</button>
+      }
     </div>
   }
 
-  <!-- A tab only exists for a category this customer has booked, so an empty list here means
-       they have never booked anything. -->
   @if (loaded() && visible().length === 0) {
-    <p class="text-gray-500 text-center py-12">No bookings yet.</p>
+    <div class="text-center py-16">
+      <div class="w-16 h-16 rounded-2xl bg-brand-light flex items-center justify-center mx-auto mb-4">
+        <svg lucideCalendarDays class="w-8 h-8 text-gray-300"></svg>
+      </div>
+      <p class="text-gray-500 px-6 text-sm">{{ isFiltering() ? 'No bookings match your search and filters.' : 'No bookings yet.' }}</p>
+      @if (isFiltering()) {
+        <button type="button" (click)="clearAll()" class="tap mt-4 text-sm font-semibold text-brand-orange">Clear search and filters</button>
+      }
+    </div>
   } @else {
     <div class="space-y-4">
       @for (b of paginated(); track b.id) {
-        <div
+        @let m = meta(b);
+        @let step = progressIndex(b);
+        @let date = scheduledDate(b);
+        @let tech = technician(b);
+        <article
           (click)="selectedBooking.set(b)"
           role="button"
           tabindex="0"
           (keydown.enter)="selectedBooking.set(b)"
           (keydown.space)="$event.preventDefault(); selectedBooking.set(b)"
-          class="tap card p-4 cursor-pointer"
+          [attr.aria-label]="b.service_name + ', ' + m.label"
+          class="tap bg-white rounded-2xl border border-gray-100 elevation-1 overflow-hidden cursor-pointer"
         >
-          <div class="flex flex-wrap justify-between items-start gap-2 mb-4 pb-4 border-b border-gray-100">
-            <div>
-              <h3 class="font-display font-bold text-brand-ink">{{ b.service_name }}</h3>
-              <p class="text-sm text-gray-500">{{ b.service_category }}</p>
+          <div class="flex gap-3 p-4 pb-3">
+            <!-- Calendar tile: the day of the visit is the first thing a customer looks for. -->
+            <div class="w-14 shrink-0 rounded-xl overflow-hidden border border-gray-100 text-center bg-white self-start">
+              <p class="bg-brand-navy text-white text-[10px] font-bold uppercase tracking-wider py-0.5">{{ date ? (date | date: 'MMM') : '—' }}</p>
+              <p class="font-display text-xl font-extrabold text-brand-ink leading-none pt-1.5">{{ date ? (date | date: 'd') : '?' }}</p>
+              <p class="text-[10px] font-semibold uppercase text-gray-400 pb-1.5 pt-0.5">{{ date ? (date | date: 'EEE') : '' }}</p>
             </div>
-            <span class="badge capitalize" [class]="statusColor(b.status)">{{ statusLabel(b.status) }}</span>
+
+            <div class="min-w-0 flex-1">
+              <div class="flex items-start justify-between gap-2">
+                <h3 class="font-display font-bold text-brand-ink leading-snug line-clamp-2">{{ b.service_name }}</h3>
+                <span class="shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold" [class]="m.pill">{{ m.label }}</span>
+              </div>
+              <p class="inline-flex items-center gap-1 mt-1 text-[11px] font-semibold text-brand-teal">
+                <app-service-category-icon [category]="b.service_category" class="w-3.5 h-3.5" /> {{ b.service_category || 'Other' }}
+              </p>
+              <p class="flex items-center gap-1.5 mt-1 text-xs text-gray-600">
+                <svg lucideClock class="w-3.5 h-3.5 text-gray-400"></svg> {{ formatTimeAmPm(b.scheduled_time) }}
+              </p>
+            </div>
           </div>
-          <div class="text-sm text-gray-600 space-y-1 mb-4">
-            <p>Date: {{ b.scheduled_date }} at {{ formatTimeAmPm(b.scheduled_time) }}</p>
-            <p>Address: {{ b.address }}</p>
-            @if (b.employee_first_name) {
-              <p>Technician: {{ b.employee_first_name }} {{ b.employee_last_name }}</p>
-            }
-          </div>
-          @if (b.status === 'cancelled' && b.cancel_reason) {
-            <div class="bg-red-50 border border-red-100 rounded-lg px-3 py-2.5 mb-4">
-              <p class="text-xs font-semibold text-red-700 uppercase tracking-wide mb-1">Cancellation Reason</p>
-              <p class="text-sm text-red-800">{{ b.cancel_reason }}</p>
+
+          @if (step >= 0) {
+            <div class="px-4 pb-3">
+              <div class="flex items-center">
+                @for (label of progressSteps; track label; let i = $index; let last = $last) {
+                  <span
+                    class="w-2.5 h-2.5 rounded-full shrink-0"
+                    [class]="i < step ? 'bg-brand-teal' : i === step ? (b.status === 'completed' ? 'bg-emerald-600 ring-4 ring-emerald-100' : 'bg-brand-orange ring-4 ring-brand-orange/15') : 'bg-gray-200'"
+                  ></span>
+                  @if (!last) {
+                    <span class="flex-1 h-0.5 mx-1 rounded-full" [class]="i < step ? 'bg-brand-teal' : 'bg-gray-200'"></span>
+                  }
+                }
+              </div>
+              <div class="flex justify-between mt-1.5">
+                @for (label of progressSteps; track label; let i = $index) {
+                  <span class="text-[9.5px] font-semibold uppercase tracking-wide" [class]="i === step ? 'text-brand-ink' : i < step ? 'text-gray-500' : 'text-gray-300'">{{ label }}</span>
+                }
+              </div>
             </div>
           }
-          <div class="flex justify-between items-center">
-            <span class="font-bold text-brand-navy">{{ b.price | homelinkPrice }}</span>
-            <div class="flex items-center gap-4">
-              @if (b.status !== 'cancelled') {
-                <button type="button" (click)="$event.stopPropagation(); trackingBooking.set(b)" class="tap flex items-center gap-1.5 text-sm text-brand-teal font-medium">
-                  <svg lucideTruck class="w-4 h-4"></svg> Track
+
+          <div class="mx-4 rounded-xl bg-gray-50/80 border border-gray-100 divide-y divide-gray-100 text-xs">
+            <p class="flex items-start gap-2 px-3 py-2 text-gray-600">
+              <svg lucideMapPin class="w-3.5 h-3.5 text-gray-400 shrink-0 mt-px"></svg>
+              <span class="line-clamp-2">{{ b.address }}</span>
+            </p>
+            <p class="flex items-center gap-2 px-3 py-2" [class]="tech ? 'text-gray-600' : 'text-gray-400'">
+              <svg lucideHardHat class="w-3.5 h-3.5 shrink-0" [class]="tech ? 'text-brand-orange' : 'text-gray-400'"></svg>
+              @if (tech) {
+                <span><span class="font-semibold text-brand-ink">{{ tech }}</span> · your technician</span>
+              } @else if (b.status === 'cancelled') {
+                <span>No technician — booking cancelled</span>
+              } @else {
+                <span>A technician will be assigned soon</span>
+              }
+            </p>
+          </div>
+
+          @if (b.status === 'cancelled' && b.cancel_reason) {
+            <div class="mx-4 mt-3 rounded-xl bg-red-50 border border-red-100 px-3 py-2 text-xs text-red-700">
+              <span class="font-semibold">Cancelled</span> · {{ b.cancel_reason }}
+            </div>
+          }
+
+          <div class="flex items-center justify-between gap-3 px-4 pt-3 pb-4">
+            <div>
+              <p class="text-[10px] font-semibold uppercase tracking-wide text-gray-400 leading-none">Total</p>
+              <p class="font-display text-lg font-extrabold tracking-tight text-brand-navy leading-tight">{{ b.price | homelinkPrice }}</p>
+            </div>
+            <div class="flex items-center gap-2">
+              @if (b.status === 'pending') {
+                <button
+                  type="button"
+                  (click)="$event.stopPropagation(); cancelTarget.set(b)"
+                  class="tap rounded-xl border border-red-200 px-3 py-2 text-xs font-semibold text-red-600"
+                >
+                  Cancel
                 </button>
               }
-              @if (b.status === 'pending') {
-                <button type="button" (click)="$event.stopPropagation(); cancelTarget.set(b)" class="tap text-sm text-red-600 font-medium">Cancel</button>
+              @if (b.status !== 'cancelled') {
+                <button
+                  type="button"
+                  (click)="$event.stopPropagation(); trackingBooking.set(b)"
+                  class="tap inline-flex items-center gap-1.5 rounded-xl bg-brand-teal/10 px-3 py-2 text-xs font-semibold text-brand-teal"
+                >
+                  <svg lucideTruck class="w-3.5 h-3.5"></svg> Track
+                </button>
+              } @else {
+                <svg lucideChevronRight class="w-4 h-4 text-gray-300"></svg>
               }
             </div>
           </div>
-        </div>
+        </article>
       }
     </div>
     <div class="mt-4">
       <app-pagination [page]="page()" [totalPages]="totalPages()" [total]="visible().length" [pageSize]="pageSize" (pageChange)="handlePageChange($event)" />
     </div>
+  }
+
+  @if (filtersOpen()) {
+    <app-filter-drawer
+      title="Filter bookings"
+      [statuses]="statusOptions()"
+      [activeStatus]="activeStatus()"
+      [categories]="categoryOptions()"
+      [activeCategory]="activeCategory()"
+      categoryKind="service"
+      [resultCount]="visible().length"
+      (statusChange)="selectStatus($event)"
+      (categoryChange)="selectCategory($event)"
+      (reset)="resetFilters()"
+      (closed)="filtersOpen.set(false)"
+    />
   }
 
   @if (selectedBooking(); as booking) {
