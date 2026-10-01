@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { LucideArrowRight, LucideBadgeCheck, LucideQuote } from '@lucide/angular';
 
 import { ApiService } from '../../core/api.service';
+import { AuthService } from '../../core/auth.service';
 import { Product, Service } from '../../core/product.model';
 import { CountUp } from '../../shared/count-up/count-up';
 import { ErrorState } from '../../shared/error-state/error-state';
@@ -75,6 +76,7 @@ const REVIEW_LOOP_COPIES = 3;
 export class Home {
   private api = inject(ApiService);
   private injector = inject(Injector);
+  protected auth = inject(AuthService);
 
   protected readonly stats = STATS;
   protected readonly longReviewChars = LONG_REVIEW_CHARS;
