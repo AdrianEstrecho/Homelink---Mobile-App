@@ -101,11 +101,13 @@
           appReveal
           #reviewTrack
           (scroll)="onReviewScroll($event)"
-          (touchstart)="onReviewInteract()"
-          (pointerdown)="onReviewInteract()"
+          (touchstart)="onReviewTouchStart()"
+          (touchend)="onReviewTouchEnd()"
+          (touchcancel)="onReviewTouchEnd()"
           class="flex items-start gap-3 overflow-x-auto snap-x snap-mandatory no-scrollbar px-[12%] pb-3"
         >
-          @for (r of reviews().data; track r.id) {
+          @for (item of loopReviews(); track item.key) {
+            @let r = item.review;
             @let long = r.comment.length > longReviewChars;
             @let expanded = isExpanded(r.id);
             <!-- min-h matches a card clamped at four lines, so the row reads as even while letting
@@ -148,7 +150,7 @@
               <!-- The dot is tiny; the padded button around it is what the thumb actually hits. -->
               <button
                 type="button"
-                (click)="onReviewInteract(); goToReview(i)"
+                (click)="goToReview(i)"
                 [attr.aria-label]="'Show review ' + (i + 1)"
                 [attr.aria-current]="i === activeReview() ? 'true' : null"
                 class="px-1 py-2.5"
