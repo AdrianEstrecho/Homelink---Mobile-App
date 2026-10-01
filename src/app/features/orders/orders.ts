@@ -336,6 +336,17 @@ export class Orders {
     this.completeTarget.set(o);
   }
 
+  /** canReturn comes from the server (delivered, inside the return window, units left to
+   *  return, no live request), so the card offers exactly what the details modal would. */
+  canRefund(o: Order): boolean {
+    return !!o.canReturn && !o.completed_at;
+  }
+
+  openRefund(event: Event, o: Order): void {
+    event.stopPropagation();
+    this.returnTarget.set(o);
+  }
+
   async confirmComplete(): Promise<void> {
     const order = this.completeTarget();
     if (!order || this.completing()) return;

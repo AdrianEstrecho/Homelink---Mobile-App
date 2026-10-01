@@ -186,22 +186,39 @@
             </div>
           </div>
 
-          @if (canReview(o) || canComplete(o)) {
-            <div class="flex gap-2 px-4 pb-4 -mt-1">
-              @if (canReview(o)) {
+          @let review = canReview(o);
+          @let refund = canRefund(o);
+          @let complete = canComplete(o);
+          @if (review || refund || complete) {
+            <!-- Three buttons don't fit one row on a phone, so Add Review takes the top row and
+                 the keep-or-return decision (Return/Refund beside Mark Completed) sits below it. -->
+            <div class="grid grid-cols-2 gap-2 px-4 pb-4 -mt-1">
+              @if (review) {
                 <button
                   type="button"
                   (click)="openReview($event, o)"
-                  class="tap flex-1 inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-xl border border-brand-orange/30 bg-brand-orange/5 px-2 py-2.5 text-[13px] font-semibold text-brand-orange"
+                  class="tap inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-xl border border-brand-orange/30 bg-brand-orange/5 px-2 py-2.5 text-[13px] font-semibold text-brand-orange"
+                  [class.col-span-2]="(refund && complete) || (!refund && !complete)"
                 >
                   <svg lucideStar class="w-4 h-4"></svg> Add Review
                 </button>
               }
-              @if (canComplete(o)) {
+              @if (refund) {
+                <button
+                  type="button"
+                  (click)="openRefund($event, o)"
+                  class="tap inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-xl border border-gray-200 bg-white px-2 py-2.5 text-[13px] font-semibold text-brand-navy"
+                  [class.col-span-2]="!review && !complete"
+                >
+                  <svg lucideRotateCcw class="w-4 h-4"></svg> Return/Refund
+                </button>
+              }
+              @if (complete) {
                 <button
                   type="button"
                   (click)="openComplete($event, o)"
-                  class="tap flex-1 inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-xl bg-emerald-600 px-2 py-2.5 text-[13px] font-semibold text-white shadow-sm shadow-emerald-600/20"
+                  class="tap inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-xl bg-emerald-600 px-2 py-2.5 text-[13px] font-semibold text-white shadow-sm shadow-emerald-600/20"
+                  [class.col-span-2]="!review && !refund"
                 >
                   <svg lucideCircleCheckBig class="w-4 h-4"></svg> Mark Completed
                 </button>
