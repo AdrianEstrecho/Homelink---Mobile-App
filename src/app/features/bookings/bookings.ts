@@ -25,6 +25,7 @@ import { CancelReasonModal } from '../../shared/cancel-reason-modal/cancel-reaso
 import { FilterDrawer, FilterOption } from '../../shared/filter-drawer/filter-drawer';
 import { Pagination } from '../../shared/pagination/pagination';
 import { ServiceCategoryIcon } from '../../shared/service-category-icon/service-category-icon';
+import { StatusTabs } from '../../shared/status-tabs/status-tabs';
 import { TrackingModal } from '../../shared/tracking-modal/tracking-modal';
 
 /** Booking cards are tall — date, service, schedule, address, technician, price — so five is
@@ -38,12 +39,12 @@ type BookingStatus = 'pending' | 'confirmed' | 'in_progress' | 'completed' | 'ca
 
 /** Badge and wording per status. Whole class strings, because Tailwind only sees class names
  *  written out in source. */
-const STATUS_META: Record<BookingStatus, { label: string; pill: string; dot: string }> = {
-  pending: { label: 'Pending', pill: 'bg-amber-100 text-amber-800', dot: 'bg-amber-400' },
-  confirmed: { label: 'Confirmed', pill: 'bg-blue-100 text-blue-800', dot: 'bg-blue-500' },
-  in_progress: { label: 'In progress', pill: 'bg-indigo-100 text-indigo-800', dot: 'bg-indigo-500' },
-  completed: { label: 'Completed', pill: 'bg-emerald-600 text-white', dot: 'bg-emerald-600' },
-  cancelled: { label: 'Cancelled', pill: 'bg-red-100 text-red-700', dot: 'bg-red-500' },
+const STATUS_META: Record<BookingStatus, { label: string; pill: string; empty: string }> = {
+  pending: { label: 'Pending', pill: 'bg-amber-100 text-amber-800', empty: 'No bookings waiting to be confirmed.' },
+  confirmed: { label: 'Confirmed', pill: 'bg-blue-100 text-blue-800', empty: 'No confirmed visits coming up.' },
+  in_progress: { label: 'In progress', pill: 'bg-indigo-100 text-indigo-800', empty: 'No services in progress right now.' },
+  completed: { label: 'Completed', pill: 'bg-emerald-600 text-white', empty: 'No completed bookings yet.' },
+  cancelled: { label: 'Cancelled', pill: 'bg-red-100 text-red-700', empty: 'No cancelled bookings.' },
 };
 
 /** BOOKING_STEPS in backend/utils/tracking.js, in the customer's words. */
@@ -64,6 +65,7 @@ const STATUS_ORDER: BookingStatus[] = ['pending', 'confirmed', 'in_progress', 'c
     TrackingModal,
     Pagination,
     ServiceCategoryIcon,
+    StatusTabs,
     LucideCalendarDays,
     LucideChevronRight,
     LucideClock,
@@ -130,18 +132,18 @@ export class Bookings {
   protected readonly statusOptions = computed<FilterOption[]>(() => {
     const list = this.searched();
     return [
-      { key: ALL, label: 'All bookings', dot: 'bg-brand-navy', count: list.length },
-      ...STATUS_ORDER.map((s) => ({ key: s, label: STATUS_META[s].label, dot: STATUS_META[s].dot, count: list.filter((b) => b.status === s).length })),
+      { key: ALL, label: 'All', count: list.length },
+      ...STATUS_ORDER.map((s) => ({ key: s, label: STATUS_META[s].label, count: list.filter((b) => b.status === s).length })),
     ];
   });
-  protected readonly activeStatusLabel = computed(() => this.statusOptions().find((s) => s.key === this.activeStatus())?.label ?? '');
   protected readonly visible = computed(() => {
     const status = this.activeStatus();
     return status === ALL ? this.searched() : this.searched().filter((b) => b.status === status);
   });
   protected readonly totalPages = computed(() => Math.max(1, Math.ceil(this.visible().length / PAGE_SIZE)));
   protected readonly paginated = computed(() => this.visible().slice((this.page() - 1) * PAGE_SIZE, this.page() * PAGE_SIZE));
-  protected readonly activeFilterCount = computed(() => (this.activeStatus() !== ALL ? 1 : 0) + (this.activeCategory() ? 1 : 0));
+  // The tabs are how you move around the list, not a filter to clear — only category counts here.
+  protected readonly activeFilterCount = computed(() => (this.activeCategory() ? 1 : 0));
   protected readonly isFiltering = computed(() => this.activeFilterCount() > 0 || !!this.search().trim());
 
   constructor() {
@@ -191,13 +193,17 @@ export class Bookings {
     if (this.queryParamMap().has('page')) this.setQuery({ page: null });
   }
 
-  resetFilters(): void {
-    this.setQuery({ status: null, category: null, page: null });
-  }
-
+  /** Clears the search and category; the status tab stays where the customer put it. */
   clearAll(): void {
     this.onSearch('');
-    this.resetFilters();
+    this.selectCategory('');
+  }
+
+  emptyMessage(): string {
+    if (this.bookings().length === 0) return 'No bookings yet.';
+    if (this.isFiltering()) return 'No bookings match your search and filters.';
+    const status = this.activeStatus();
+    return status === ALL ? 'No bookings yet.' : STATUS_META[status as BookingStatus].empty;
   }
 
   handlePageChange(next: number): void {

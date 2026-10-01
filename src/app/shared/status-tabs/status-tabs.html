@@ -1,0 +1,24 @@
+<div #scroller class="relative flex gap-5 border-b border-gray-200 overflow-x-auto no-scrollbar px-4" role="tablist" [attr.aria-label]="label()">
+  @for (t of options(); track t.key) {
+    @let isActive = t.key === active();
+    <button
+      type="button"
+      role="tab"
+      [attr.data-key]="t.key"
+      [attr.aria-selected]="isActive"
+      (click)="selected.emit(t.key)"
+      class="tap shrink-0 flex items-center gap-1.5 pb-3 pt-1 text-sm font-semibold transition border-b-2 -mb-px whitespace-nowrap"
+      [class]="isActive ? 'border-brand-orange text-brand-navy' : 'border-transparent text-gray-400'"
+    >
+      {{ t.label }}
+      @if (t.count > 0) {
+        <span class="rounded-full px-1.5 py-0.5 text-[11px] font-bold leading-none" [class]="isActive ? 'bg-brand-orange/10 text-brand-orange' : 'bg-gray-100 text-gray-500'">
+          {{ t.count }}
+        </span>
+      }
+    </button>
+  }
+  <!-- Room past the last tab, so the fade below never sits on top of it. -->
+  <span class="shrink-0 w-4" aria-hidden="true"></span>
+</div>
+<div class="pointer-events-none absolute right-0 top-0 bottom-px w-8 bg-gradient-to-l from-white to-transparent"></div>

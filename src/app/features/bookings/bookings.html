@@ -1,5 +1,7 @@
 <div class="px-4 py-4">
   @if (bookings().length > 0) {
+    <app-status-tabs class="mb-4" label="Booking status" [options]="statusOptions()" [active]="activeStatus()" (selected)="selectStatus($event)" />
+
     <div class="flex items-center gap-2 mb-3">
       <div class="relative flex-1 min-w-0">
         <svg lucideSearch class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></svg>
@@ -23,7 +25,7 @@
       <button
         type="button"
         (click)="filtersOpen.set(true)"
-        aria-label="Filter bookings"
+        aria-label="Filter bookings by category"
         class="tap relative shrink-0 w-11 h-11 rounded-2xl flex items-center justify-center"
         [class]="activeFilterCount() > 0 ? 'bg-brand-navy text-white' : 'bg-white border border-gray-200 text-brand-navy'"
       >
@@ -38,11 +40,6 @@
 
     <div class="flex items-center gap-2 flex-wrap mb-4 min-h-[1.5rem]">
       <span class="text-xs font-medium text-gray-500">{{ visible().length }} booking{{ visible().length === 1 ? '' : 's' }}</span>
-      @if (activeStatus() !== 'all') {
-        <button type="button" (click)="selectStatus('all')" class="tap inline-flex items-center gap-1 rounded-full bg-brand-navy/10 text-brand-navy pl-2.5 pr-1.5 py-1 text-xs font-semibold">
-          {{ activeStatusLabel() }} <svg lucideX class="w-3 h-3"></svg>
-        </button>
-      }
       @if (activeCategory()) {
         <button type="button" (click)="selectCategory('')" class="tap inline-flex items-center gap-1 rounded-full bg-brand-teal/10 text-brand-teal pl-2.5 pr-1.5 py-1 text-xs font-semibold">
           {{ activeCategory() }} <svg lucideX class="w-3 h-3"></svg>
@@ -59,7 +56,7 @@
       <div class="w-16 h-16 rounded-2xl bg-brand-light flex items-center justify-center mx-auto mb-4">
         <svg lucideCalendarDays class="w-8 h-8 text-gray-300"></svg>
       </div>
-      <p class="text-gray-500 px-6 text-sm">{{ isFiltering() ? 'No bookings match your search and filters.' : 'No bookings yet.' }}</p>
+      <p class="text-gray-500 px-6 text-sm">{{ emptyMessage() }}</p>
       @if (isFiltering()) {
         <button type="button" (click)="clearAll()" class="tap mt-4 text-sm font-semibold text-brand-orange">Clear search and filters</button>
       }
@@ -184,16 +181,11 @@
 
   @if (filtersOpen()) {
     <app-filter-drawer
-      title="Filter bookings"
-      [statuses]="statusOptions()"
-      [activeStatus]="activeStatus()"
       [categories]="categoryOptions()"
       [activeCategory]="activeCategory()"
       categoryKind="service"
       [resultCount]="visible().length"
-      (statusChange)="selectStatus($event)"
       (categoryChange)="selectCategory($event)"
-      (reset)="resetFilters()"
       (closed)="filtersOpen.set(false)"
     />
   }

@@ -40,6 +40,7 @@ import { OrderReviewModal } from '../../shared/order-review-modal/order-review-m
 import { CreatedReturn, ReturnRequestModal } from '../../shared/return-request-modal/return-request-modal';
 import { SafeImage } from '../../shared/safe-image/safe-image';
 import { StarRating } from '../../shared/star-rating/star-rating';
+import { StatusTabs } from '../../shared/status-tabs/status-tabs';
 import { TrackingModal } from '../../shared/tracking-modal/tracking-modal';
 
 /** A card lists its first couple of products in full and folds the rest into "+N more", so a
@@ -68,7 +69,6 @@ const PROGRESS_INDEX: Partial<Record<DisplayStatus, number>> = { pending: 0, pro
 interface OrderTab {
   key: string;
   label: string;
-  dot: string;
   match: (o: Order) => boolean;
   empty: string;
 }
@@ -77,15 +77,14 @@ interface OrderTab {
 // one under Completed only rather than also sitting in To Review. Cancelled wins over returned:
 // the backend also flags a cancelled order `returned` once its refund has been paid out.
 const TABS: OrderTab[] = [
-  { key: 'all', label: 'All orders', dot: 'bg-brand-navy', match: () => true, empty: 'No orders yet.' },
-  { key: 'to-ship', label: 'To Ship', dot: 'bg-amber-400', match: (o) => o.status === 'pending' || o.status === 'processing', empty: 'Nothing waiting to be shipped.' },
-  { key: 'to-receive', label: 'To Receive', dot: 'bg-purple-500', match: (o) => o.status === 'shipped', empty: 'Nothing on its way right now.' },
-  { key: 'to-review', label: 'To Review', dot: 'bg-green-500', match: (o) => o.status === 'delivered' && !o.returned && !o.completed_at, empty: 'No delivered orders waiting on you.' },
-  { key: 'returns', label: 'Returns', dot: 'bg-orange-400', match: (o) => !!o.returned && o.status !== 'cancelled', empty: 'No returns yet. Cancellation refunds are tracked under Returns & Cancellations in your account.' },
-  { key: 'completed', label: 'Completed', dot: 'bg-emerald-600', match: (o) => o.status === 'delivered' && !!o.completed_at && !o.returned, empty: 'No completed orders yet. Mark a delivered order as completed once you’re happy with it.' },
-  { key: 'cancelled', label: 'Cancelled', dot: 'bg-red-500', match: (o) => o.status === 'cancelled', empty: 'No cancelled orders.' },
+  { key: 'all', label: 'All', match: () => true, empty: 'No orders yet.' },
+  { key: 'to-ship', label: 'To Ship', match: (o) => o.status === 'pending' || o.status === 'processing', empty: 'Nothing waiting to be shipped.' },
+  { key: 'to-receive', label: 'To Receive', match: (o) => o.status === 'shipped', empty: 'Nothing on its way right now.' },
+  { key: 'to-review', label: 'To Review', match: (o) => o.status === 'delivered' && !o.returned && !o.completed_at, empty: 'No delivered orders waiting on you.' },
+  { key: 'returns', label: 'Returns', match: (o) => !!o.returned && o.status !== 'cancelled', empty: 'No returns yet. Cancellation refunds are tracked under Returns & Cancellations in your account.' },
+  { key: 'completed', label: 'Completed', match: (o) => o.status === 'delivered' && !!o.completed_at && !o.returned, empty: 'No completed orders yet. Mark a delivered order as completed once you’re happy with it.' },
+  { key: 'cancelled', label: 'Cancelled', match: (o) => o.status === 'cancelled', empty: 'No cancelled orders.' },
 ];
-const DEFAULT_TAB = TABS[0].key;
 
 /** An item with no category files under this key, so it can still be filtered to. */
 const NO_CATEGORY = 'other';
@@ -104,6 +103,7 @@ const NO_CATEGORY = 'other';
     TrackingModal,
     SafeImage,
     StarRating,
+    StatusTabs,
     LucideBadgeCheck,
     LucideBanknote,
     LucideChevronRight,
@@ -192,7 +192,7 @@ export class Orders {
   );
 
   /** Search and category narrow the list first; the status counts are taken over what's left, so
-   *  the side panel always says how many of each the current search would show. */
+   *  the tabs always say how many of each the current search would show. */
   private readonly searched = computed(() => {
     const terms = this.search().trim().toLowerCase().split(/\s+/).filter(Boolean);
     const category = this.activeCategory();
@@ -205,10 +205,11 @@ export class Orders {
   });
   protected readonly statusOptions = computed<FilterOption[]>(() => {
     const list = this.searched();
-    return TABS.map((t) => ({ key: t.key, label: t.label, dot: t.dot, count: list.filter(t.match).length }));
+    return TABS.map((t) => ({ key: t.key, label: t.label, count: list.filter(t.match).length }));
   });
   protected readonly visible = computed(() => this.searched().filter(this.activeTab().match));
-  protected readonly activeFilterCount = computed(() => (this.activeTab().key !== DEFAULT_TAB ? 1 : 0) + (this.activeCategory() ? 1 : 0));
+  // The tabs are how you move around the list, not a filter to clear — only category counts here.
+  protected readonly activeFilterCount = computed(() => (this.activeCategory() ? 1 : 0));
   protected readonly isFiltering = computed(() => this.activeFilterCount() > 0 || !!this.search().trim());
 
   /** What the cancel dialog says depends on whether money has to travel back — payment_status,
@@ -264,20 +265,17 @@ export class Orders {
   }
 
   selectTab(key: string): void {
-    this.setQuery({ tab: key === DEFAULT_TAB ? null : key });
+    this.setQuery({ tab: key === TABS[0].key ? null : key });
   }
 
   selectCategory(key: string): void {
     this.setQuery({ category: key || null });
   }
 
-  resetFilters(): void {
-    this.setQuery({ tab: null, category: null });
-  }
-
+  /** Clears the search and category; the status tab stays where the customer put it. */
   clearAll(): void {
     this.search.set('');
-    this.resetFilters();
+    this.selectCategory('');
   }
 
   emptyMessage(): string {
