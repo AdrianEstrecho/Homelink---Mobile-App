@@ -39,7 +39,7 @@ interface FeaturedReview {
 
 /** Past this, a review is clamped on its card with a "Read more" toggle, so one long review
  *  doesn't stretch every card in the row to its height. */
-const LONG_REVIEW_CHARS = 160;
+const LONG_REVIEW_CHARS = 120;
 const REVIEW_AUTOPLAY_MS = 6000;
 /** Must match the carousel's gap-3. */
 const REVIEW_GAP_PX = 12;
