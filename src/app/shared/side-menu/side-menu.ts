@@ -4,6 +4,7 @@ import { filter } from 'rxjs/operators';
 import {
   LucideCalendar,
   LucideChevronRight,
+  LucideCircleQuestionMark,
   LucideCode,
   LucideFileText,
   LucideHeart,
@@ -50,6 +51,7 @@ type MenuIcon =
   | 'app'
   | 'code'
   | 'location'
+  | 'faq'
   | 'policies'
   | 'terms';
 
@@ -107,6 +109,7 @@ const SECTIONS: MenuSection[] = [
     title: 'More',
     items: [
       { to: '/location', label: 'Our Location', icon: 'location' },
+      { to: '/faq', label: 'FAQs', icon: 'faq' },
       { to: '/policies', label: 'Policies', icon: 'policies' },
       { to: '/terms', label: 'Terms & Conditions', icon: 'terms' },
     ],
@@ -154,6 +157,7 @@ const EXIT_MS = 230;
     LucideSmartphone,
     LucideCode,
     LucideMapPin,
+    LucideCircleQuestionMark,
     LucideFileText,
     LucideScrollText,
     LucideChevronRight,

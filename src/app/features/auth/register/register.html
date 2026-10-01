@@ -1,122 +1,246 @@
-<app-auth-layout title="Sign up" subtitle="Let's get you all set up so you can access your personal account.">
-  <form (ngSubmit)="onSubmit()" class="space-y-4">
-    <div class="grid grid-cols-2 gap-4">
-      <div>
-        <label class="block text-sm font-medium mb-1.5">First Name</label>
-        <input name="firstName" required [(ngModel)]="firstName" class="input-field" />
-      </div>
-      <div>
-        <label class="block text-sm font-medium mb-1.5">Last Name</label>
-        <input name="lastName" required [(ngModel)]="lastName" class="input-field" />
-      </div>
-    </div>
-    <div>
-      <label class="block text-sm font-medium mb-1.5">Email</label>
-      <div class="flex gap-2">
-        <input
-          type="email"
-          name="email"
-          required
-          [disabled]="codeSent()"
-          [(ngModel)]="email"
-          class="input-field flex-1 disabled:bg-gray-50 disabled:text-gray-500"
-        />
-        @if (!codeSent()) {
-          <button
-            type="button"
-            (click)="confirmEmail()"
-            [disabled]="sendingCode() || !email"
-            class="btn-secondary whitespace-nowrap px-4 disabled:opacity-50"
-          >
-            {{ sendingCode() ? 'Sending...' : 'Confirm Email' }}
+<app-auth-layout title="Create your account" [subtitle]="subtitle()">
+  <ol class="grid grid-cols-3 gap-2 mb-6" aria-label="Sign-up steps">
+    @for (s of steps; track s.key; let i = $index) {
+      @let done = i < step();
+      @let current = i === step();
+      <li class="min-w-0">
+        <button type="button" (click)="selectStep(i)" [disabled]="!done" [attr.aria-current]="current ? 'step' : null" class="w-full text-left disabled:cursor-default">
+          <span class="block h-1.5 rounded-full bg-gray-100 overflow-hidden">
+            <span class="block h-full rounded-full transition-all duration-500 ease-out" [class]="done ? 'bg-brand-teal' : 'bg-brand-orange'" [style.width.%]="barWidth(i)"></span>
+          </span>
+          <span class="mt-2 flex items-center gap-1.5 text-xs font-semibold transition-colors" [class]="current ? 'text-brand-ink' : done ? 'text-teal-700' : 'text-gray-400'">
+            @if (done) {
+              <svg lucideCheck class="w-3.5 h-3.5 shrink-0" [attr.stroke-width]="3"></svg>
+            } @else {
+              <span class="tabular-nums">{{ i + 1 }}</span>
+            }
+            <span class="truncate">{{ s.label }}</span>
+          </span>
+        </button>
+      </li>
+    }
+  </ol>
+
+  @switch (step()) {
+    @case (0) {
+      <div [class]="direction() === 'forward' ? 'auth-step-forward' : 'auth-step-back'">
+        <form (submit)="$event.preventDefault(); submitDetails()" novalidate class="space-y-4">
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label for="signup-first-name" class="block text-sm font-medium mb-1.5">First name</label>
+              <input
+                id="signup-first-name"
+                name="firstName"
+                autocomplete="given-name"
+                [ngModel]="form().firstName"
+                (ngModelChange)="updateField('firstName', $event)"
+                class="input-field"
+                [class.border-red-300]="!!fieldErrors().firstName"
+              />
+              @if (fieldErrors().firstName) {
+                <p class="mt-1.5 text-xs text-red-600">{{ fieldErrors().firstName }}</p>
+              }
+            </div>
+            <div>
+              <label for="signup-last-name" class="block text-sm font-medium mb-1.5">Last name</label>
+              <input
+                id="signup-last-name"
+                name="lastName"
+                autocomplete="family-name"
+                [ngModel]="form().lastName"
+                (ngModelChange)="updateField('lastName', $event)"
+                class="input-field"
+                [class.border-red-300]="!!fieldErrors().lastName"
+              />
+              @if (fieldErrors().lastName) {
+                <p class="mt-1.5 text-xs text-red-600">{{ fieldErrors().lastName }}</p>
+              }
+            </div>
+          </div>
+
+          <div>
+            <label for="signup-email" class="block text-sm font-medium mb-1.5">Email</label>
+            <div class="relative">
+              <input
+                id="signup-email"
+                name="email"
+                type="email"
+                inputmode="email"
+                autocomplete="email"
+                [ngModel]="form().email"
+                (ngModelChange)="updateField('email', $event)"
+                class="input-field pr-10"
+                [class.border-red-300]="!!fieldErrors().email || emailTaken()"
+              />
+              @if (emailValid()) {
+                <svg lucideCheck class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-teal"></svg>
+              }
+            </div>
+            @if (emailTaken()) {
+              <p class="mt-1.5 text-xs text-red-600">
+                This email already has a HomeLink account.
+                <a routerLink="/login" class="font-semibold underline">Sign in instead</a>
+              </p>
+            } @else if (fieldErrors().email) {
+              <p class="mt-1.5 text-xs text-red-600">{{ fieldErrors().email }}</p>
+            } @else {
+              <p class="mt-1.5 text-xs text-gray-400">We'll send a code here to confirm it's yours.</p>
+            }
+          </div>
+
+          <div>
+            <div class="flex items-baseline justify-between mb-1.5">
+              <label for="signup-phone" class="block text-sm font-medium">Phone number</label>
+              <span class="text-xs text-gray-400">Optional</span>
+            </div>
+            <input
+              id="signup-phone"
+              name="phone"
+              type="tel"
+              inputmode="tel"
+              autocomplete="tel"
+              placeholder="0917 123 4567"
+              [ngModel]="form().phone"
+              (ngModelChange)="updateField('phone', $event)"
+              class="input-field"
+            />
+            <p class="mt-1.5 text-xs text-gray-400">For delivery and technician visit updates.</p>
+          </div>
+
+          @if (error()) {
+            <p class="text-red-600 text-sm">{{ error() }}</p>
+          }
+          <button type="submit" [disabled]="sendingCode()" class="btn-primary w-full flex items-center justify-center gap-2 py-3 disabled:opacity-60">
+            @if (sendingCode()) {
+              Sending code…
+            } @else {
+              Continue <svg lucideArrowRight class="w-4 h-4"></svg>
+            }
           </button>
+        </form>
+
+        @if (googleSupported) {
+          <div class="flex items-center gap-3 my-6 text-xs font-medium uppercase tracking-wider text-gray-400">
+            <span class="h-px flex-1 bg-gray-200"></span> or <span class="h-px flex-1 bg-gray-200"></span>
+          </div>
+          <app-google-signin-button text="signup_with" (credential)="onGoogleCredential($event)" />
         }
       </div>
+    }
 
-      @if (codeSent()) {
-        <div class="mt-3">
-          <label class="block text-sm font-medium mb-1.5">Verification Code</label>
-          <input
-            required
-            autofocus
-            [ngModel]="code"
-            (ngModelChange)="onCodeInput($event)"
-            name="code"
-            maxlength="8"
-            class="input-field tracking-widest font-mono uppercase"
-            placeholder="XXXXXXXX"
-          />
-          <p class="text-xs text-gray-500 mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-1">
-            <span class="flex items-center gap-1">
-              <svg lucideCheckCircle2 class="w-3.5 h-3.5 text-brand-teal shrink-0"></svg> Code sent to {{ email }}.
-            </span>
-            <button type="button" (click)="resendCode()" class="text-brand-orange font-semibold hover:underline">Resend</button>
-            @if (resent()) {
-              <span class="text-green-600">Sent!</span>
-            }
-            <span class="text-gray-300">&middot;</span>
-            <button type="button" (click)="changeEmail()" class="text-brand-orange font-semibold hover:underline">Change email</button>
-          </p>
+    @case (1) {
+      <form (submit)="$event.preventDefault(); submitPassword()" novalidate class="space-y-4" [class]="direction() === 'forward' ? 'auth-step-forward' : 'auth-step-back'">
+        <div class="flex items-start gap-2.5 rounded-xl bg-brand-teal/10 px-3.5 py-3 text-sm text-brand-navy">
+          <svg lucideMailCheck class="w-4 h-4 mt-0.5 shrink-0 text-teal-700"></svg>
+          <p>Code sent to <span class="font-semibold break-all">{{ codeSentTo() }}</span>. You'll enter it in the next step.</p>
         </div>
-      }
-      @if (verifyError()) {
-        <p class="text-red-600 text-xs mt-1.5">{{ verifyError() }}</p>
-      }
-    </div>
-    <div>
-      <label class="block text-sm font-medium mb-1.5">Phone Number</label>
-      <input name="phone" [(ngModel)]="phone" class="input-field" />
-    </div>
-    <div>
-      <label class="block text-sm font-medium mb-1.5">Password</label>
-      <app-password-input name="password" [required]="true" [(value)]="password" (focused)="passwordTouched.set(true)" />
-    </div>
-    <div>
-      <label class="block text-sm font-medium mb-1.5">Confirm Password</label>
-      <app-password-input name="confirmPassword" [required]="true" [(value)]="confirmPassword" />
-    </div>
-    @if (passwordTouched()) {
-      <app-password-requirements [password]="password" />
-    }
-    @if (!passwordsMatch) {
-      <p class="text-red-600 text-xs">Passwords do not match</p>
+
+        <div>
+          <label class="block text-sm font-medium mb-1.5">Password</label>
+          <app-password-input name="password" [autofocus]="true" [value]="form().password" (valueChange)="updateField('password', $event)" />
+          @if (fieldErrors().password) {
+            <p class="mt-1.5 text-xs text-red-600">{{ fieldErrors().password }}</p>
+          }
+          <app-password-requirements [password]="form().password" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1.5">Confirm password</label>
+          <app-password-input name="confirmPassword" [value]="form().confirmPassword" (valueChange)="updateField('confirmPassword', $event)" />
+          @if (fieldErrors().confirmPassword) {
+            <p class="mt-1.5 text-xs text-red-600">{{ fieldErrors().confirmPassword }}</p>
+          } @else if (passwordsMatch()) {
+            <p class="mt-1.5 inline-flex items-center gap-1 text-xs font-medium text-teal-700">
+              <svg lucideCheck class="w-3.5 h-3.5" [attr.stroke-width]="2.5"></svg> Passwords match
+            </p>
+          } @else if (confirmMismatch()) {
+            <p class="mt-1.5 text-xs text-red-600">Passwords don't match yet.</p>
+          }
+        </div>
+
+        <div class="pt-1">
+          <label class="flex items-start gap-2.5 text-sm text-gray-600 cursor-pointer">
+            <input
+              #termsBox
+              type="checkbox"
+              [checked]="acceptedTerms()"
+              (change)="onTermsCheckbox(termsBox.checked, termsBox)"
+              [attr.aria-invalid]="fieldErrors().terms ? true : null"
+              class="mt-0.5 w-4 h-4 shrink-0 accent-brand-orange cursor-pointer"
+            />
+            <span>
+              I've read and agree to the
+              <button type="button" (click)="showTerms.set(true)" class="text-brand-orange font-semibold">Terms &amp; Conditions</button>
+              and Privacy Policy.
+            </span>
+          </label>
+          @if (fieldErrors().terms) {
+            <p class="mt-1.5 ml-6 text-xs text-red-600">{{ fieldErrors().terms }}</p>
+          }
+        </div>
+
+        @if (error()) {
+          <p class="text-red-600 text-sm">{{ error() }}</p>
+        }
+        <div class="flex gap-3">
+          <button type="button" (click)="goTo(0)" class="tap inline-flex items-center gap-1 px-4 py-3 rounded-lg border border-gray-200 text-sm font-semibold text-gray-600">
+            <svg lucideChevronLeft class="w-4 h-4"></svg> Back
+          </button>
+          <button type="submit" class="btn-primary flex-1 flex items-center justify-center gap-2 py-3">
+            Continue <svg lucideArrowRight class="w-4 h-4"></svg>
+          </button>
+        </div>
+      </form>
     }
 
-    <label class="flex items-start gap-2 text-sm text-gray-600 pt-1">
-      <input
-        type="checkbox"
-        required
-        [ngModel]="acceptedTerms()"
-        (ngModelChange)="acceptedTerms.set($event)"
-        name="acceptedTerms"
-        class="mt-0.5"
-      />
-      <span>
-        I agree to all the
-        <button type="button" (click)="showTerms.set(true)" class="text-brand-orange font-semibold hover:underline">Terms</button>
-        and Privacy Policies
-      </span>
-    </label>
-
-    @if (error()) {
-      <p class="text-red-600 text-sm">{{ error() }}</p>
+    @default {
+      <form (submit)="$event.preventDefault(); createAccount()" novalidate class="space-y-5" [class]="direction() === 'forward' ? 'auth-step-forward' : 'auth-step-back'">
+        <div>
+          <div class="flex items-baseline justify-between gap-3 mb-2">
+            <p id="signup-code-label" class="text-sm font-medium text-brand-ink">Verification code</p>
+            <button type="button" (click)="goTo(0)" class="tap text-xs font-semibold text-brand-orange">Use a different email</button>
+          </div>
+          <app-code-input
+            inputId="signup-code"
+            labelledBy="signup-code-label"
+            [describedBy]="fieldErrors().code ? 'signup-code-error' : undefined"
+            [value]="form().code"
+            [length]="codeLength"
+            (valueChange)="onCodeChange($event)"
+            (completed)="createAccount($event)"
+            [invalid]="!!fieldErrors().code || !!error()"
+            [disabled]="loading()"
+            [autofocus]="true"
+          />
+          @if (fieldErrors().code) {
+            <p id="signup-code-error" class="mt-2 text-xs text-red-600">{{ fieldErrors().code }}</p>
+          }
+        </div>
+        <app-resend-code [sentAt]="codeSentAt()" [onResend]="resendCode" />
+        @if (error()) {
+          <p class="text-red-600 text-sm">{{ error() }}</p>
+        }
+        <div class="flex gap-3">
+          <button type="button" (click)="goTo(1)" [disabled]="loading()" class="tap inline-flex items-center gap-1 px-4 py-3 rounded-lg border border-gray-200 text-sm font-semibold text-gray-600 disabled:opacity-50">
+            <svg lucideChevronLeft class="w-4 h-4"></svg> Back
+          </button>
+          <button type="submit" [disabled]="loading()" class="btn-primary flex-1 flex items-center justify-center gap-2 py-3 disabled:opacity-60">
+            <svg lucideUserPlus class="w-4 h-4"></svg> {{ loading() ? 'Creating account…' : 'Create account' }}
+          </button>
+        </div>
+      </form>
     }
-    <button type="submit" [disabled]="loading() || !codeSent() || !code.trim()" class="btn-primary w-full flex items-center justify-center gap-2 py-3 disabled:opacity-50">
-      <svg lucideUserPlus class="w-4 h-4"></svg> {{ loading() ? 'Creating...' : 'Create account' }}
-    </button>
-    <p class="text-center text-sm text-gray-600">
-      Already have an account? <a routerLink="/login" class="text-brand-orange font-semibold hover:underline">Login</a>
-    </p>
+  }
 
-    @if (googleSupported) {
-      <div class="flex items-center gap-3 my-1">
-        <div class="flex-1 h-px bg-gray-200"></div>
-        <span class="text-xs text-gray-400">or sign up with</span>
-        <div class="flex-1 h-px bg-gray-200"></div>
-      </div>
-      <app-google-signin-button text="signup_with" (credential)="onGoogleCredential($event)" />
-    }
-  </form>
+  <p class="text-center text-sm text-gray-600 mt-7">
+    Already have an account? <a routerLink="/login" class="text-brand-orange font-semibold hover:underline">Sign in</a>
+  </p>
 
-  <app-terms-modal [open]="showTerms()" (closed)="showTerms.set(false)" />
+  <app-terms-modal
+    [open]="showTerms()"
+    [requireAcceptance]="true"
+    (closed)="showTerms.set(false)"
+    (accepted)="acceptTerms()"
+    (declined)="declineTerms()"
+  />
 </app-auth-layout>

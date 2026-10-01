@@ -1,10 +1,11 @@
-import { Component, input, signal } from '@angular/core';
+import { Component, computed, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { LucideCheck, LucideCopy, LucideCreditCard, LucideLandmark, LucideQrCode, LucideShieldCheck, LucideSmartphone } from '@lucide/angular';
+import { LucideBanknote, LucideCheck, LucideCopy, LucideCreditCard, LucideLandmark, LucideQrCode, LucideShieldCheck, LucideSmartphone, LucideWallet } from '@lucide/angular';
 
+import { PAYMENT_METHODS, PaymentMethodValue } from '../../core/payment-methods';
 import { Select, SelectOption } from '../select/select';
 
-export type PaymentMethodValue = 'card' | 'gcash' | 'qrph' | 'bank';
+export type { PaymentMethodValue } from '../../core/payment-methods';
 
 interface CardForm {
   cardNumber: string;
@@ -18,15 +19,6 @@ export interface ValidatedPayment {
   card?: { cardNumber: string; expMonth: number; expYear: number; cvc: string };
   gcashNumber?: string;
 }
-
-const PAYMENT_METHODS: { value: PaymentMethodValue; label: string; description: string; icon: 'card' | 'gcash' | 'qrph' | 'bank' }[] = [
-  { value: 'card', label: 'Credit / Debit Card', description: 'Visa, Mastercard & more', icon: 'card' },
-  { value: 'gcash', label: 'GCash', description: 'Pay with your wallet', icon: 'gcash' },
-  { value: 'qrph', label: 'QR Ph', description: 'Scan with any app', icon: 'qrph' },
-  { value: 'bank', label: 'Bank Transfer', description: 'Direct bank deposit', icon: 'bank' },
-];
-
-const PAYMENT_METHOD_OPTIONS: SelectOption[] = PAYMENT_METHODS.map((m) => ({ value: m.value, label: m.label }));
 
 const BANK_DETAILS = { bank: 'BDO Unibank', accountName: 'HomeLink Home Improvement Inc.', accountNumber: '0012 3456 7890' };
 
@@ -49,15 +41,19 @@ const yearOptions: SelectOption[] = Array.from({ length: 12 }, (_, i) => ({ valu
  */
 @Component({
   selector: 'app-payment-method-picker',
-  imports: [FormsModule, Select, LucideCreditCard, LucideSmartphone, LucideQrCode, LucideLandmark, LucideShieldCheck, LucideCopy, LucideCheck],
+  imports: [FormsModule, Select, LucideCreditCard, LucideSmartphone, LucideQrCode, LucideLandmark, LucideBanknote, LucideWallet, LucideShieldCheck, LucideCopy, LucideCheck],
   templateUrl: './payment-method-picker.html',
   styleUrl: './payment-method-picker.css',
 })
 export class PaymentMethodPicker {
   readonly stepNumber = input(2);
+  /** Cash on delivery is only offered where there's a delivery to pay for, so it's opt-in per
+   *  page rather than part of the default list (the service booking form shares this picker). */
+  readonly allowCashOnDelivery = input(false);
 
-  protected readonly paymentMethods = PAYMENT_METHODS;
-  protected readonly paymentMethodOptions = PAYMENT_METHOD_OPTIONS;
+  protected readonly paymentMethodOptions = computed<SelectOption[]>(() =>
+    PAYMENT_METHODS.filter((m) => this.allowCashOnDelivery() || !m.deliveryOnly).map((m) => ({ value: m.value, label: m.label })),
+  );
   protected readonly monthOptions = monthOptions;
   protected readonly yearOptions = yearOptions;
   protected readonly bankDetails = BANK_DETAILS;
@@ -134,8 +130,8 @@ export class PaymentMethodPicker {
       this.gcashError.set('');
       return { method, gcashNumber: digits };
     }
-    // 'qrph' and 'bank' need no client-side form data — PayMongo's hosted page (qrph) or the
-    // static bank details below (bank) are all that's shown for those two.
+    // 'qrph', 'bank' and 'cod' need no client-side form data — PayMongo's hosted page (qrph),
+    // the static bank details (bank) or the cash-on-delivery notes (cod) are all that's shown.
     return { method };
   }
 }

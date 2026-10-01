@@ -17,21 +17,39 @@
   } @else {
     @let s = service()!;
     <div class="px-4 py-4 pb-28">
-      <div class="card relative mb-5">
+      <div class="card relative mb-4">
         <app-safe-image [src]="s.image" [alt]="s.name" class="w-full h-64 object-cover" />
-        <div class="absolute inset-0 bg-gradient-to-t from-brand-navy/70 to-transparent"></div>
         <span class="absolute top-3 left-3 badge bg-brand-teal text-white flex items-center gap-1.5">
           <app-service-category-icon [category]="s.category" class="w-3 h-3" />
           {{ s.category }}
         </span>
         <span class="absolute top-3 right-3 badge bg-white/90 text-brand-navy flex items-center gap-1">
-          <svg lucideClock class="w-3 h-3"></svg> ~{{ s.duration_hours | number: '1.1-1' }}h
+          <svg lucideClock class="w-3 h-3"></svg> ~{{ hours() }}h
         </span>
       </div>
 
+      @if (quickDetails().length > 0) {
+        <div class="card p-4 mb-5">
+          <h2 class="text-xs font-semibold uppercase tracking-[0.14em] text-gray-400 mb-3">At a glance</h2>
+          <dl class="grid grid-cols-2 gap-x-4 gap-y-3">
+            @for (d of quickDetails(); track d.key) {
+              <div class="min-w-0">
+                <dt class="text-xs text-gray-400">{{ d.label }}</dt>
+                <dd class="text-sm font-semibold text-brand-ink break-words">{{ d.value }}</dd>
+              </div>
+            }
+          </dl>
+          @if (specs().length > quickDetailCount) {
+            <button type="button" (click)="tab.set('Service Details')" class="tap mt-3 text-sm font-medium text-brand-teal">
+              See all {{ specs().length }} service details →
+            </button>
+          }
+        </div>
+      }
+
       <!-- No appReveal above the fold -- see the note in product-detail.html. -->
       <div>
-        <p class="eyebrow text-brand-teal mb-2">{{ durationLabel(s.duration_hours) }}</p>
+        <p class="eyebrow text-brand-teal mb-2">{{ s.category }}</p>
         <h1 class="font-display text-2xl font-extrabold tracking-tight text-brand-ink mb-2">{{ s.name }}</h1>
 
         <div class="flex items-baseline gap-2 mb-4">
@@ -39,9 +57,30 @@
           <span class="text-sm text-gray-400">starting price</span>
         </div>
 
-        <p class="text-gray-500 mb-5 leading-relaxed text-sm">
-          {{ s.description || 'Book a verified HomeLink technician for this service.' }}
-        </p>
+        @if (descriptionParagraphs()[0]) {
+          <p class="text-gray-500 mb-4 leading-relaxed text-sm">{{ descriptionParagraphs()[0] }}</p>
+        }
+
+        @if (inclusions().length > 0) {
+          <ul class="space-y-2 mb-5">
+            @for (item of inclusions().slice(0, 4); track item) {
+              <li class="flex items-start gap-2.5 text-sm text-gray-600">
+                <svg lucideCheck class="w-4 h-4 text-brand-teal shrink-0 mt-0.5"></svg>
+                <span class="leading-relaxed">{{ item }}</span>
+              </li>
+            }
+          </ul>
+        }
+
+        <div class="flex items-start gap-2.5 rounded-xl bg-gray-50 border border-gray-100 px-3.5 py-3 mb-5">
+          <svg lucideClock class="w-4 h-4 text-brand-teal shrink-0 mt-0.5"></svg>
+          <div>
+            <p class="text-sm font-semibold text-brand-ink">Typically about {{ hours() }} hours on site</p>
+            <p class="text-xs text-gray-400">Slots run 8:00 AM to 4:00 PM, seven days a week.</p>
+          </div>
+        </div>
+
+        <p class="text-center text-xs text-gray-400 mb-5">First-time customers get 15% off. Zero obligation until you confirm.</p>
 
         <div class="grid grid-cols-3 gap-2.5 mb-6 text-center">
           <div class="rounded-xl bg-gray-50 border border-gray-100 px-2 py-3">
@@ -49,61 +88,141 @@
             <p class="text-[11px] text-gray-500 leading-tight">Verified Technicians</p>
           </div>
           <div class="rounded-xl bg-gray-50 border border-gray-100 px-2 py-3">
-            <svg lucideAward class="w-5 h-5 text-brand-teal mx-auto mb-1.5"></svg>
-            <p class="text-[11px] text-gray-500 leading-tight">Satisfaction Guarantee</p>
+            <svg lucideTag class="w-5 h-5 text-brand-teal mx-auto mb-1.5"></svg>
+            <p class="text-[11px] text-gray-500 leading-tight">Upfront Pricing</p>
           </div>
           <div class="rounded-xl bg-gray-50 border border-gray-100 px-2 py-3">
-            <svg lucideTimer class="w-5 h-5 text-brand-teal mx-auto mb-1.5"></svg>
-            <p class="text-[11px] text-gray-500 leading-tight">On-Time Arrival</p>
+            <svg lucideAward class="w-5 h-5 text-brand-teal mx-auto mb-1.5"></svg>
+            <p class="text-[11px] text-gray-500 leading-tight">Satisfaction Guaranteed</p>
           </div>
         </div>
+
+        <a routerLink="/products" class="tap block text-center text-sm text-brand-teal mb-2">
+          Need parts or equipment? Shop products →
+        </a>
       </div>
 
-      <div appReveal class="mb-6">
-        <h2 class="font-display text-lg font-extrabold tracking-tight text-brand-ink mb-3">How It Works</h2>
-        <div class="card divide-y divide-gray-100">
-          @for (step of steps; track step.title; let i = $index) {
-            <div class="flex gap-3 p-4">
-              <span class="w-6 h-6 rounded-full bg-brand-navy text-white text-xs font-bold flex items-center justify-center shrink-0">
-                {{ i + 1 }}
-              </span>
-              <div class="min-w-0">
-                <p class="text-sm font-semibold text-brand-ink mb-0.5">{{ step.title }}</p>
-                <p class="text-xs text-gray-500 leading-relaxed">{{ step.body }}</p>
+      <div appReveal class="mt-8">
+        <div class="relative -mx-4">
+          <div class="flex gap-6 border-b border-gray-200 overflow-x-auto no-scrollbar px-4">
+            @for (t of tabs; track t) {
+              <button
+                type="button"
+                (click)="tab.set(t)"
+                class="tap pb-3 text-sm font-semibold border-b-2 -mb-px whitespace-nowrap"
+                [class]="tab() === t ? 'border-brand-orange text-brand-navy' : 'border-transparent text-gray-400'"
+              >
+                {{ t }}{{ t === 'Service Details' && specs().length > 0 ? ' (' + specs().length + ')' : '' }}
+              </button>
+            }
+          </div>
+          <div class="pointer-events-none absolute right-0 top-0 bottom-px w-8 bg-gradient-to-l from-white to-transparent"></div>
+        </div>
+
+        <div class="py-6">
+          @if (tab() === 'Overview') {
+            <div class="space-y-6">
+              <div class="space-y-3">
+                <h2 class="font-display text-lg font-bold text-brand-ink">About this service</h2>
+                @for (para of descriptionParagraphs(); track $index) {
+                  <p class="text-gray-600 leading-relaxed text-sm">{{ para }}</p>
+                } @empty {
+                  <p class="text-gray-400 text-sm">No description available.</p>
+                }
+              </div>
+
+              <div>
+                <h3 class="text-xs font-semibold uppercase tracking-[0.14em] text-gray-400 mb-3">What's included</h3>
+                @if (inclusions().length > 0) {
+                  <ul class="space-y-2.5">
+                    @for (item of inclusions(); track item) {
+                      <li class="flex items-start gap-2.5 text-sm text-gray-600">
+                        <svg lucideCheck class="w-4 h-4 text-brand-teal shrink-0 mt-0.5"></svg>
+                        <span class="leading-relaxed">{{ item }}</span>
+                      </li>
+                    }
+                  </ul>
+                } @else {
+                  <p class="text-sm text-gray-400">Scope is confirmed with you by the technician before work begins.</p>
+                }
+              </div>
+
+              @if (requirements().length > 0) {
+                <div class="rounded-xl border border-gray-100 bg-gray-50 p-4">
+                  <h3 class="flex items-center gap-2 font-semibold text-sm text-brand-ink mb-3">
+                    <svg lucideClipboardList class="w-4 h-4 text-brand-teal"></svg> Before your visit
+                  </h3>
+                  <ul class="space-y-2">
+                    @for (item of requirements(); track item) {
+                      <li class="flex items-start gap-2.5 text-sm text-gray-600">
+                        <span class="w-1.5 h-1.5 rounded-full bg-brand-teal shrink-0 mt-1.5"></span>
+                        <span class="leading-relaxed">{{ item }}</span>
+                      </li>
+                    }
+                  </ul>
+                </div>
+              }
+            </div>
+          }
+
+          @if (tab() === 'Service Details') {
+            <p class="text-sm text-gray-400 mb-4">What this booking covers, and the terms every HomeLink visit runs under.</p>
+            <dl class="rounded-xl border border-gray-100 overflow-hidden">
+              @for (row of detailRows(); track row.key; let odd = $odd) {
+                <div class="px-4 py-3 text-sm" [class]="odd ? 'bg-white' : 'bg-gray-50/70'">
+                  <dt class="text-gray-400">{{ row.label }}</dt>
+                  <dd class="font-medium text-brand-ink mt-0.5 break-words">{{ row.value }}</dd>
+                </div>
+              }
+            </dl>
+          }
+
+          @if (tab() === 'How It Works') {
+            <ol class="space-y-5 mb-6">
+              @for (step of steps; track step.title; let i = $index) {
+                <li class="flex gap-3.5">
+                  <span class="w-8 h-8 rounded-full bg-brand-navy text-white text-sm font-bold flex items-center justify-center shrink-0">{{ i + 1 }}</span>
+                  <div class="min-w-0">
+                    <p class="flex items-center gap-1.5 font-semibold text-sm text-brand-ink mb-1">
+                      @switch (step.icon) {
+                        @case ('calendar') { <svg lucideCalendarCheck class="w-4 h-4 text-brand-teal"></svg> }
+                        @case ('map') { <svg lucideMapPin class="w-4 h-4 text-brand-teal"></svg> }
+                        @case ('card') { <svg lucideCreditCard class="w-4 h-4 text-brand-teal"></svg> }
+                        @default { <svg lucideWrench class="w-4 h-4 text-brand-teal"></svg> }
+                      }
+                      {{ step.title }}
+                    </p>
+                    <p class="text-sm text-gray-600 leading-relaxed">{{ step.body }}</p>
+                  </div>
+                </li>
+              }
+            </ol>
+
+            <div class="space-y-3">
+              <div class="rounded-xl border border-gray-100 p-4">
+                <div class="w-9 h-9 rounded-lg bg-brand-teal/10 text-brand-teal flex items-center justify-center mb-3">
+                  <svg lucideShieldCheck class="w-4 h-4"></svg>
+                </div>
+                <h3 class="font-semibold text-sm text-brand-ink mb-1.5">Service guarantee</h3>
+                <p class="text-sm text-gray-500 leading-relaxed">{{ s.warranty || defaultGuarantee }}</p>
+              </div>
+              <div class="rounded-xl border border-gray-100 p-4">
+                <div class="w-9 h-9 rounded-lg bg-brand-teal/10 text-brand-teal flex items-center justify-center mb-3">
+                  <svg lucideCalendarCheck class="w-4 h-4"></svg>
+                </div>
+                <h3 class="font-semibold text-sm text-brand-ink mb-1.5">Rescheduling</h3>
+                <p class="text-sm text-gray-500 leading-relaxed">
+                  Bookings can be cancelled or rescheduled up to 24 hours before the appointment, from your Bookings page.
+                </p>
               </div>
             </div>
           }
         </div>
       </div>
 
-      <div appReveal class="mb-6">
-        <h2 class="font-display text-lg font-extrabold tracking-tight text-brand-ink mb-3">At a Glance</h2>
-        <dl class="card p-4 space-y-3 text-sm">
-          <div class="flex justify-between gap-4 border-b border-gray-100 pb-2">
-            <dt class="text-gray-400">Category</dt>
-            <dd class="font-medium text-brand-ink text-right">{{ s.category }}</dd>
-          </div>
-          <div class="flex justify-between gap-4 border-b border-gray-100 pb-2">
-            <dt class="text-gray-400">Typical duration</dt>
-            <dd class="font-medium text-brand-ink text-right">~{{ s.duration_hours | number: '1.1-1' }} hours</dd>
-          </div>
-          <div class="flex justify-between gap-4">
-            <dt class="text-gray-400">Starting price</dt>
-            <dd class="font-medium text-brand-ink text-right">{{ s.base_price | homelinkPrice }}</dd>
-          </div>
-        </dl>
-        <p class="text-[11px] text-gray-400 mt-2 leading-relaxed">
-          Final pricing is confirmed on the booking screen, where any discounts you qualify for are applied.
-        </p>
-      </div>
-
-      <a routerLink="/products" class="tap block text-center text-sm text-brand-teal mb-2">
-        Need parts or fixtures for this job? Browse products →
-      </a>
-
       @if (related().length > 0) {
         <div class="mt-6">
-          <h2 class="font-display text-xl font-extrabold tracking-tight text-brand-ink mb-4">More {{ s.category }} Services</h2>
+          <h2 class="font-display text-xl font-extrabold tracking-tight text-brand-ink mb-4">Other Services You Might Need</h2>
           <div class="grid grid-cols-2 gap-3">
             @for (rs of related(); track rs.id; let i = $index) {
               <div appReveal [revealDelay]="i * 60" class="h-full">

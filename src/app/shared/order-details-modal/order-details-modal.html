@@ -152,7 +152,7 @@
           <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2 flex items-center gap-1.5">
             <svg lucideCreditCard class="w-3.5 h-3.5"></svg> Payment Method
           </h3>
-          <p class="text-sm text-gray-700 capitalize">{{ o.payment_method }}</p>
+          <p class="text-sm text-gray-700">{{ paymentMethodLabel(o.payment_method) }}</p>
         </div>
       }
 
@@ -204,6 +204,16 @@
           class="no-print w-full border border-red-200 text-red-600 rounded-lg py-2.5 font-semibold text-sm hover:bg-red-50 transition"
         >
           Cancel Order
+        </button>
+      }
+
+      @if (showReturn() && canReturn()) {
+        <button
+          type="button"
+          (click)="returnRequested.emit()"
+          class="no-print w-full border border-gray-300 text-brand-navy rounded-lg py-2.5 font-semibold text-sm hover:bg-gray-50 transition flex items-center justify-center gap-2"
+        >
+          <svg lucideRotateCcw class="w-4 h-4"></svg> Return or Refund
         </button>
       }
     </div>

@@ -13,7 +13,10 @@ export interface Product {
   avg_rating?: number;
   review_count?: number;
   specifications?: Record<string, string>;
+  highlights?: string[] | null;
   brand?: string | null;
+  model?: string | null;
+  warranty?: string | null;
   discount?: number;
 }
 
@@ -34,4 +37,10 @@ export interface Service {
   base_price: number;
   duration_hours: number;
   image: string;
+  specifications?: Record<string, string> | null;
+  /** What the visit includes. */
+  highlights?: string[] | null;
+  /** What the customer should prepare before the visit. */
+  requirements?: string[] | null;
+  warranty?: string | null;
 }

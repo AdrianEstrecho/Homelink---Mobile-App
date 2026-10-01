@@ -8,6 +8,7 @@ import {
   LucideMapPin,
   LucidePenLine,
   LucidePrinter,
+  LucideRotateCcw,
   LucideTruck,
   LucideX,
 } from '@lucide/angular';
@@ -16,6 +17,7 @@ import { ApiService } from '../../core/api.service';
 import { Review } from '../../core/account.model';
 import { PricePipe } from '../../core/price.pipe';
 import { Order, OrderItem, PendingOrder } from '../../core/order.model';
+import { paymentMethodLabel } from '../../core/payment-methods';
 import { downloadReceiptPdf, ReceiptPerson } from '../../core/receipt-pdf.util';
 import { statusColor } from '../../core/format.util';
 import { SafeImage } from '../safe-image/safe-image';
@@ -53,6 +55,7 @@ const REVIEWABLE_STATUSES = new Set(['delivered', 'completed']);
     LucideCircleCheck,
     LucidePenLine,
     LucideTruck,
+    LucideRotateCcw,
   ],
   templateUrl: './order-details-modal.html',
   styleUrl: './order-details-modal.css',
@@ -69,6 +72,8 @@ export class OrderDetailsModal {
   readonly error = input<string>();
   readonly showCancel = input(false);
   readonly showTrack = input(false);
+  /** Offers "Return or Refund" when the server says the order can still be returned. */
+  readonly showReturn = input(false);
   readonly reviewableProductIds = input<Set<string>>(new Set());
   readonly reviewsByProduct = input<Map<string, Review>>(new Map());
 
@@ -79,10 +84,12 @@ export class OrderDetailsModal {
   readonly confirmed = output<void>();
   readonly cancelRequested = output<void>();
   readonly trackRequested = output<void>();
+  readonly returnRequested = output<void>();
   /** Emits the posted review once it's saved. */
   readonly reviewed = output<Review>();
 
   protected readonly statusColor = statusColor;
+  protected readonly paymentMethodLabel = paymentMethodLabel;
 
   protected readonly writingProductId = signal<string | null>(null);
   protected readonly rating = signal(0);
@@ -105,6 +112,12 @@ export class OrderDetailsModal {
 
   isPending(): boolean {
     return this.asOrder().status === 'pending';
+  }
+
+  /** canReturn comes from the server (delivered, inside the 7-day window, and with units not
+   *  already spoken for) — never worked out from the order here. */
+  canReturn(): boolean {
+    return !this.previewing() && !this.justConfirmed() && !!this.asOrder().canReturn;
   }
 
   canReviewItem(item: OrderItem): boolean {

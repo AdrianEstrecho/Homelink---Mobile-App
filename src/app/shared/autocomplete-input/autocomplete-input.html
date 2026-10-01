@@ -1,0 +1,57 @@
+<div class="relative">
+  <input
+    [id]="inputId()"
+    [value]="value()"
+    (input)="onInput($any($event.target).value)"
+    (focus)="onFocus()"
+    (keydown)="onKeyDown($event)"
+    [placeholder]="placeholder()"
+    [attr.inputmode]="inputMode()"
+    autocomplete="off"
+    class="input-field"
+    role="combobox"
+    [attr.aria-expanded]="showList()"
+    [attr.aria-controls]="listId"
+    aria-autocomplete="list"
+    [attr.aria-activedescendant]="active() >= 0 ? listId + '-' + active() : null"
+  />
+
+  @if (showList()) {
+    <!-- The loading bar belongs to the outer, unscrolled frame, so it stays pinned while the list
+         scrolls under it, and the list's own overflow never toggles mid-refresh. -->
+    <div class="absolute z-30 left-0 right-0 mt-1 rounded-lg border border-gray-200 bg-white shadow-lg overflow-hidden" [class.loading-bar]="spinner() && items().length">
+      <ul [id]="listId" role="listbox" [attr.aria-busy]="spinner()" class="max-h-60 overflow-auto py-1">
+        @for (item of items(); track $index) {
+          @let description = getDescription()(item);
+          <li
+            [id]="listId + '-' + $index"
+            role="option"
+            [attr.aria-selected]="$index === active()"
+            (mousedown)="$event.preventDefault(); choose(item)"
+            class="px-3 py-2.5 cursor-pointer text-sm active:bg-brand-orange/10"
+            [class]="$index === active() ? 'bg-brand-orange/10' : ''"
+          >
+            <span class="block text-brand-ink truncate">{{ getLabel()(item) }}</span>
+            @if (description) {
+              <span class="block text-xs text-gray-500 truncate">{{ description }}</span>
+            }
+          </li>
+        }
+
+        @if (spinner() && !items().length) {
+          @for (i of [0, 1, 2]; track i) {
+            <li class="px-3 py-2" aria-hidden="true">
+              <span class="skeleton block h-3.5 rounded" [style.width.%]="70 - i * 12"></span>
+              <span class="skeleton block h-2.5 rounded mt-1.5" [style.width.%]="50 - i * 8"></span>
+            </li>
+          }
+          <li class="sr-only" role="status">Searching</li>
+        }
+
+        @if (showEmpty()) {
+          <li class="px-3 py-2 text-sm text-gray-500">{{ failed() ? errorMessage() || emptyMessage() : emptyMessage() }}</li>
+        }
+      </ul>
+    </div>
+  }
+</div>

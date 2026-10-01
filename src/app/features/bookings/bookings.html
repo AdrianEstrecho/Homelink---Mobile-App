@@ -1,9 +1,50 @@
 <div class="px-4 py-4">
-  @if (bookings().length === 0) {
+  <!-- Same underline tabs and count badges as My Orders, so the two read as one pair. Shown from
+       the first booking on: with one category it reads as a count rather than a choice. -->
+  @if (bookings().length > 0) {
+    <div class="relative -mx-4 mb-4">
+      <div class="flex gap-5 border-b border-gray-200 overflow-x-auto no-scrollbar px-4">
+        <button
+          type="button"
+          (click)="selectCategory(all)"
+          [attr.aria-pressed]="activeCategory() === all"
+          class="tap flex items-center gap-1.5 pb-3 text-sm font-semibold transition border-b-2 -mb-px whitespace-nowrap"
+          [class]="activeCategory() === all ? 'border-brand-orange text-brand-navy' : 'border-transparent text-gray-400'"
+        >
+          <svg lucideLayoutGrid class="w-4 h-4"></svg>
+          All
+          <span class="rounded-full px-1.5 py-0.5 text-[11px] font-bold leading-none" [class]="activeCategory() === all ? 'bg-brand-orange/10 text-brand-orange' : 'bg-gray-100 text-gray-500'">
+            {{ bookings().length }}
+          </span>
+        </button>
+        @for (c of categories(); track c.category) {
+          @let active = c.category === activeCategory();
+          <button
+            type="button"
+            (click)="selectCategory(c.category)"
+            [attr.aria-pressed]="active"
+            class="tap flex items-center gap-1.5 pb-3 text-sm font-semibold transition border-b-2 -mb-px whitespace-nowrap"
+            [class]="active ? 'border-brand-orange text-brand-navy' : 'border-transparent text-gray-400'"
+          >
+            <app-service-category-icon [category]="c.category" class="w-4 h-4" />
+            {{ c.category }}
+            <span class="rounded-full px-1.5 py-0.5 text-[11px] font-bold leading-none" [class]="active ? 'bg-brand-orange/10 text-brand-orange' : 'bg-gray-100 text-gray-500'">
+              {{ c.count }}
+            </span>
+          </button>
+        }
+      </div>
+      <div class="pointer-events-none absolute right-0 top-0 bottom-px w-8 bg-gradient-to-l from-white to-transparent"></div>
+    </div>
+  }
+
+  <!-- A tab only exists for a category this customer has booked, so an empty list here means
+       they have never booked anything. -->
+  @if (loaded() && visible().length === 0) {
     <p class="text-gray-500 text-center py-12">No bookings yet.</p>
   } @else {
     <div class="space-y-4">
-      @for (b of bookings(); track b.id) {
+      @for (b of paginated(); track b.id) {
         <div
           (click)="selectedBooking.set(b)"
           role="button"
@@ -47,6 +88,9 @@
           </div>
         </div>
       }
+    </div>
+    <div class="mt-4">
+      <app-pagination [page]="page()" [totalPages]="totalPages()" [total]="visible().length" [pageSize]="pageSize" (pageChange)="handlePageChange($event)" />
     </div>
   }
 

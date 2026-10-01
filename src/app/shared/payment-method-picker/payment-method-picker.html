@@ -10,9 +10,10 @@
         @case ('gcash') { <svg lucideSmartphone class="w-5 h-5 text-brand-orange"></svg> }
         @case ('qrph') { <svg lucideQrCode class="w-5 h-5 text-brand-orange"></svg> }
         @case ('bank') { <svg lucideLandmark class="w-5 h-5 text-brand-orange"></svg> }
+        @case ('cod') { <svg lucideBanknote class="w-5 h-5 text-brand-orange"></svg> }
       }
     </div>
-    <app-select [value]="method()" (valueChange)="onMethodChange($event)" [options]="paymentMethodOptions" class="flex-1" />
+    <app-select [value]="method()" (valueChange)="onMethodChange($event)" [options]="paymentMethodOptions()" class="flex-1" />
   </div>
 
   @if (method() === 'card') {
@@ -81,6 +82,22 @@
         </div>
       </div>
       <p class="text-xs text-gray-400 mt-2">Please use your reference number as the payment reference.</p>
+    </div>
+  }
+
+  @if (method() === 'cod') {
+    <div class="mt-5 pt-5 border-t border-gray-100">
+      <div class="p-4 rounded-xl bg-gray-50 border border-gray-100 space-y-3">
+        <p class="flex items-start gap-2 text-sm text-brand-ink">
+          <svg lucideBanknote class="w-4 h-4 text-brand-teal shrink-0 mt-0.5"></svg>
+          <span>Pay the courier in cash when your order arrives. Nothing is charged now.</span>
+        </p>
+        <p class="flex items-start gap-2 text-sm text-gray-500">
+          <svg lucideWallet class="w-4 h-4 text-gray-400 shrink-0 mt-0.5"></svg>
+          <span>Please prepare the exact amount — our riders may not carry change.</span>
+        </p>
+      </div>
+      <p class="text-xs text-gray-400 mt-2">Someone aged 18 or over needs to be at the address to receive the order and pay.</p>
     </div>
   }
 </div>

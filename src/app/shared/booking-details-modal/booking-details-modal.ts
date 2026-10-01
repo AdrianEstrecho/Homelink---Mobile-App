@@ -3,6 +3,7 @@ import { Component, input, output } from '@angular/core';
 import { LucideCircleCheck, LucideCreditCard, LucideMapPin, LucideStickyNote, LucideTruck, LucideUser, LucideX } from '@lucide/angular';
 
 import { Booking } from '../../core/booking.model';
+import { paymentMethodLabel } from '../../core/payment-methods';
 import { PricePipe } from '../../core/price.pipe';
 import { ReceiptPerson } from '../../core/receipt-pdf.util';
 import { statusColor } from '../../core/format.util';
@@ -38,6 +39,7 @@ export class BookingDetailsModal {
   readonly trackRequested = output<void>();
 
   protected readonly statusColor = statusColor;
+  protected readonly paymentMethodLabel = paymentMethodLabel;
 
   subtotal(): number {
     const b = this.booking();

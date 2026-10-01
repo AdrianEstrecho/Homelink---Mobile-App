@@ -1,0 +1,86 @@
+<div>
+  <label for="addr-label" class="block text-sm font-medium mb-1.5 text-gray-700">Label</label>
+  <input id="addr-label" [ngModel]="form().label" (ngModelChange)="set({ label: $event })" [ngModelOptions]="{ standalone: true }" placeholder="Home, Office, ..." class="input-field" />
+</div>
+
+<div class="grid grid-cols-2 gap-4">
+  <div>
+    <label for="addr-house" class="block text-sm font-medium mb-1.5 text-gray-700">House / Unit No.</label>
+    <input id="addr-house" [ngModel]="form().houseNumber" (ngModelChange)="set({ houseNumber: $event })" [ngModelOptions]="{ standalone: true }" placeholder="123" class="input-field" />
+  </div>
+  <div class="col-span-2">
+    <label for="addr-street" class="block text-sm font-medium mb-1.5 text-gray-700">Street</label>
+    <!-- Scoped to the city already chosen, since a street name repeats in a hundred
+         municipalities. Three characters is the geocoder's own floor for a useful query, and it
+         answers in about a second and a half, so it waits longer before asking. -->
+    <app-autocomplete-input
+      inputId="addr-street"
+      [value]="form().street"
+      (valueChange)="set({ street: $event })"
+      [minChars]="3"
+      [debounceMs]="400"
+      [fetchSuggestions]="searchStreets"
+      [getLabel]="streetLabel"
+      [getDescription]="streetDescription"
+      (selected)="onStreetPicked($event)"
+      placeholder="Rizal Street"
+      emptyMessage="No street found here — type it in as you write it."
+      errorMessage="Street lookup unavailable right now — type it in as you write it."
+    />
+  </div>
+</div>
+
+<div>
+  <label for="addr-village" class="block text-sm font-medium mb-1.5 text-gray-700">Village / Barangay</label>
+  <!-- Subdivisions, phases, sitios and purok numbers are not barangays and will never be in the
+       register, so an empty list here is expected rather than a dead end. -->
+  <app-autocomplete-input
+    inputId="addr-village"
+    [value]="form().village"
+    (valueChange)="set({ village: $event })"
+    [fetchSuggestions]="searchBarangays"
+    [getDescription]="barangayDescription"
+    (selected)="onBarangayPicked($event)"
+    placeholder="Barangay San Isidro"
+    emptyMessage="Not a registered barangay — type your village or subdivision."
+  />
+</div>
+
+<div>
+  <label for="addr-city" class="block text-sm font-medium mb-1.5 text-gray-700">City / Municipality</label>
+  <app-autocomplete-input
+    inputId="addr-city"
+    [value]="form().city"
+    (valueChange)="set({ city: $event })"
+    [fetchSuggestions]="searchCities"
+    [getDescription]="cityDescription"
+    (selected)="onCityPicked($event)"
+    placeholder="Makati City"
+  />
+</div>
+
+<div class="grid grid-cols-2 gap-4">
+  <div>
+    <label for="addr-province" class="block text-sm font-medium mb-1.5 text-gray-700">Province</label>
+    <app-autocomplete-input
+      inputId="addr-province"
+      [value]="form().province"
+      (valueChange)="set({ province: $event })"
+      [fetchSuggestions]="searchProvinces"
+      (selected)="onProvincePicked($event)"
+      placeholder="Metro Manila"
+    />
+  </div>
+  <div>
+    <label for="addr-postal" class="block text-sm font-medium mb-1.5 text-gray-700">Postal Code</label>
+    <input
+      id="addr-postal"
+      [ngModel]="form().postalCode"
+      (ngModelChange)="onPostalCodeInput($event)"
+      [ngModelOptions]="{ standalone: true }"
+      placeholder="1200"
+      class="input-field"
+      inputmode="numeric"
+    />
+  </div>
+</div>

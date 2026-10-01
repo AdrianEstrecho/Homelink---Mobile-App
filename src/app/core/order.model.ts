@@ -4,6 +4,7 @@ export interface OrderItem {
   name: string;
   image: string;
   slug: string;
+  brand?: string | null;
   price: number;
   quantity: number;
 }
@@ -22,6 +23,10 @@ export interface Order {
   created_at: string;
   cancel_reason?: string | null;
   items: OrderItem[];
+  /** Server-computed: delivered, inside the return window, and with units not already claimed. */
+  canReturn?: boolean;
+  /** Server-computed: a live return or a full refund — files the order under Returns. */
+  returned?: boolean;
 }
 
 /** A not-yet-placed order preview, built client-side for the review step. */

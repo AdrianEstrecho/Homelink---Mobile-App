@@ -10,6 +10,7 @@ import { ApiService } from '../../core/api.service';
 import { AuthService } from '../../core/auth.service';
 import { CartService } from '../../core/cart.service';
 import { Order, PendingOrder } from '../../core/order.model';
+import { isOfflinePayment } from '../../core/payment-methods';
 import { pollPaymentStatus } from '../../core/payment-polling.util';
 import { PricePipe } from '../../core/price.pipe';
 import { ActivePromos, AppliedVoucher, calcDiscount } from '../../core/promo.model';
@@ -133,11 +134,14 @@ export class Checkout {
     this.placingOrder.set(true);
     this.error.set('');
     try {
-      if (pending.payment_method === 'bank') {
+      // Bank transfer and cash on delivery create the order immediately (payment_status
+      // 'pending' — settled later by staff verifying the deposit, or by the order being
+      // marked delivered).
+      if (isOfflinePayment(pending.payment_method)) {
         const order = await this.api.post<Order>('/orders', {
           items: pending.items.map((i) => ({ productId: i.id, quantity: i.quantity })),
           shippingAddress: pending.shipping_address,
-          paymentMethod: 'bank',
+          paymentMethod: pending.payment_method,
           promoCode: pending.promo_code || undefined,
         });
         this.cart.clearCart();

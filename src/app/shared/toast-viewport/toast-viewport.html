@@ -16,6 +16,18 @@
           <div class="w-9 h-9 rounded-full flex items-center justify-center shrink-0" [class]="toast.iconClass || 'bg-brand-teal/15 text-brand-teal'">
             <svg lucideCircleX class="w-4.5 h-4.5"></svg>
           </div>
+        } @else if (toast.icon === 'banknote') {
+          <div class="w-9 h-9 rounded-full flex items-center justify-center shrink-0" [class]="toast.iconClass || 'bg-brand-teal/15 text-brand-teal'">
+            <svg lucideBanknote class="w-4.5 h-4.5"></svg>
+          </div>
+        } @else if (toast.icon === 'package-check') {
+          <div class="w-9 h-9 rounded-full flex items-center justify-center shrink-0" [class]="toast.iconClass || 'bg-brand-teal/15 text-brand-teal'">
+            <svg lucidePackageCheck class="w-4.5 h-4.5"></svg>
+          </div>
+        } @else if (toast.icon === 'star') {
+          <div class="w-9 h-9 rounded-full flex items-center justify-center shrink-0" [class]="toast.iconClass || 'bg-brand-teal/15 text-brand-teal'">
+            <svg lucideStar class="w-4.5 h-4.5"></svg>
+          </div>
         } @else if (toast.icon === 'spinner') {
           <div class="w-9 h-9 rounded-full flex items-center justify-center shrink-0" [class]="toast.iconClass || 'bg-brand-teal/15 text-brand-teal'">
             <svg lucideLoaderCircle class="w-4.5 h-4.5 animate-spin"></svg>

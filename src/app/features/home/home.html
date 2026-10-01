@@ -42,6 +42,65 @@
 
   <section class="py-8 bg-brand-light">
     <div class="px-4">
+      <div appReveal class="mb-5">
+        <p class="eyebrow mb-2">How It Works</p>
+        <h2 class="font-display text-xl font-extrabold tracking-tight text-brand-ink">From checkout to a job well done</h2>
+        <p class="text-gray-500 text-sm mt-1.5">Whether you're buying a product or booking a pro, every step happens in one place.</p>
+      </div>
+
+      <div appReveal class="flex p-1 rounded-full bg-white border border-gray-200 elevation-1 mb-5" role="tablist" aria-label="How it works">
+        @for (t of howItWorks; track t.key; let i = $index) {
+          <button
+            type="button"
+            role="tab"
+            [attr.aria-selected]="trackIndex() === i"
+            (click)="trackIndex.set(i)"
+            class="tap flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-full text-xs font-semibold transition-all duration-300"
+            [class]="trackIndex() === i ? 'bg-brand-navy text-white shadow-md shadow-brand-navy/20' : 'text-gray-500'"
+          >
+            @if (t.key === 'products') {
+              <svg lucideShoppingCart class="w-3.5 h-3.5"></svg>
+            } @else {
+              <svg lucideCalendarCheck class="w-3.5 h-3.5"></svg>
+            }
+            {{ t.label }}
+          </button>
+        }
+      </div>
+
+      @let flow = howItWorks[trackIndex()];
+      <ol class="relative space-y-4">
+        <span class="absolute left-6 top-6 bottom-6 w-0.5 bg-brand-navy/10" aria-hidden="true"></span>
+        @for (step of flow.steps; track step.title; let i = $index) {
+          <li class="relative flex gap-4 fade-up" [style.animation-delay.ms]="i * 80">
+            <div class="relative w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-navy to-brand-blue shadow-lg shadow-brand-navy/20 flex items-center justify-center shrink-0">
+              @switch (step.icon) {
+                @case ('search') { <svg lucideSearch class="w-5 h-5 text-white"></svg> }
+                @case ('card') { <svg lucideCreditCard class="w-5 h-5 text-white"></svg> }
+                @case ('truck') { <svg lucideTruck class="w-5 h-5 text-white"></svg> }
+                @case ('wrench') { <svg lucideWrench class="w-5 h-5 text-white"></svg> }
+                @case ('calendar') { <svg lucideCalendarCheck class="w-5 h-5 text-white"></svg> }
+                @case ('user') { <svg lucideUserCheck class="w-5 h-5 text-white"></svg> }
+                @case ('activity') { <svg lucideActivity class="w-5 h-5 text-white"></svg> }
+              }
+              <span class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-brand-orange text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-brand-light">{{ i + 1 }}</span>
+            </div>
+            <div class="min-w-0 pt-1">
+              <h3 class="font-display font-bold text-sm text-brand-ink mb-0.5">{{ step.title }}</h3>
+              <p class="text-gray-500 text-xs leading-relaxed">{{ step.desc }}</p>
+            </div>
+          </li>
+        }
+      </ol>
+
+      <a [routerLink]="flow.cta.to" class="tap mt-5 text-brand-navy font-semibold text-sm inline-flex items-center gap-1">
+        {{ flow.cta.text }} <svg lucideArrowRight class="w-4 h-4"></svg>
+      </a>
+    </div>
+  </section>
+
+  <section class="py-8 bg-white">
+    <div class="px-4">
       <div appReveal class="flex justify-between items-end mb-5 gap-4">
         <h2 class="font-display text-xl font-extrabold tracking-tight text-brand-ink">Popular services</h2>
         <a routerLink="/services" class="tap shrink-0 text-brand-navy font-semibold text-sm flex items-center gap-1">
@@ -68,7 +127,7 @@
     </div>
   </section>
 
-  <section class="py-8 bg-white">
+  <section class="py-8 bg-brand-light">
     <div class="px-4">
       <div appReveal class="mb-5">
         <h2 class="font-display text-xl font-extrabold tracking-tight text-brand-ink">The HomeLink promise</h2>
@@ -91,6 +150,79 @@
       </div>
     </div>
   </section>
+
+  @if (reviews().loading || reviews().error || reviews().data.length > 0) {
+    <section class="py-8 bg-white">
+      <div class="px-4">
+        <div appReveal class="mb-5">
+          <p class="eyebrow mb-2">Testimonials</p>
+          <h2 class="font-display text-xl font-extrabold tracking-tight text-brand-ink">What our customers say</h2>
+          <p class="text-gray-500 text-sm mt-1.5">Real reviews from homeowners who bought through HomeLink.</p>
+        </div>
+        @if (reviews().loading) {
+          <app-review-card-skeleton />
+        } @else if (reviews().error) {
+          <app-error-state message="Couldn't load reviews right now." (retry)="loadReviews()" />
+        }
+      </div>
+      @if (reviews().data.length > 0) {
+        <div appReveal class="flex gap-3 overflow-x-auto snap-x snap-mandatory no-scrollbar px-4 pb-2">
+          @for (r of reviews().data; track r.id) {
+            <figure class="snap-center shrink-0 w-[85%] bg-white rounded-2xl border border-gray-100 elevation-1 p-5 flex flex-col gap-3">
+              <div class="flex items-center justify-between">
+                <app-star-rating [value]="r.rating" [readOnly]="true" size="w-4 h-4" />
+                <svg lucideQuote class="w-6 h-6 text-brand-orange/25"></svg>
+              </div>
+              <blockquote class="text-gray-600 text-sm leading-relaxed flex-1">{{ r.comment }}</blockquote>
+              <figcaption class="flex items-center gap-3 pt-3 border-t border-gray-100">
+                <div class="w-9 h-9 rounded-full bg-gradient-to-br from-brand-navy to-brand-blue flex items-center justify-center text-white font-semibold text-sm shrink-0">
+                  {{ initials(r) }}
+                </div>
+                <div class="min-w-0">
+                  <p class="text-sm font-semibold text-gray-800 truncate">{{ r.first_name }} {{ r.last_name }}</p>
+                  <p class="text-xs text-gray-400 truncate">{{ r.product_name }}</p>
+                </div>
+              </figcaption>
+            </figure>
+          }
+        </div>
+      }
+    </section>
+  }
+
+  @if (faqs().length > 0) {
+    <section class="py-8 bg-brand-light">
+      <div class="px-4">
+        <div appReveal class="mb-5">
+          <p class="eyebrow mb-2">Need Help?</p>
+          <h2 class="font-display text-xl font-extrabold tracking-tight text-brand-ink">Questions, answered</h2>
+          <p class="text-gray-500 text-sm mt-1.5">Quick answers to what homeowners ask us most. Can't find yours? Our support team is a call or an email away.</p>
+        </div>
+        <div appReveal>
+          <app-faq-accordion [faqs]="faqs()" />
+        </div>
+        <a routerLink="/faq" class="tap mt-4 text-brand-navy font-semibold text-sm inline-flex items-center gap-1">
+          View all FAQs <svg lucideArrowRight class="w-4 h-4"></svg>
+        </a>
+
+        <div appReveal class="card p-4 mt-5 space-y-3">
+          <a [href]="'tel:' + contact().phone" class="tap flex items-center gap-2.5 text-sm text-gray-600">
+            <span class="w-8 h-8 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0"><svg lucidePhone class="w-4 h-4 text-brand-teal"></svg></span>
+            {{ contact().phone }}
+          </a>
+          <a [href]="'mailto:' + contact().email" class="tap flex items-center gap-2.5 text-sm text-gray-600">
+            <span class="w-8 h-8 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0"><svg lucideMail class="w-4 h-4 text-brand-teal"></svg></span>
+            {{ contact().email }}
+          </a>
+          <div class="flex items-center gap-2.5 text-sm text-gray-600">
+            <span class="w-8 h-8 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0"><svg lucideClock class="w-4 h-4 text-brand-teal"></svg></span>
+            Mon – Sat, 8:00 AM – 6:00 PM
+          </div>
+          <p class="text-xs text-gray-400 pt-3 border-t border-gray-100">We respond within 24 hours on business days.</p>
+        </div>
+      </div>
+    </section>
+  }
 
   <section class="relative overflow-hidden py-12 bg-brand-navy text-white">
     <div appReveal class="relative px-4 text-center">

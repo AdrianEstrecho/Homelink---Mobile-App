@@ -34,40 +34,7 @@
 
   @if (showForm()) {
     <div class="p-4 rounded-xl bg-gray-50 border border-gray-100 space-y-4" [class.mt-4]="options().length > 0">
-      <div>
-        <label class="block text-sm font-medium mb-1.5 text-gray-700">Label</label>
-        <input [ngModel]="form().label" (ngModelChange)="updateField('label', $event)" placeholder="Home, Office, ..." class="input-field" />
-      </div>
-      <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        <div>
-          <label class="block text-sm font-medium mb-1.5 text-gray-700">House / Unit No.</label>
-          <input [ngModel]="form().houseNumber" (ngModelChange)="updateField('houseNumber', $event)" placeholder="123" class="input-field" />
-        </div>
-        <div class="col-span-2">
-          <label class="block text-sm font-medium mb-1.5 text-gray-700">Street</label>
-          <input [ngModel]="form().street" (ngModelChange)="updateField('street', $event)" placeholder="Rizal Street" class="input-field" />
-        </div>
-      </div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-sm font-medium mb-1.5 text-gray-700">Village / Barangay</label>
-          <input [ngModel]="form().village" (ngModelChange)="updateField('village', $event)" placeholder="Barangay San Isidro" class="input-field" />
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1.5 text-gray-700">City / Municipality</label>
-          <input [ngModel]="form().city" (ngModelChange)="updateField('city', $event)" placeholder="Makati City" class="input-field" />
-        </div>
-      </div>
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <label class="block text-sm font-medium mb-1.5 text-gray-700">Province</label>
-          <input [ngModel]="form().province" (ngModelChange)="updateField('province', $event)" placeholder="Metro Manila" class="input-field" />
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1.5 text-gray-700">Postal Code</label>
-          <input [ngModel]="form().postalCode" (ngModelChange)="updateField('postalCode', $event)" placeholder="1200" class="input-field" />
-        </div>
-      </div>
+      <app-address-form-fields [form]="form()" (formChange)="form.set($event)" />
       @if (error()) {
         <p class="text-red-600 text-sm">{{ error() }}</p>
       }

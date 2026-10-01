@@ -1,15 +1,13 @@
 import { Component, inject, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { LucideMapPin, LucidePencil, LucidePlus, LucideStar, LucideTrash2, LucideX } from '@lucide/angular';
 
 import { ApiService } from '../../../../core/api.service';
 import { Address, NewAddressForm } from '../../../../core/address.model';
-
-const emptyForm: NewAddressForm = { label: '', houseNumber: '', street: '', village: '', city: '', province: '', postalCode: '' };
+import { AddressFormFields, emptyAddressForm as emptyForm } from '../../../../shared/address-form-fields/address-form-fields';
 
 @Component({
   selector: 'app-addresses-tab',
-  imports: [FormsModule, LucideMapPin, LucidePlus, LucideStar, LucidePencil, LucideTrash2, LucideX],
+  imports: [AddressFormFields, LucideMapPin, LucidePlus, LucideStar, LucidePencil, LucideTrash2, LucideX],
   templateUrl: './addresses-tab.html',
   styleUrl: './addresses-tab.css',
 })
@@ -32,10 +30,6 @@ export class AddressesTab {
       .get<Address[]>('/addresses/my')
       .then((data) => this.addresses.set(data))
       .catch(() => this.addresses.set([]));
-  }
-
-  updateField<K extends keyof NewAddressForm>(key: K, value: NewAddressForm[K]): void {
-    this.form.update((f) => ({ ...f, [key]: value }));
   }
 
   startAdd(): void {

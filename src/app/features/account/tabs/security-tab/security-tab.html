@@ -26,6 +26,62 @@
     </button>
   </form>
 
+  <div class="mt-8 pt-6 border-t border-gray-100 max-w-sm">
+    <h3 class="font-display font-bold text-brand-ink flex items-center gap-2 mb-1">
+      <svg lucideShieldCheck class="w-4 h-4 text-brand-teal"></svg> Two-Factor Authentication
+    </h3>
+    <p class="text-sm text-gray-500 mb-3">When enabled, we'll email you a one-time code to enter each time you sign in.</p>
+
+    @if (setupStage() === 'code') {
+      <form (submit)="$event.preventDefault(); verifyAndEnable()" class="space-y-3">
+        <p class="text-sm text-gray-600">Enter the verification code we emailed you to turn on two-factor authentication.</p>
+        <input
+          required
+          [ngModel]="setupCode()"
+          (ngModelChange)="onSetupCodeInput($event)"
+          name="setupCode"
+          maxlength="8"
+          autocomplete="one-time-code"
+          autocapitalize="characters"
+          class="input-field tracking-widest font-mono uppercase"
+          placeholder="XXXXXXXX"
+        />
+        <p class="text-xs text-gray-500">
+          Didn't receive a code?
+          <button type="button" (click)="resendSetupCode()" class="tap text-brand-orange font-semibold">Resend</button>
+          @if (setupResent()) {
+            <span class="text-green-600 ml-1">Sent!</span>
+          }
+        </p>
+        <div class="flex items-center gap-3">
+          <button type="submit" [disabled]="twoFactorSaving()" class="btn-primary flex items-center gap-2 disabled:opacity-60">
+            <svg lucideShieldCheck class="w-4 h-4"></svg> {{ twoFactorSaving() ? 'Verifying...' : 'Enable' }}
+          </button>
+          <button type="button" (click)="cancelSetup()" class="tap text-sm text-gray-500">Cancel</button>
+        </div>
+      </form>
+    } @else {
+      <div class="flex items-center">
+        <button
+          type="button"
+          role="switch"
+          [attr.aria-checked]="twoFactorEnabled()"
+          aria-label="Two-factor authentication"
+          (click)="toggleTwoFactor()"
+          [disabled]="twoFactorSaving()"
+          class="tap relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-60"
+          [class]="twoFactorEnabled() ? 'bg-brand-teal' : 'bg-gray-300'"
+        >
+          <span class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform" [class]="twoFactorEnabled() ? 'translate-x-6' : 'translate-x-1'"></span>
+        </button>
+        <span class="ml-3 text-sm text-gray-700">{{ twoFactorEnabled() ? 'Enabled' : 'Disabled' }}</span>
+      </div>
+    }
+    @if (twoFactorError()) {
+      <p class="text-red-600 text-sm mt-2">{{ twoFactorError() }}</p>
+    }
+  </div>
+
   <div class="mt-8 pt-6 border-t border-gray-100 flex items-start gap-3 text-sm text-gray-500 max-w-sm">
     <svg lucideLock class="w-4 h-4 text-gray-400 mt-0.5 shrink-0"></svg>
     <p>Your password is never stored in plain text — HomeLink only keeps a one-way hash of it.</p>

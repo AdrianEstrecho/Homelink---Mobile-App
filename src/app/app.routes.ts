@@ -44,6 +44,11 @@ export const routes: Routes = [
     canActivate: [roleGuard(['customer'])],
   },
   {
+    path: 'account/returns',
+    loadComponent: () => import('./features/account/returns-page/returns-page').then((m) => m.ReturnsPage),
+    canActivate: [roleGuard(['customer'])],
+  },
+  {
     path: 'account/support',
     loadComponent: () => import('./features/account/support-page/support-page').then((m) => m.SupportPage),
     canActivate: [roleGuard(['customer'])],
@@ -95,6 +100,10 @@ export const routes: Routes = [
   {
     path: 'about/developers',
     loadComponent: () => import('./features/about/developers/developers').then((m) => m.Developers),
+  },
+  {
+    path: 'faq',
+    loadComponent: () => import('./features/faq/faq').then((m) => m.FaqPage),
   },
   {
     path: 'location',

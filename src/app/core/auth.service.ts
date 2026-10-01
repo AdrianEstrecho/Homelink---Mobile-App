@@ -116,6 +116,18 @@ export class AuthService {
     this.user.update((prev) => (prev ? { ...prev, ...form } : prev));
   }
 
+  /** Emails the code that has to be entered before two-factor sign-in can be switched on. */
+  sendTwoFactorSetupCode(): Promise<unknown> {
+    return this.api.post('/auth/two-factor/send-code', {});
+  }
+
+  /** Mirrors setTwoFactorEnabled in frontend/src/context/AuthContext.jsx. Turning it on needs
+   *  the emailed setup code; turning it off doesn't. */
+  async setTwoFactorEnabled(enabled: boolean, code?: string): Promise<void> {
+    const data = await this.api.put<{ twoFactorEnabled: boolean }>('/auth/two-factor', { enabled, code });
+    this.user.update((prev) => (prev ? { ...prev, twoFactorEnabled: data.twoFactorEnabled } : prev));
+  }
+
   async refreshUser(): Promise<User> {
     const data = await this.api.get<User>('/auth/me');
     this.user.set(data);

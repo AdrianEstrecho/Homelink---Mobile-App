@@ -1,6 +1,7 @@
 import { jsPDF } from 'jspdf';
 
 import { Order } from './order.model';
+import { paymentMethodLabel } from './payment-methods';
 
 const NAVY = '#0f2b5b';
 const ORANGE = '#ff6b35';
@@ -127,7 +128,7 @@ export function downloadReceiptPdf(order: Order, person: ReceiptPerson | null, p
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
     doc.setTextColor(INK);
-    doc.text(capitalize(order.payment_method), MARGIN, y);
+    doc.text(paymentMethodLabel(order.payment_method), MARGIN, y);
     y += 24;
   }
 

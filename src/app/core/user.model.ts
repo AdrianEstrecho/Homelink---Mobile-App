@@ -13,4 +13,5 @@ export interface User {
   notifyOrders: boolean;
   notifyBookings: boolean;
   notifyPromotions: boolean;
+  twoFactorEnabled?: boolean;
 }

@@ -1,0 +1,15 @@
+<p class="text-sm text-gray-500 flex flex-wrap items-center gap-x-2 gap-y-1" aria-live="polite">
+  <span>Didn't get it? Check your spam folder, or</span>
+  @if (remaining() > 0) {
+    <span class="tabular-nums text-gray-400">resend in {{ remaining() }}s</span>
+  } @else {
+    <button type="button" (click)="resend()" [disabled]="sending()" class="tap font-semibold text-brand-orange disabled:opacity-60">
+      {{ sending() ? 'Sending…' : 'resend the code' }}
+    </button>
+  }
+  @if (resent() && remaining() > 0) {
+    <span class="auth-pop inline-flex items-center gap-1 font-medium text-teal-700">
+      <svg lucideCheck class="w-3.5 h-3.5" [attr.stroke-width]="2.5"></svg> New code sent
+    </span>
+  }
+</p>

@@ -1,0 +1,37 @@
+<div class="relative" [class.opacity-60]="disabled()">
+  <!-- 16px text stops iOS zooming in on focus. -->
+  <input
+    #field
+    [id]="inputId()"
+    [value]="value()"
+    (input)="onInput(field)"
+    (focus)="onFocus()"
+    (blur)="focused.set(false)"
+    (select)="pinCaret()"
+    (click)="pinCaret()"
+    [disabled]="disabled()"
+    autocomplete="one-time-code"
+    autocapitalize="characters"
+    autocorrect="off"
+    spellcheck="false"
+    [attr.aria-labelledby]="labelledBy()"
+    [attr.aria-describedby]="describedBy()"
+    [attr.aria-invalid]="invalid() || null"
+    class="absolute inset-0 z-10 w-full h-full opacity-0 text-base cursor-text disabled:cursor-not-allowed"
+  />
+  <div class="flex items-center gap-1.5" aria-hidden="true">
+    @for (i of cells(); track i) {
+      @if (i === length() / 2) {
+        <span class="w-2 h-0.5 shrink-0 rounded-full bg-gray-300"></span>
+      }
+      @let char = value()[i];
+      <div class="flex-1 min-w-0 h-12 rounded-xl border-2 flex items-center justify-center font-display text-lg font-bold text-brand-ink transition-all duration-150" [class]="cellTone(i)">
+        @if (char) {
+          <span class="auth-pop">{{ char }}</span>
+        } @else if (focused() && i === activeIndex()) {
+          <span class="code-caret"></span>
+        }
+      </div>
+    }
+  </div>
+</div>

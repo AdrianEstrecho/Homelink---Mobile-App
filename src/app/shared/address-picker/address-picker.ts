@@ -1,12 +1,10 @@
 import { Component, computed, inject, input, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { LucidePlus } from '@lucide/angular';
 
 import { ApiService } from '../../core/api.service';
 import { Address, NewAddressForm, PROFILE_ADDRESS_ID } from '../../core/address.model';
 import { AuthService } from '../../core/auth.service';
-
-const emptyAddressForm: NewAddressForm = { label: '', houseNumber: '', street: '', village: '', city: '', province: '', postalCode: '' };
+import { AddressFormFields, emptyAddressForm } from '../address-form-fields/address-form-fields';
 
 /**
  * Ported from frontend/src/components/AddressPicker.jsx. React exposes
@@ -15,7 +13,7 @@ const emptyAddressForm: NewAddressForm = { label: '', houseNumber: '', street: '
  */
 @Component({
   selector: 'app-address-picker',
-  imports: [FormsModule, LucidePlus],
+  imports: [AddressFormFields, LucidePlus],
   templateUrl: './address-picker.html',
   styleUrl: './address-picker.css',
 })
@@ -57,10 +55,6 @@ export class AddressPicker {
         if (this.hasProfileAddress()) this.selectedId.set(PROFILE_ADDRESS_ID);
         else this.showForm.set(true);
       });
-  }
-
-  updateField<K extends keyof NewAddressForm>(key: K, value: NewAddressForm[K]): void {
-    this.form.update((f) => ({ ...f, [key]: value }));
   }
 
   openForm(): void {

@@ -21,4 +21,7 @@ export interface NewAddressForm {
   city: string;
   province: string;
   postalCode: string;
+  /** The postal code was filled in from a picked city/barangay rather than typed — so a later
+   *  pick may overwrite it. Ignored by the backend. */
+  postalCodeAuto?: boolean;
 }

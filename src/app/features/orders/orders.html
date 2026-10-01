@@ -1,26 +1,109 @@
 <div class="px-4 py-4">
-  @if (orders().length === 0) {
+  @if (orders().length > 0) {
+    <div class="relative -mx-4 mb-4">
+      <div class="flex gap-5 border-b border-gray-200 overflow-x-auto no-scrollbar px-4">
+        @for (t of tabs; track t.key) {
+          @let active = t.key === activeTab().key;
+          <button
+            type="button"
+            (click)="selectTab(t.key)"
+            [attr.aria-pressed]="active"
+            class="tap flex items-center gap-1.5 pb-3 text-sm font-semibold transition border-b-2 -mb-px whitespace-nowrap"
+            [class]="active ? 'border-brand-orange text-brand-navy' : 'border-transparent text-gray-400'"
+          >
+            {{ t.label }}
+            @if (counts()[t.key] > 0) {
+              <span class="rounded-full px-1.5 py-0.5 text-[11px] font-bold leading-none" [class]="active ? 'bg-brand-orange/10 text-brand-orange' : 'bg-gray-100 text-gray-500'">
+                {{ counts()[t.key] }}
+              </span>
+            }
+          </button>
+        }
+      </div>
+      <div class="pointer-events-none absolute right-0 top-0 bottom-px w-8 bg-gradient-to-l from-white to-transparent"></div>
+    </div>
+  }
+
+  @if (loaded() && visible().length === 0) {
     <div class="text-center py-20">
       <svg lucideShoppingBag class="w-16 h-16 text-gray-300 mx-auto mb-4"></svg>
-      <p class="text-gray-500">No orders yet.</p>
+      <p class="text-gray-500 px-6">{{ activeTab().empty }}</p>
     </div>
   } @else {
     <div class="space-y-3">
-      @for (o of orders(); track o.id) {
-        <button type="button" (click)="selectedOrder.set(o)" class="tap card p-4 w-full text-left flex items-center gap-3">
-          <app-safe-image [src]="o.items[0]?.image" [alt]="o.items[0]?.name || ''" class="w-14 h-14 rounded-lg object-cover shrink-0 bg-gray-50" iconClass="w-6 h-6" />
-          <div class="flex-1 min-w-0">
-            <p class="font-semibold text-brand-ink truncate">Order #{{ o.id.slice(0, 8).toUpperCase() }}</p>
-            <p class="text-sm text-gray-500 truncate">
-              {{ o.created_at | date }} · {{ o.items?.length || 0 }} item{{ o.items?.length === 1 ? '' : 's' }}
-            </p>
-            <div class="flex items-center gap-2 flex-wrap mt-1">
-              <span class="badge" [class]="statusColor(o.status)">{{ o.status }}</span>
-              <span class="font-bold text-brand-navy text-sm">{{ o.total | homelinkPrice }}</span>
+      @for (o of visible(); track o.id) {
+        @let status = displayStatus(o);
+        @let units = unitCount(o);
+        @let hidden = (o.items?.length || 0) - itemsShown;
+        <div
+          role="button"
+          tabindex="0"
+          (click)="selectedOrder.set(o)"
+          (keydown.enter)="selectedOrder.set(o)"
+          [attr.aria-label]="'Order ' + o.id.slice(0, 8).toUpperCase() + ', ' + status"
+          class="tap card overflow-hidden w-full text-left cursor-pointer"
+        >
+          <div class="h-1 bg-gradient-to-r" [class]="accentFor(o)"></div>
+
+          <div class="flex items-center justify-between gap-2 px-4 pt-3.5 pb-3">
+            <div class="min-w-0">
+              <p class="font-display font-bold tracking-tight text-brand-ink truncate">Order #{{ o.id.slice(0, 8).toUpperCase() }}</p>
+              <p class="text-xs text-gray-500 mt-0.5">{{ o.created_at | date: 'MMM d, y' }} · {{ units }} item{{ units === 1 ? '' : 's' }}</p>
+            </div>
+            <span class="badge capitalize shrink-0" [class]="statusColor(status)">{{ status }}</span>
+          </div>
+
+          <div class="border-t border-gray-100 divide-y divide-gray-100">
+            @for (i of o.items.slice(0, itemsShown); track i.id) {
+              @let rating = ratingFor(o, i.product_id);
+              <div class="flex items-center gap-3 px-4 py-3">
+                <app-safe-image [src]="i.image" [alt]="i.name" class="w-14 h-14 shrink-0 rounded-xl object-cover bg-gray-100 ring-1 ring-gray-200/80" iconClass="w-5 h-5" />
+                <div class="flex-1 min-w-0">
+                  @if (i.brand) {
+                    <p class="text-[11px] font-semibold uppercase tracking-[0.12em] text-brand-teal truncate">{{ i.brand }}</p>
+                  }
+                  <p class="font-semibold text-sm text-brand-ink truncate">{{ i.name }}</p>
+                  <p class="text-xs text-gray-500 mt-0.5">Qty {{ i.quantity }} × {{ i.price | homelinkPrice }}</p>
+                  @if (rating) {
+                    <div class="flex items-center gap-2 mt-1.5 min-w-0">
+                      <app-star-rating [value]="rating.rating" [readOnly]="true" size="w-3.5 h-3.5" />
+                      @if (rating.comment) {
+                        <p class="text-xs text-gray-500 italic truncate">“{{ rating.comment }}”</p>
+                      } @else {
+                        <span class="text-xs text-gray-400">Your rating</span>
+                      }
+                    </div>
+                  }
+                </div>
+                <p class="shrink-0 text-sm font-bold text-brand-navy">{{ i.price * i.quantity | homelinkPrice }}</p>
+              </div>
+            }
+            @if (hidden > 0) {
+              <p class="px-4 py-2.5 text-xs font-semibold text-gray-500">+{{ hidden }} more item{{ hidden === 1 ? '' : 's' }} in this order</p>
+            }
+          </div>
+
+          <div class="flex items-center justify-between gap-3 px-4 py-3 border-t border-gray-100 bg-gradient-to-r from-brand-light/70 to-transparent">
+            <p class="text-xs text-gray-500 truncate">{{ paymentMethodLabel(o.payment_method) }}</p>
+            <div class="flex items-baseline gap-2 shrink-0">
+              <span class="text-xs font-medium text-gray-500">Total</span>
+              <span class="font-display text-lg font-extrabold tracking-tight text-brand-navy">{{ o.total | homelinkPrice }}</span>
+              <svg lucideChevronRight class="w-4 h-4 self-center text-gray-400"></svg>
             </div>
           </div>
-          <svg lucideChevronRight class="w-4 h-4 text-gray-400 shrink-0"></svg>
-        </button>
+
+          @if (canReview(o)) {
+            <div class="flex justify-end px-4 py-3 border-t border-gray-100">
+              <button
+                type="button"
+                (click)="openReview($event, o)"
+                class="tap inline-flex items-center gap-1.5 rounded-lg border border-brand-orange/30 bg-brand-orange/5 px-3.5 py-2 text-sm font-semibold text-brand-orange"
+              >
+                <svg lucideStar class="w-4 h-4"></svg> Add Review
+              </button>
+            </div>
+          }
+        </div>
       }
     </div>
   }
@@ -32,11 +115,13 @@
       personLabel="Billed To"
       [showCancel]="true"
       [showTrack]="true"
+      [showReturn]="true"
       [reviewableProductIds]="reviewableProductIds()"
       [reviewsByProduct]="reviewsByProduct()"
       (closed)="selectedOrder.set(null)"
       (cancelRequested)="cancelTarget.set(order)"
       (trackRequested)="trackingOrder.set(order)"
+      (returnRequested)="returnTarget.set(order)"
       (reviewed)="handleReviewed($event)"
     />
   }
@@ -50,10 +135,23 @@
     />
   }
 
+  @if (returnTarget(); as order) {
+    <app-return-request-modal [order]="order" (closed)="returnTarget.set(null)" (submitted)="handleReturnSubmitted($event)" />
+  }
+
+  @if (reviewTarget(); as order) {
+    <app-order-review-modal
+      [order]="order"
+      [reviewed]="reviewsByProduct()"
+      (closed)="reviewTarget.set(null)"
+      (submitted)="handleReviewsPosted($event)"
+    />
+  }
+
   <app-cancel-reason-modal
     [open]="cancelTarget() !== null"
     title="Cancel this order?"
-    message="This can't be undone once submitted. Let us know why you're cancelling."
+    [message]="cancelMessage()"
     (submitted)="submitCancel($event)"
     (cancelled)="cancelTarget.set(null)"
   />

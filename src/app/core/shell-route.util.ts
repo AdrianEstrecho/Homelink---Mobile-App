@@ -16,6 +16,7 @@ const ROOT_ROUTES = new Set([
   '/bookings',
   '/account',
   '/about',
+  '/faq',
   '/location',
   '/policies',
   '/terms',

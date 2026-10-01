@@ -6,10 +6,12 @@ import { LucideBadgeCheck, LucideChevronRight, LucideLayoutGrid, LucideSearch, L
 
 import { ApiService } from '../../core/api.service';
 import { Category, Product } from '../../core/product.model';
+import { scrollAppToTop } from '../../core/scroll-top.util';
 import { RevealDirective } from '../../shared/reveal.directive';
 import { categoryAccent } from '../../shared/category-accent';
 import { CategoryIcon } from '../../shared/category-icon/category-icon';
 import { ErrorState } from '../../shared/error-state/error-state';
+import { Pagination } from '../../shared/pagination/pagination';
 import { ProductCard } from '../../shared/product-card/product-card';
 import { Skeleton } from '../../shared/skeleton/skeleton';
 import { ProductCardSkeleton } from '../../shared/skeleton/product-card-skeleton/product-card-skeleton';
@@ -21,6 +23,9 @@ const SORT_OPTIONS: SelectOption[] = [
   { value: 'price_desc', label: 'Price: High to Low' },
   { value: 'name', label: 'Name: A to Z' },
 ];
+
+/** The catalog is paged from the server (?meta=1&limit&offset), the same size as the web. */
+const PAGE_SIZE = 30;
 
 type QuickFilterKey = 'featured' | 'inStock' | 'topRated';
 
@@ -36,6 +41,11 @@ interface LoadState<T> {
   error: boolean;
 }
 
+interface ProductPage {
+  products: Product[];
+  total: number;
+}
+
 @Component({
   selector: 'app-products',
   imports: [
@@ -43,6 +53,7 @@ interface LoadState<T> {
     RevealDirective,
     CategoryIcon,
     ErrorState,
+    Pagination,
     ProductCard,
     Skeleton,
     ProductCardSkeleton,
@@ -63,10 +74,12 @@ export class Products {
 
   protected readonly sortOptions = SORT_OPTIONS;
   protected readonly quickFilters = QUICK_FILTERS;
+  protected readonly pageSize = PAGE_SIZE;
 
   private queryParamMap = toSignal(this.route.queryParamMap, { requireSync: true });
   protected readonly category = () => this.queryParamMap().get('category') ?? '';
   protected readonly sort = () => this.queryParamMap().get('sort') ?? 'featured';
+  protected readonly page = computed(() => Math.max(1, Number(this.queryParamMap().get('page')) || 1));
 
   protected search = signal(this.queryParamMap().get('search') ?? '');
   protected readonly debouncedSearch = signal(this.search());
@@ -77,12 +90,16 @@ export class Products {
   protected readonly showCategories = signal(false);
 
   protected readonly categories = signal<LoadState<Category>>({ data: [], loading: true, error: false });
-  protected readonly products = signal<LoadState<Product>>({ data: [], loading: true, error: false });
+  protected readonly products = signal<LoadState<Product> & { total: number }>({ data: [], total: 0, loading: true, error: false });
+  protected readonly totalPages = computed(() => Math.max(1, Math.ceil(this.products().total / PAGE_SIZE)));
+
+  /** Featured is filtered by the server; In Stock and Top Rated have no server-side filter, so
+   *  they only narrow the page already loaded. */
+  protected readonly pageOnlyFilterActive = computed(() => this.activeFilters().has('inStock') || this.activeFilters().has('topRated'));
 
   protected readonly filteredProducts = computed(() => {
     const filters = this.activeFilters();
     let list = this.products().data;
-    if (filters.has('featured')) list = list.filter((p) => p.featured);
     if (filters.has('inStock')) list = list.filter((p) => p.stock > 0);
     if (filters.has('topRated')) list = list.filter((p) => (p.avg_rating ?? 0) >= 4);
     return list;
@@ -111,37 +128,63 @@ export class Products {
       onCleanup(() => clearTimeout(t));
     });
 
+    effect(() => this.loadProducts());
+
+    // A stale ?page= can point past the end of the catalog; fall back to the last real page
+    // rather than an empty grid. Replaced, not pushed, so Back still leaves.
     effect(() => {
-      const params = new URLSearchParams();
-      if (this.category()) params.set('category', this.category());
-      if (this.debouncedSearch()) params.set('search', this.debouncedSearch());
-      if (this.sort() !== 'featured') params.set('sort', this.sort());
-      this.loadProducts(params);
+      const state = this.products();
+      if (state.loading || state.error) return;
+      if (this.page() > this.totalPages()) this.setPage(this.totalPages(), true);
     });
   }
 
-  private loadProducts(params: URLSearchParams): void {
-    this.products.update((s) => ({ ...s, loading: true, error: false }));
-    this.api
-      .get<Product[]>(`/products?${params}`)
-      .then((data) => this.products.set({ data, loading: false, error: false }))
-      .catch(() => this.products.set({ data: [], loading: false, error: true }));
-  }
-
-  retryProducts(): void {
+  private loadProducts(): void {
     const params = new URLSearchParams();
     if (this.category()) params.set('category', this.category());
     if (this.debouncedSearch()) params.set('search', this.debouncedSearch());
     if (this.sort() !== 'featured') params.set('sort', this.sort());
-    this.loadProducts(params);
+    if (this.activeFilters().has('featured')) params.set('featured', 'true');
+    // meta=1 asks for the matching row count alongside the rows — one page's worth of products
+    // can't tell the pager how many pages there are.
+    params.set('meta', '1');
+    params.set('limit', String(PAGE_SIZE));
+    params.set('offset', String((this.page() - 1) * PAGE_SIZE));
+
+    this.products.update((s) => ({ ...s, loading: true, error: false }));
+    this.api
+      .get<ProductPage>(`/products?${params}`)
+      .then((data) => this.products.set({ data: data.products, total: data.total, loading: false, error: false }))
+      .catch(() => this.products.set({ data: [], total: 0, loading: false, error: true }));
   }
 
+  retryProducts(): void {
+    this.loadProducts();
+  }
+
+  /** Any filter change starts the result set over: page 3 of the whole catalog is an offset the
+   *  next filter may not even reach. */
   private mergeQueryParams(patch: Record<string, string | null>): void {
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: patch,
+      queryParams: { ...patch, page: null },
       queryParamsHandling: 'merge',
     });
+  }
+
+  /** Page 1 is the bare URL rather than ?page=1. */
+  private setPage(next: number, replaceUrl = false): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { page: next <= 1 ? null : next },
+      queryParamsHandling: 'merge',
+      replaceUrl,
+    });
+  }
+
+  handlePageChange(next: number): void {
+    this.setPage(next);
+    scrollAppToTop();
   }
 
   setCategory(slug: string | null): void {
@@ -166,6 +209,9 @@ export class Products {
 
   onSearchInput(value: string): void {
     this.search.set(value);
+    // Typing refetches on a debounce without going through the URL, so the page is cleared on
+    // the keystroke — otherwise the new term would first be searched at the old page's offset.
+    if (this.queryParamMap().has('page')) this.setPage(1, true);
   }
 
   onSearchFocus(): void {
@@ -194,6 +240,7 @@ export class Products {
       else next.add(key);
       return next;
     });
+    if (key === 'featured' && this.queryParamMap().has('page')) this.setPage(1, true);
   }
 
   toggleFilterPanel(): void {

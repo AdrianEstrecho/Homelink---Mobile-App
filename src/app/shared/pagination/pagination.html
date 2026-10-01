@@ -1,0 +1,26 @@
+@if (totalPages() > 1) {
+  <div class="flex items-center justify-between gap-3 py-3">
+    <p class="text-xs text-gray-500">Showing {{ start() }}–{{ end() }} of {{ total() }}</p>
+    <div class="flex items-center gap-2 ml-auto">
+      <button
+        type="button"
+        (click)="pageChange.emit(page() - 1)"
+        [disabled]="page() === 1"
+        aria-label="Previous page"
+        class="tap p-2 rounded-lg border border-gray-200 text-gray-500 disabled:opacity-40"
+      >
+        <svg lucideChevronLeft class="w-4 h-4"></svg>
+      </button>
+      <span class="text-xs font-medium text-gray-600 px-1 whitespace-nowrap">Page {{ page() }} of {{ totalPages() }}</span>
+      <button
+        type="button"
+        (click)="pageChange.emit(page() + 1)"
+        [disabled]="page() === totalPages()"
+        aria-label="Next page"
+        class="tap p-2 rounded-lg border border-gray-200 text-gray-500 disabled:opacity-40"
+      >
+        <svg lucideChevronRight class="w-4 h-4"></svg>
+      </button>
+    </div>
+  </div>
+}
