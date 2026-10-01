@@ -7,6 +7,7 @@ import { LucideBadgeCheck, LucideChevronRight, LucideLayoutGrid, LucideSearch, L
 import { ApiService } from '../../core/api.service';
 import { Category, Product } from '../../core/product.model';
 import { scrollAppToTop } from '../../core/scroll-top.util';
+import { carriedShellState } from '../../core/shell-route.util';
 import { RevealDirective } from '../../shared/reveal.directive';
 import { categoryAccent } from '../../shared/category-accent';
 import { CategoryIcon } from '../../shared/category-icon/category-icon';
@@ -169,6 +170,7 @@ export class Products {
       relativeTo: this.route,
       queryParams: { ...patch, page: null },
       queryParamsHandling: 'merge',
+      state: carriedShellState(this.router),
     });
   }
 
@@ -179,6 +181,7 @@ export class Products {
       queryParams: { page: next <= 1 ? null : next },
       queryParamsHandling: 'merge',
       replaceUrl,
+      state: carriedShellState(this.router),
     });
   }
 

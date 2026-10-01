@@ -7,7 +7,7 @@
           {{ user()?.firstName ?? 'Welcome' }}
         </h1>
       </div>
-      <a routerLink="/cart" aria-label="Cart" class="tap relative w-11 h-11 rounded-full bg-white border border-gray-100 elevation-1 flex items-center justify-center shrink-0">
+      <a routerLink="/cart" [state]="drillDown" aria-label="Cart" class="tap relative w-11 h-11 rounded-full bg-white border border-gray-100 elevation-1 flex items-center justify-center shrink-0">
         <svg lucideShoppingCart class="w-5 h-5 text-brand-ink"></svg>
         @if (cartCount() > 0) {
           <span class="absolute -top-1 -right-1 bg-brand-orange text-white text-[10px] font-bold min-w-[1.25rem] h-5 px-1 rounded-full flex items-center justify-center ring-2 ring-brand-light">{{ cartCount() > 9 ? '9+' : cartCount() }}</span>
@@ -34,7 +34,7 @@
 
     <div class="fade-up flex items-center justify-between mb-3" style="animation-delay: 90ms">
       <h2 class="font-display font-bold text-base text-brand-ink">Categories</h2>
-      <a routerLink="/products" class="tap flex items-center gap-0.5 text-xs font-semibold text-brand-navy">
+      <a routerLink="/products" [state]="drillDown" class="tap flex items-center gap-0.5 text-xs font-semibold text-brand-navy">
         View All <svg lucideArrowRight class="w-3.5 h-3.5"></svg>
       </a>
     </div>
@@ -49,7 +49,7 @@
         </button>
       } @else {
         @for (c of categories().data; track c.id; let i = $index) {
-          <a [routerLink]="['/products']" [queryParams]="{ category: c.slug }" class="tap group shrink-0 flex flex-col items-center gap-2 w-[4.25rem]">
+          <a [routerLink]="['/products']" [queryParams]="{ category: c.slug }" [state]="drillDown" class="tap group shrink-0 flex flex-col items-center gap-2 w-[4.25rem]">
             <div
               class="w-14 h-14 rounded-full elevation-1 flex items-center justify-center shrink-0 transition-transform duration-200 group-active:scale-95"
               [class]="categoryAccent(i).bg"

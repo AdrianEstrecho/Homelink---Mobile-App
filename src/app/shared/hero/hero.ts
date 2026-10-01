@@ -7,6 +7,7 @@ import { ApiService } from '../../core/api.service';
 import { AuthService } from '../../core/auth.service';
 import { CartService } from '../../core/cart.service';
 import { Category } from '../../core/product.model';
+import { DRILL_DOWN_STATE } from '../../core/shell-route.util';
 import { categoryAccent } from '../category-accent';
 import { CategoryIcon } from '../category-icon/category-icon';
 import { CategorySkeleton } from '../skeleton/category-skeleton/category-skeleton';
@@ -66,6 +67,7 @@ export class Hero {
   protected readonly announcements = signal<Announcement[]>([]);
 
   protected readonly categoryAccent = categoryAccent;
+  protected readonly drillDown = DRILL_DOWN_STATE;
 
   private bannerTimer?: ReturnType<typeof setInterval>;
 
@@ -92,7 +94,7 @@ export class Hero {
   onSearch(event: Event): void {
     event.preventDefault();
     const q = this.searchQuery().trim();
-    this.router.navigate(['/products'], q ? { queryParams: { search: q } } : {});
+    this.router.navigate(['/products'], { queryParams: q ? { search: q } : {}, state: DRILL_DOWN_STATE });
   }
 
   onBannerScroll(event: Event): void {

@@ -7,7 +7,7 @@ import { LucideArrowLeft, LucideHouse, LucideLogIn, LucideMenu, LucideShoppingCa
 import { AuthService } from '../../core/auth.service';
 import { CartService } from '../../core/cart.service';
 import { SideMenuService } from '../../core/side-menu.service';
-import { isRootRoute } from '../../core/shell-route.util';
+import { isDrillDown, isRootRoute } from '../../core/shell-route.util';
 
 const ROOT_TITLES: Record<string, string> = {
   '/': 'HomeLink',
@@ -74,7 +74,7 @@ export class Navbar {
   );
 
   protected readonly isHome = computed(() => this.url() === '/');
-  protected readonly isRoot = computed(() => isRootRoute(this.url()));
+  protected readonly isRoot = computed(() => isRootRoute(this.url()) && !isDrillDown(this.router));
   protected readonly pageTitle = computed(
     () => ROOT_TITLES[this.url()] ?? SECTION_TITLES.find((t) => t.test(this.url()))?.title ?? 'HomeLink',
   );
