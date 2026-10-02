@@ -1,6 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { LucideChevronDown, LucideReceipt, LucideRefreshCw, LucideSearch, LucideTriangleAlert } from '@lucide/angular';
 
 import { AdminOrder } from '../../../core/admin.model';
@@ -110,6 +111,10 @@ export class AdminOrders {
   }
 
   constructor() {
+    // The dashboard's "Needs attention" and pipeline rows link here pre-filtered (?status=pending).
+    const status = inject(ActivatedRoute).snapshot.queryParamMap.get('status');
+    const match = STATUSES.find((s) => s === status);
+    if (match) this.tab.set(match);
     this.load();
   }
 

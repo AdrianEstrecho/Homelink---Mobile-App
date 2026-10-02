@@ -1,0 +1,92 @@
+:host {
+  display: block;
+}
+
+/* The hero is a blueprint drawing sheet: brand navy with a fine 16px drafting grid, a heavier
+   line every fourth cell, a lift of brand blue in the top corner, and an inset frame line like
+   the border of a technical drawing. */
+.blueprint {
+  position: relative;
+  background-color: #0f2b5b;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.07) 1px, transparent 1px),
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    radial-gradient(120% 70% at 100% 0%, #1a4a8a 0%, rgba(26, 74, 138, 0) 65%);
+  background-size: 64px 64px, 64px 64px, 16px 16px, 16px 16px, 100% 100%;
+  background-position: 8px 8px, 8px 8px, 8px 8px, 8px 8px, 0 0;
+}
+.blueprint::before {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 20px;
+  pointer-events: none;
+}
+
+/* Drawing annotations: dates, axis labels, title-block captions. */
+.annot {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(219, 234, 254, 0.62);
+}
+
+/* Sized to the phone so an eight-digit total still fits on one line at 360px. */
+.hero-figure {
+  font-size: clamp(2.25rem, 11.5vw, 3rem);
+}
+.peso {
+  font-size: 0.6em;
+  vertical-align: 0.42em;
+  margin-right: 0.08em;
+  color: rgba(219, 234, 254, 0.7);
+}
+
+/* The sales line is drafted in left to right on first paint, then the month marker drops in. */
+.draw-in {
+  animation: drawIn 1.2s cubic-bezier(0.65, 0, 0.35, 1) 0.25s both;
+}
+.marker {
+  box-shadow: 0 0 0 2px #0f2b5b, 0 0 0 7px rgba(255, 107, 53, 0.22);
+  animation: markerIn 0.35s ease-out 1.35s both;
+}
+.track {
+  transition:
+    left 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    top 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes drawIn {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes markerIn {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .draw-in,
+  .marker {
+    animation: none;
+  }
+  .track {
+    transition: none;
+  }
+}
