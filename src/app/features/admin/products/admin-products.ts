@@ -3,9 +3,16 @@ import { FormsModule } from '@angular/forms';
 import {
   LucideArchive,
   LucideArchiveRestore,
+  LucideFolderTree,
+  LucideImage,
+  LucideInfo,
+  LucideListChecks,
   LucidePencil,
   LucidePlus,
   LucideSearch,
+  LucideShieldCheck,
+  LucideSparkles,
+  LucideTag,
   LucideTrash2,
   LucideUploadCloud,
   LucideX,
@@ -13,18 +20,34 @@ import {
 
 import { AdminCategory, AdminProduct } from '../../../core/admin.model';
 import { ApiService } from '../../../core/api.service';
+import { presetsForCategory, specEntries, toHighlights } from '../../../core/catalog-specs.util';
 import { formatPrice } from '../../../core/format.util';
+import { validateImageFile } from '../../../core/image-upload.util';
 import { ConfirmDialog } from '../../../shared/confirm-dialog/confirm-dialog';
 import { SafeImage } from '../../../shared/safe-image/safe-image';
 import { Select, SelectOption } from '../../../shared/select/select';
 
-const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-const MAX_IMAGE_MB = 5;
 const PAGE_SIZE = 10;
+const NEW_SUBCATEGORY = '__new__';
+
+// Specifications and highlights are edited as ordered rows, but stored as a label -> value
+// object and a string array respectively. Rows carry a client-only id so @for keeps inputs
+// focused while rows above them are added or removed (tracking by index would not).
+interface SpecRow {
+  id: string;
+  label: string;
+  value: string;
+}
+
+interface HighlightRow {
+  id: string;
+  value: string;
+}
 
 interface ProductForm {
   name: string;
   brand: string;
+  model: string;
   description: string;
   mainCategoryId: string;
   subcategoryId: string;
@@ -33,13 +56,23 @@ interface ProductForm {
   addStock: string;
   price: string;
   discount: string;
+  specs: SpecRow[];
+  highlights: HighlightRow[];
+  warranty: string;
   image: string;
   featured: boolean;
 }
 
-const emptyForm: ProductForm = {
+let rowSeq = 0;
+const specRow = (label = '', value = ''): SpecRow => ({ id: `s${++rowSeq}`, label, value });
+const highlightRow = (value = ''): HighlightRow => ({ id: `h${++rowSeq}`, value });
+
+// A factory rather than a shared constant — the form holds arrays, and reusing one object
+// across resets would let two edits share the same rows.
+const createEmptyForm = (): ProductForm => ({
   name: '',
   brand: '',
+  model: '',
   description: '',
   mainCategoryId: '',
   subcategoryId: '',
@@ -48,9 +81,12 @@ const emptyForm: ProductForm = {
   addStock: '',
   price: '',
   discount: '',
+  specs: [specRow()],
+  highlights: [highlightRow()],
+  warranty: '',
   image: '',
   featured: false,
-};
+});
 
 function slugify(str: string): string {
   return str
@@ -64,13 +100,33 @@ function slugify(str: string): string {
  * Mobile analog of frontend/src/pages/admin/Products.jsx, admin-only (no
  * inventory_clerk/general_staff approval-request branches — every write here
  * applies immediately, matching the mobile app's admin-only scope decision).
- * The desktop table becomes a card list; the inline "+ Add new subcategory"
- * prompt from Select.jsx isn't ported (see PromptDialog note in the plan) —
- * use the web admin for category management, this picks from existing ones.
+ * The desktop table becomes a card list; the form carries every field the web
+ * form does (model, specifications, highlights, warranty), and the PromptDialog
+ * behind "+ Add new subcategory..." becomes an inline field under the picker.
  */
 @Component({
   selector: 'app-admin-products',
-  imports: [FormsModule, ConfirmDialog, SafeImage, Select, LucideSearch, LucidePlus, LucidePencil, LucideArchive, LucideArchiveRestore, LucideTrash2, LucideX, LucideUploadCloud],
+  imports: [
+    FormsModule,
+    ConfirmDialog,
+    SafeImage,
+    Select,
+    LucideSearch,
+    LucidePlus,
+    LucidePencil,
+    LucideArchive,
+    LucideArchiveRestore,
+    LucideTrash2,
+    LucideX,
+    LucideUploadCloud,
+    LucideInfo,
+    LucideFolderTree,
+    LucideTag,
+    LucideListChecks,
+    LucideSparkles,
+    LucideShieldCheck,
+    LucideImage,
+  ],
   templateUrl: './admin-products.html',
   styleUrl: './admin-products.css',
 })
@@ -88,9 +144,12 @@ export class AdminProducts {
 
   protected readonly showForm = signal(false);
   protected readonly editingId = signal<string | null>(null);
-  protected readonly form = signal<ProductForm>(emptyForm);
+  protected readonly form = signal<ProductForm>(createEmptyForm());
+  protected readonly addingSubcategory = signal(false);
+  protected readonly newSubcategory = signal('');
+  protected readonly creatingSubcategory = signal(false);
+  protected readonly saving = signal(false);
   protected readonly error = signal('');
-  protected readonly notice = signal('');
   protected readonly pageError = signal('');
 
   protected readonly confirmArchiveId = signal<string | null>(null);
@@ -136,6 +195,7 @@ export class AdminProducts {
     return [
       { value: '', label: mainId ? 'None' : 'Select main category first' },
       ...subs.map((c) => ({ value: c.id, label: c.name })),
+      ...(mainId ? [{ value: NEW_SUBCATEGORY, label: '+ Add new subcategory...' }] : []),
     ];
   });
 
@@ -144,13 +204,31 @@ export class AdminProducts {
     { value: 'inactive', label: 'Inactive' },
   ];
 
+  protected readonly activeMainCategory = computed(() => this.mainCategories().find((c) => c.id === this.form().mainCategoryId));
+
+  protected readonly specSuggestions = computed(() => {
+    const used = new Set(this.form().specs.map((s) => s.label.trim().toLowerCase()).filter(Boolean));
+    return presetsForCategory(this.activeMainCategory()?.name).filter((label) => !used.has(label.toLowerCase()));
+  });
+
   private load(): void {
     this.api.get<AdminProduct[]>('/admin/products').then((p) => this.products.set(p)).catch(() => {});
-    this.api.get<AdminCategory[]>('/admin/categories').then((c) => this.categories.set(c)).catch(() => {});
+    this.loadCategories();
+  }
+
+  private loadCategories(): Promise<void> {
+    return this.api
+      .get<AdminCategory[]>('/admin/categories')
+      .then((c) => this.categories.set(c))
+      .catch(() => {});
   }
 
   constructor() {
     this.load();
+  }
+
+  specCount(p: AdminProduct): number {
+    return specEntries(p.specifications).length;
   }
 
   setTab(t: 'active' | 'archived'): void {
@@ -172,39 +250,52 @@ export class AdminProducts {
     this.visibleCount.update((v) => v + PAGE_SIZE);
   }
 
-  startAdd(): void {
-    this.form.set({ ...emptyForm });
-    this.editingId.set(null);
+  private openForm(form: ProductForm, editingId: string | null): void {
+    this.form.set(form);
+    this.editingId.set(editingId);
+    this.addingSubcategory.set(false);
+    this.newSubcategory.set('');
     this.error.set('');
-    this.notice.set('');
+    this.pageError.set('');
     this.showForm.set(true);
   }
 
+  startAdd(): void {
+    this.openForm(createEmptyForm(), null);
+  }
+
   startEdit(p: AdminProduct): void {
-    this.form.set({
-      name: p.name,
-      brand: p.brand ?? '',
-      description: p.description ?? '',
-      mainCategoryId: p.main_category_id ?? '',
-      subcategoryId: p.category_parent_id ? p.category_id : '',
-      status: p.status === 'inactive' ? 'inactive' : 'active',
-      stock: String(p.stock),
-      addStock: '',
-      price: String(p.price),
-      discount: String(p.discount || 0),
-      image: p.image || '',
-      featured: !!p.featured,
-    });
-    this.editingId.set(p.id);
-    this.error.set('');
-    this.notice.set('');
-    this.showForm.set(true);
+    // specEntries humanizes legacy camelCase keys ("energyRating" -> "Energy Rating"), so
+    // re-saving an older product also tidies up how its labels are stored.
+    const specs = specEntries(p.specifications).map((s) => specRow(s.label, s.value));
+    const highlights = toHighlights(p.highlights).map((h) => highlightRow(h));
+    this.openForm(
+      {
+        name: p.name,
+        brand: p.brand ?? '',
+        model: p.model ?? '',
+        description: p.description ?? '',
+        mainCategoryId: p.main_category_id ?? '',
+        subcategoryId: p.category_parent_id ? p.category_id : '',
+        status: p.status === 'inactive' ? 'inactive' : 'active',
+        stock: String(p.stock),
+        addStock: '',
+        price: String(p.price),
+        discount: String(p.discount || 0),
+        specs: specs.length ? specs : [specRow()],
+        highlights: highlights.length ? highlights : [highlightRow()],
+        warranty: p.warranty ?? '',
+        image: p.image || '',
+        featured: !!p.featured,
+      },
+      p.id,
+    );
   }
 
   cancelForm(): void {
     this.showForm.set(false);
     this.editingId.set(null);
-    this.form.set({ ...emptyForm });
+    this.form.set(createEmptyForm());
     this.error.set('');
   }
 
@@ -213,17 +304,84 @@ export class AdminProducts {
   }
 
   onMainCategoryChange(mainCategoryId: string): void {
+    this.addingSubcategory.set(false);
     this.patchForm({ mainCategoryId, subcategoryId: '' });
   }
 
-  handleFile(file: File | null | undefined): void {
-    if (!file) return;
-    if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
-      this.error.set('Please upload a JPG, PNG, WebP, or GIF image.');
+  onSubcategoryChange(value: string): void {
+    if (value === NEW_SUBCATEGORY) {
+      this.newSubcategory.set('');
+      this.addingSubcategory.set(true);
       return;
     }
-    if (file.size > MAX_IMAGE_MB * 1024 * 1024) {
-      this.error.set(`Image must be smaller than ${MAX_IMAGE_MB}MB.`);
+    this.addingSubcategory.set(false);
+    this.patchForm({ subcategoryId: value });
+  }
+
+  async confirmNewSubcategory(): Promise<void> {
+    const label = this.newSubcategory().trim();
+    const mainId = this.form().mainCategoryId;
+    if (!label || !mainId || this.creatingSubcategory()) return;
+    // Same name already exists under this category — reuse it instead of creating a duplicate.
+    const existing = this.categories().find((c) => c.parent_id === mainId && c.name.trim().toLowerCase() === label.toLowerCase());
+    if (existing) {
+      this.patchForm({ subcategoryId: existing.id });
+      this.addingSubcategory.set(false);
+      return;
+    }
+    this.creatingSubcategory.set(true);
+    this.error.set('');
+    try {
+      const slug = `${slugify(label)}-${Date.now().toString(36)}`;
+      const { id } = await this.api.post<{ id: string }>('/admin/categories', { name: label, slug, parentId: mainId });
+      await this.loadCategories();
+      this.patchForm({ subcategoryId: id });
+      this.addingSubcategory.set(false);
+    } catch (err) {
+      this.error.set((err as Error).message);
+    } finally {
+      this.creatingSubcategory.set(false);
+    }
+  }
+
+  updateSpec(id: string, patch: Partial<SpecRow>): void {
+    this.form.update((f) => ({ ...f, specs: f.specs.map((s) => (s.id === id ? { ...s, ...patch } : s)) }));
+  }
+
+  addSpec(label = ''): void {
+    this.form.update((f) => ({ ...f, specs: [...f.specs, specRow(label)] }));
+  }
+
+  removeSpec(id: string): void {
+    this.form.update((f) => {
+      const specs = f.specs.filter((s) => s.id !== id);
+      return { ...f, specs: specs.length ? specs : [specRow()] };
+    });
+  }
+
+  updateHighlight(id: string, value: string): void {
+    this.form.update((f) => ({ ...f, highlights: f.highlights.map((h) => (h.id === id ? { ...h, value } : h)) }));
+  }
+
+  addHighlight(): void {
+    this.form.update((f) => ({ ...f, highlights: [...f.highlights, highlightRow()] }));
+  }
+
+  removeHighlight(id: string): void {
+    this.form.update((f) => {
+      const highlights = f.highlights.filter((h) => h.id !== id);
+      return { ...f, highlights: highlights.length ? highlights : [highlightRow()] };
+    });
+  }
+
+  onFileInput(e: Event): void {
+    const input = e.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    const err = validateImageFile(file);
+    if (err) {
+      this.error.set(err);
       return;
     }
     this.error.set('');
@@ -232,18 +390,35 @@ export class AdminProducts {
     reader.readAsDataURL(file);
   }
 
-  onFileInput(e: Event): void {
-    const input = e.target as HTMLInputElement;
-    this.handleFile(input.files?.[0]);
-    input.value = '';
-  }
-
+  // Admin writes take effect immediately, so the submit gates on an explicit confirmation.
   submitForm(): void {
     this.error.set('');
-    if (!this.form().mainCategoryId) {
+    const f = this.form();
+    if (!f.mainCategoryId) {
       this.error.set('Select a main category.');
       return;
     }
+
+    // A value typed without a label would silently vanish on save, and two rows sharing a
+    // label would collapse into one — catch both here rather than letting the object build
+    // quietly drop them.
+    const seen = new Set<string>();
+    for (const row of f.specs) {
+      const label = row.label.trim();
+      const value = row.value.trim();
+      if (!label && value) {
+        this.error.set('Every specification needs a label — one row has a value but no label.');
+        return;
+      }
+      if (!label) continue;
+      const key = label.toLowerCase();
+      if (seen.has(key)) {
+        this.error.set(`"${label}" is listed twice in the specifications. Use a different label for each row.`);
+        return;
+      }
+      seen.add(key);
+    }
+
     this.confirmSaveOpen.set(true);
   }
 
@@ -251,68 +426,66 @@ export class AdminProducts {
     this.confirmSaveOpen.set(false);
     const f = this.form();
     const editingId = this.editingId();
-    const categoryId = f.subcategoryId || f.mainCategoryId;
-    const addQty = Number(f.addStock) || 0;
+    const specifications: Record<string, string> = {};
+    for (const row of f.specs) {
+      const label = row.label.trim();
+      const value = row.value.trim();
+      if (label && value) specifications[label] = value;
+    }
     const payload: Record<string, unknown> = {
       name: f.name,
-      categoryId,
+      categoryId: f.subcategoryId || f.mainCategoryId,
       description: f.description,
       price: Number(f.price),
       image: f.image,
       brand: f.brand,
+      model: f.model,
+      warranty: f.warranty,
       discount: Number(f.discount) || 0,
       status: f.status,
       featured: f.featured,
-      specifications: {},
+      specifications,
+      highlights: f.highlights.map((h) => h.value.trim()).filter(Boolean),
     };
-    if (editingId) payload['addStock'] = addQty;
+    if (editingId) payload['addStock'] = Number(f.addStock) || 0;
     else payload['stock'] = Number(f.stock);
 
+    this.saving.set(true);
     try {
-      if (editingId) {
-        await this.api.put(`/admin/products/${editingId}`, payload);
-      } else {
-        await this.api.post('/admin/products', { ...payload, slug: slugify(f.name) });
-      }
+      if (editingId) await this.api.put(`/admin/products/${editingId}`, payload);
+      else await this.api.post('/admin/products', { ...payload, slug: slugify(f.name) });
       this.cancelForm();
-      this.notice.set('');
       this.load();
     } catch (err) {
       this.error.set((err as Error).message);
+    } finally {
+      this.saving.set(false);
     }
   }
 
-  async archive(id: string): Promise<void> {
-    await this.api.put(`/admin/products/${id}/archive`);
-    this.load();
-  }
-
-  async restore(id: string): Promise<void> {
-    await this.api.put(`/admin/products/${id}/restore`);
-    this.load();
-  }
-
-  async remove(id: string): Promise<void> {
+  private async run(fn: () => Promise<unknown>): Promise<void> {
+    this.pageError.set('');
     try {
-      await this.api.delete(`/admin/products/${id}`);
-      this.notice.set('');
+      await fn();
       this.load();
     } catch (err) {
       this.pageError.set((err as Error).message);
     }
   }
 
+  restore(id: string): void {
+    this.run(() => this.api.put(`/admin/products/${id}/restore`));
+  }
+
   confirmArchive(): void {
     const id = this.confirmArchiveId();
-    if (id) this.archive(id);
     this.confirmArchiveId.set(null);
+    if (id) this.run(() => this.api.put(`/admin/products/${id}/archive`));
   }
 
   confirmDelete(): void {
     const id = this.confirmDeleteId();
-    this.notice.set('');
-    this.pageError.set('');
-    if (id) this.remove(id);
     this.confirmDeleteId.set(null);
+    if (id) this.run(() => this.api.delete(`/admin/products/${id}`));
   }
 }

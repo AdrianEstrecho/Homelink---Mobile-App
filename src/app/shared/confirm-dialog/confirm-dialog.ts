@@ -33,6 +33,8 @@ export class ConfirmDialog {
   readonly confirmLabel = input('Confirm');
   readonly cancelLabel = input('Cancel');
   readonly tone = input<ConfirmTone>('delete');
+  /** Raise above another z-[100] overlay it's opened from (e.g. a form modal's save confirm). */
+  readonly zIndexClass = input('z-[100]');
 
   readonly confirmed = output<void>();
   readonly cancelled = output<void>();

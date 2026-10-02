@@ -80,7 +80,7 @@
     @let f = form();
     <div class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center app-overlay-frame">
       <div class="modal-scrim" (click)="cancelForm()"></div>
-      <form (ngSubmit)="submitForm()" class="relative bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-h-[90vh] overflow-y-auto p-5 space-y-3 fade-up pb-safe">
+      <form ngNativeValidate (ngSubmit)="submitForm()" class="relative bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-h-[90vh] overflow-y-auto p-5 space-y-3 fade-up pb-safe">
         <div class="flex items-center justify-between">
           <h3 class="font-semibold text-gray-800 text-lg">New Voucher</h3>
           <button type="button" (click)="cancelForm()" aria-label="Close" class="text-gray-400"><svg lucideX class="w-4 h-4"></svg></button>

@@ -111,7 +111,7 @@
     @let f = form();
     <div class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center app-overlay-frame">
       <div class="modal-scrim" (click)="cancelForm()"></div>
-      <form (ngSubmit)="submitForm()" class="relative bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-h-[90vh] flex flex-col fade-up">
+      <form ngNativeValidate (ngSubmit)="submitForm()" class="relative bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-h-[90vh] flex flex-col fade-up">
         <div class="flex items-start justify-between gap-3 px-5 pt-5 pb-3 border-b border-gray-100 shrink-0">
           <div>
             <h3 class="font-semibold text-gray-800 text-lg">{{ editingId() ? 'Edit Service' : 'Add New Service' }}</h3>

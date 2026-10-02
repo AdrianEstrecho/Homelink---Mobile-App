@@ -30,6 +30,25 @@ export function toHighlights(highlights: unknown): string[] {
   return highlights.map((h) => String(h ?? '').trim()).filter(Boolean);
 }
 
+// One-tap specification labels offered in the admin product editor, keyed by main category name.
+const SPEC_PRESETS: Record<string, string[]> = {
+  'air conditioners': ['Brand', 'Cooling Capacity', 'Type', 'Energy Rating', 'Refrigerant', 'Room Size', 'Noise Level', 'Power Supply'],
+  'solar panels': ['System Capacity', 'Panels', 'Inverter', 'Panel Efficiency', 'Roof Area Needed', 'Mounting', 'Certification'],
+  'cctv & security': ['Brand', 'Cameras', 'Resolution', 'Storage', 'Night Vision', 'Weather Rating', 'Mobile App'],
+  electrical: ['Brand', 'Voltage Rating', 'Amperage', 'Material', 'Standard', 'Dimensions'],
+  plumbing: ['Brand', 'Material', 'Finish', 'Type', 'Sizes', 'Pressure Rating'],
+  'smart home': ['Brand', 'Connectivity', 'Power', 'Voice Assistants', 'Battery', 'Dimensions'],
+  'home appliances': ['Brand', 'Capacity', 'Type', 'Energy Rating', 'Power Consumption', 'Dimensions'],
+  lighting: ['Brand', 'Wattage', 'Light Output', 'Color Temperature', 'Beam Angle', 'Lifespan', 'Pack Size'],
+  tools: ['Brand', 'Voltage', 'Max Torque', 'Chuck Size', 'No-load Speed', 'Includes', 'Weight'],
+};
+
+const DEFAULT_PRESETS = ['Brand', 'Model', 'Material', 'Dimensions', 'Weight', 'Power Supply', 'Warranty'];
+
+export function presetsForCategory(categoryName: string | null | undefined): string[] {
+  return SPEC_PRESETS[String(categoryName ?? '').trim().toLowerCase()] || DEFAULT_PRESETS;
+}
+
 // The labels a booking coordinator would want on record for a visit, keyed by the service
 // categories the seed ships with — offered as one-tap rows in the admin service editor.
 const SERVICE_SPEC_PRESETS: Record<string, string[]> = {

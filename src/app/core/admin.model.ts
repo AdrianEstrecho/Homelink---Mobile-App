@@ -67,6 +67,11 @@ export interface AdminProduct {
   image: string;
   featured: boolean;
   brand?: string | null;
+  model?: string | null;
+  warranty?: string | null;
+  /** Arrive already parsed (backend shapeProduct): label -> value, and a list of lines. */
+  specifications?: Record<string, string> | null;
+  highlights?: string[] | null;
   discount: number;
   status: 'active' | 'inactive';
   archived: boolean;
