@@ -3,7 +3,6 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import {
   LucideCalendar,
-  LucideHouse,
   LucideLayoutDashboard,
   LucideLifeBuoy,
   LucideLogOut,
@@ -82,7 +81,6 @@ function avatarColor(seed: string): string {
     LucideTicket,
     LucideLifeBuoy,
     LucideLogOut,
-    LucideHouse,
   ],
   templateUrl: './admin-shell.html',
   styleUrl: './admin-shell.css',
