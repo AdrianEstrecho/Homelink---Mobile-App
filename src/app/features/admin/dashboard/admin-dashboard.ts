@@ -2,15 +2,21 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import {
   LucideAlertTriangle,
+  LucideArchive,
   LucideArrowRight,
   LucideCalendar,
   LucideDollarSign,
+  LucideLogIn,
+  LucidePencil,
+  LucidePlus,
   LucideShoppingCart,
+  LucideTrash2,
   LucideUsers,
 } from '@lucide/angular';
 
-import { AdminDashboardData } from '../../../core/admin.model';
+import { AdminAuditLog, AdminDashboardData, AdminUser } from '../../../core/admin.model';
 import { ApiService } from '../../../core/api.service';
+import { ACTION_META, AuditCategory, describeAudit, timeAgo } from '../../../core/audit-actions';
 import { AuthService } from '../../../core/auth.service';
 import { formatPrice, statusColor } from '../../../core/format.util';
 
@@ -25,11 +31,19 @@ const STATUS_BAR_FILL: Record<string, string> = {
 
 type StatIcon = 'revenue' | 'customers' | 'orders' | 'bookings';
 
+const CATEGORY_STYLE: Record<AuditCategory, string> = {
+  create: 'bg-green-100 text-green-600',
+  update: 'bg-amber-100 text-amber-600',
+  delete: 'bg-red-100 text-red-600',
+  login: 'bg-blue-100 text-blue-600',
+  archive: 'bg-purple-100 text-purple-600',
+};
+
 /** Mobile analog of frontend/src/pages/admin/Dashboard.jsx — stat cards, order-status
- * breakdown, and a recent orders/bookings switcher, as vertical cards instead of a
- * two-column desktop grid. The revenue line chart (RevenueChart.jsx) is swapped for a
- * lightweight bar list (recentMonths below); the "Recent Activity" audit-log feed isn't
- * ported since the Audit Log page itself is out of the Core Ops scope for this pass.
+ * breakdown, a recent orders/bookings switcher and the staff "Recent Activity" feed, as
+ * vertical cards instead of a two-column desktop grid. The revenue line chart
+ * (RevenueChart.jsx) is swapped for a lightweight bar list (recentMonths below). The web
+ * feed's "View all" goes to the Audit Trail page, which mobile doesn't have, so it's omitted.
  */
 @Component({
   selector: 'app-admin-dashboard',
@@ -41,6 +55,11 @@ type StatIcon = 'revenue' | 'customers' | 'orders' | 'bookings';
     LucideCalendar,
     LucideAlertTriangle,
     LucideArrowRight,
+    LucidePlus,
+    LucidePencil,
+    LucideTrash2,
+    LucideLogIn,
+    LucideArchive,
   ],
   templateUrl: './admin-dashboard.html',
   styleUrl: './admin-dashboard.css',
@@ -54,6 +73,28 @@ export class AdminDashboard {
   protected readonly user = this.auth.user;
   protected readonly data = signal<AdminDashboardData | null>(null);
   protected readonly recentTab = signal<'orders' | 'bookings'>('orders');
+  protected readonly activity = signal<AdminAuditLog[] | null>(null);
+  private readonly staff = signal<AdminUser[]>([]);
+
+  // booking.assign/unassign entries only carry an employee id, so they're named from the staff list.
+  protected readonly activityRows = computed(() => {
+    const staff = this.staff();
+    const nameOf = (id: string) => {
+      const match = staff.find((u) => u.id === id);
+      return match && `${match.first_name} ${match.last_name}`;
+    };
+    return (this.activity() ?? []).map((log) => {
+      const category = ACTION_META[log.action]?.category;
+      return {
+        id: log.id,
+        category: category ?? 'update',
+        style: category ? CATEGORY_STYLE[category] : 'bg-gray-100 text-gray-600',
+        text: describeAudit(log.action, log.details, nameOf),
+        by: log.first_name ? `${log.first_name} ${log.last_name}` : 'Deleted user',
+        when: timeAgo(log.created_at),
+      };
+    });
+  });
 
   protected readonly statCards = computed(() => {
     const d = this.data();
@@ -97,6 +138,14 @@ export class AdminDashboard {
     this.api
       .get<AdminDashboardData>('/admin/dashboard')
       .then((d) => this.data.set(d))
+      .catch(() => {});
+    this.api
+      .get<AdminAuditLog[]>('/admin/audit-logs?limit=6')
+      .then((a) => this.activity.set(a))
+      .catch(() => this.activity.set([]));
+    this.api
+      .get<AdminUser[]>('/admin/users')
+      .then((users) => this.staff.set(users.filter((u) => u.role !== 'customer')))
       .catch(() => {});
   }
 }

@@ -30,6 +30,23 @@ export function toHighlights(highlights: unknown): string[] {
   return highlights.map((h) => String(h ?? '').trim()).filter(Boolean);
 }
 
+// The labels a booking coordinator would want on record for a visit, keyed by the service
+// categories the seed ships with — offered as one-tap rows in the admin service editor.
+const SERVICE_SPEC_PRESETS: Record<string, string[]> = {
+  'air conditioning': ['Service Type', 'Unit Types Covered', 'Team Size', 'Parts Included', 'Refrigerant Top-up', 'Follow-up Check'],
+  'solar energy': ['Service Type', 'System Sizes Covered', 'Team Size', 'Roof Types', 'Permits Handled', 'Monitoring Setup'],
+  security: ['Service Type', 'Cameras Covered', 'Cabling Included', 'Team Size', 'App Setup', 'Storage Configuration'],
+  electrical: ['Service Type', 'Scope', 'Team Size', 'Materials Included', 'Testing', 'Certification'],
+  plumbing: ['Service Type', 'Scope', 'Team Size', 'Materials Included', 'Leak Testing'],
+  general: ['Service Type', 'Scope', 'Team Size', 'Materials Included', 'Follow-up Visit'],
+};
+
+const DEFAULT_SERVICE_PRESETS = ['Service Type', 'Scope', 'Team Size', 'Materials Included', 'Coverage Area', 'Follow-up Visit'];
+
+export function presetsForServiceCategory(categoryName: string | null | undefined): string[] {
+  return SERVICE_SPEC_PRESETS[String(categoryName ?? '').trim().toLowerCase()] || DEFAULT_SERVICE_PRESETS;
+}
+
 /** Free-text descriptions are written as prose; honour the paragraph breaks staff typed instead
  *  of collapsing the whole thing into one block. */
 export function paragraphs(text: string | null | undefined): string[] {

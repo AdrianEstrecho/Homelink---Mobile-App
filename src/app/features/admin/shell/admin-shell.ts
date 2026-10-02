@@ -5,11 +5,15 @@ import {
   LucideCalendar,
   LucideHouse,
   LucideLayoutDashboard,
+  LucideLifeBuoy,
   LucideLogOut,
   LucideMenu,
   LucidePackage,
+  LucidePackageCheck,
   LucideShoppingCart,
+  LucideTicket,
   LucideUsers,
+  LucideWrench,
   LucideX,
 } from '@lucide/angular';
 import { filter, map } from 'rxjs/operators';
@@ -17,22 +21,31 @@ import { filter, map } from 'rxjs/operators';
 import { AuthService } from '../../../core/auth.service';
 import { ConfirmDialog } from '../../../shared/confirm-dialog/confirm-dialog';
 
-type NavIcon = 'dashboard' | 'package' | 'cart' | 'calendar' | 'users';
+type NavIcon = 'dashboard' | 'package' | 'wrench' | 'cart' | 'returns' | 'calendar' | 'users' | 'ticket' | 'support';
 
+// Same order as the web sidebar's "Main" section (AdminLayout.jsx NAV_SECTIONS).
 const NAV_ITEMS: { to: string; label: string; icon: NavIcon; exact: boolean }[] = [
   { to: '/admin', label: 'Dashboard', icon: 'dashboard', exact: true },
   { to: '/admin/products', label: 'Products', icon: 'package', exact: false },
+  { to: '/admin/services', label: 'Services', icon: 'wrench', exact: false },
   { to: '/admin/orders', label: 'Orders', icon: 'cart', exact: false },
+  { to: '/admin/returns', label: 'Returns & Cancellations', icon: 'returns', exact: false },
   { to: '/admin/bookings', label: 'Bookings', icon: 'calendar', exact: false },
   { to: '/admin/users', label: 'Users', icon: 'users', exact: false },
+  { to: '/admin/vouchers', label: 'Vouchers', icon: 'ticket', exact: false },
+  { to: '/admin/support', label: 'Support', icon: 'support', exact: false },
 ];
 
 const PAGE_TITLES: Record<string, string> = {
   '/admin': 'Dashboard',
   '/admin/products': 'Products',
+  '/admin/services': 'Services',
   '/admin/orders': 'Orders',
+  '/admin/returns': 'Returns & Cancellations',
   '/admin/bookings': 'Bookings',
   '/admin/users': 'Users',
+  '/admin/vouchers': 'Vouchers',
+  '/admin/support': 'Support Messages',
 };
 
 const AVATAR_COLORS = ['bg-brand-navy', 'bg-brand-blue', 'bg-[#00806f]', 'bg-[#c8461a]'];
@@ -46,10 +59,9 @@ function avatarColor(seed: string): string {
  * Mobile analog of frontend/src/components/AdminLayout.jsx: same navy sidebar
  * language, but a collapsible slide-out drawer (toggled by a hamburger button
  * in the topbar) instead of an always-visible desktop rail — there's no room
- * for a permanent 240px sidebar on a phone screen. Scoped to the admin-only,
- * Core-Ops nav (Dashboard/Products/Orders/Bookings/Users) decided for the
- * mobile app; the position-scoped employee sections of NAV_SECTIONS in the
- * web version aren't ported here.
+ * for a permanent 240px sidebar on a phone screen. Admin-only: it carries the
+ * web sidebar's "Main" section (operations) but not its Management/System
+ * sections, nor the position-scoped employee navs of NAV_SECTIONS.
  */
 @Component({
   selector: 'app-admin-shell',
@@ -62,9 +74,13 @@ function avatarColor(seed: string): string {
     LucideX,
     LucideLayoutDashboard,
     LucidePackage,
+    LucideWrench,
     LucideShoppingCart,
+    LucidePackageCheck,
     LucideCalendar,
     LucideUsers,
+    LucideTicket,
+    LucideLifeBuoy,
     LucideLogOut,
     LucideHouse,
   ],

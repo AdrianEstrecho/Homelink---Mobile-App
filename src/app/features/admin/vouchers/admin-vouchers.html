@@ -1,0 +1,132 @@
+<div class="px-4 py-4 pb-8">
+  <app-confirm-dialog
+    [open]="confirmDeleteId() !== null"
+    tone="delete"
+    title="Delete this voucher?"
+    message="This cannot be undone."
+    confirmLabel="Delete"
+    (confirmed)="confirmDelete()"
+    (cancelled)="confirmDeleteId.set(null)"
+  >
+    <svg icon lucideTrash2></svg>
+  </app-confirm-dialog>
+
+  <app-confirm-dialog
+    [open]="confirmToggleId() !== null"
+    tone="update"
+    [title]="toggleTarget() ? (toggleTarget()!.active ? 'Deactivate' : 'Activate') + ' this voucher?' : ''"
+    [message]="toggleTarget()?.active ? 'Customers will no longer be able to use this code.' : 'Customers will be able to use this code again.'"
+    [confirmLabel]="toggleTarget()?.active ? 'Deactivate' : 'Activate'"
+    (confirmed)="confirmToggle()"
+    (cancelled)="confirmToggleId.set(null)"
+  >
+    <svg icon lucideTicket></svg>
+  </app-confirm-dialog>
+
+  @if (pageError()) {
+    <p class="mb-3 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{{ pageError() }}</p>
+  }
+
+  <div class="flex items-center justify-between gap-2 mb-3">
+    <p class="text-xs text-gray-500">{{ vouchers().length }} voucher{{ vouchers().length === 1 ? '' : 's' }}</p>
+    <button type="button" (click)="openForm()" class="tap btn-primary flex items-center gap-1.5 text-xs py-2 px-3 shrink-0">
+      <svg lucidePlus class="w-3.5 h-3.5"></svg> Add Voucher
+    </button>
+  </div>
+
+  @if (!loaded()) {
+    <div class="flex justify-center py-12">
+      <div class="animate-spin w-7 h-7 border-4 border-brand-orange border-t-transparent rounded-full"></div>
+    </div>
+  } @else if (vouchers().length === 0) {
+    <div class="card p-10 text-center">
+      <svg lucideTicket class="w-8 h-8 text-gray-300 mx-auto mb-3"></svg>
+      <p class="text-gray-400 text-sm">No vouchers yet.</p>
+    </div>
+  } @else {
+    <div class="space-y-2.5">
+      @for (v of vouchers(); track v.id) {
+        <div class="card p-3">
+          <div class="flex items-start justify-between gap-2">
+            <div class="flex items-center gap-2 font-mono font-semibold text-gray-800 min-w-0">
+              <svg lucideTicket class="w-4 h-4 text-brand-orange shrink-0"></svg>
+              <span class="truncate">{{ v.code }}</span>
+            </div>
+            <button
+              type="button"
+              (click)="confirmToggleId.set(v.id)"
+              [attr.aria-label]="(v.active ? 'Deactivate ' : 'Activate ') + v.code"
+              class="tap badge shrink-0"
+              [class]="v.active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'"
+            >
+              {{ v.active ? 'Active' : 'Inactive' }}
+            </button>
+          </div>
+          <p class="text-sm font-semibold text-brand-navy mt-1.5">{{ discountLabel(v) }}</p>
+          <div class="grid grid-cols-2 gap-x-3 gap-y-1 mt-1.5 text-xs text-gray-500">
+            <span>Min order: <span class="text-gray-700">{{ v.min_order > 0 ? formatPrice(v.min_order) : '—' }}</span></span>
+            <span>Uses: <span class="text-gray-700">{{ v.used_count }} / {{ v.max_uses }}</span></span>
+            <span class="col-span-2">Valid: <span class="text-gray-700">{{ validPeriod(v) }}</span></span>
+          </div>
+          <div class="flex justify-end mt-2">
+            <button type="button" (click)="confirmDeleteId.set(v.id)" aria-label="Delete voucher" class="tap p-1.5 rounded-lg bg-red-50 text-red-600"><svg lucideTrash2 class="w-3.5 h-3.5"></svg></button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  @if (showForm()) {
+    @let f = form();
+    <div class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center app-overlay-frame">
+      <div class="modal-scrim" (click)="cancelForm()"></div>
+      <form (ngSubmit)="submitForm()" class="relative bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-h-[90vh] overflow-y-auto p-5 space-y-3 fade-up pb-safe">
+        <div class="flex items-center justify-between">
+          <h3 class="font-semibold text-gray-800 text-lg">New Voucher</h3>
+          <button type="button" (click)="cancelForm()" aria-label="Close" class="text-gray-400"><svg lucideX class="w-4 h-4"></svg></button>
+        </div>
+
+        @if (error()) {
+          <p class="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{{ error() }}</p>
+        }
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Code <span class="text-red-500">*</span></label>
+          <input required placeholder="e.g. SAVE20" [ngModel]="f.code" (ngModelChange)="patchForm({ code: $event.toUpperCase() })" name="code" autocapitalize="characters" class="input-field font-mono" />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Type</label>
+            <app-select [value]="f.discountType" [options]="discountTypeOptions" (valueChange)="patchForm({ discountType: $any($event) })" class="block" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">{{ f.discountType === 'percent' ? 'Discount %' : 'Discount ₱' }} <span class="text-red-500">*</span></label>
+            <input type="number" min="0" required [ngModel]="f.discountValue" (ngModelChange)="patchForm({ discountValue: $event })" name="discountValue" class="input-field" />
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Min Order (₱)</label>
+            <input type="number" min="0" [ngModel]="f.minOrder" (ngModelChange)="patchForm({ minOrder: $event })" name="minOrder" class="input-field" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Max Uses</label>
+            <input type="number" min="1" [ngModel]="f.maxUses" (ngModelChange)="patchForm({ maxUses: $event })" name="maxUses" class="input-field" />
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Valid From</label>
+            <input type="date" [ngModel]="f.validFrom" (ngModelChange)="patchForm({ validFrom: $event })" name="validFrom" class="input-field" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Valid Until</label>
+            <input type="date" [ngModel]="f.validUntil" (ngModelChange)="patchForm({ validUntil: $event })" name="validUntil" class="input-field" />
+          </div>
+        </div>
+
+        <button type="submit" [disabled]="saving()" class="tap btn-primary w-full disabled:opacity-60">{{ saving() ? 'Saving...' : 'Save Voucher' }}</button>
+      </form>
+    </div>
+  }
+</div>

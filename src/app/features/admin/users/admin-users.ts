@@ -62,7 +62,7 @@ function maskAddress(address?: string | null): string {
  * Admin-only here, so every write applies immediately — none of the HR
  * change-request branches from the web version are ported. Archived accounts
  * live behind a toggle on this same page instead of a separate route, to keep
- * the mobile nav to five items.
+ * the mobile nav short.
  */
 @Component({
   selector: 'app-admin-users',

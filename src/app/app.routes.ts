@@ -195,8 +195,16 @@ export const routes: Routes = [
         loadComponent: () => import('./features/admin/products/admin-products').then((m) => m.AdminProducts),
       },
       {
+        path: 'services',
+        loadComponent: () => import('./features/admin/services/admin-services').then((m) => m.AdminServices),
+      },
+      {
         path: 'orders',
         loadComponent: () => import('./features/admin/orders/admin-orders').then((m) => m.AdminOrders),
+      },
+      {
+        path: 'returns',
+        loadComponent: () => import('./features/admin/returns/admin-returns').then((m) => m.AdminReturns),
       },
       {
         path: 'bookings',
@@ -205,6 +213,14 @@ export const routes: Routes = [
       {
         path: 'users',
         loadComponent: () => import('./features/admin/users/admin-users').then((m) => m.AdminUsers),
+      },
+      {
+        path: 'vouchers',
+        loadComponent: () => import('./features/admin/vouchers/admin-vouchers').then((m) => m.AdminVouchers),
+      },
+      {
+        path: 'support',
+        loadComponent: () => import('./features/admin/support/admin-support').then((m) => m.AdminSupport),
       },
     ],
   },

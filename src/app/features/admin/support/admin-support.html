@@ -1,0 +1,79 @@
+<div class="px-4 py-4 pb-8">
+  @if (error()) {
+    <p class="mb-3 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{{ error() }}</p>
+  }
+
+  <div class="flex items-center gap-2 mb-3">
+    <button type="button" (click)="tab.set('open')" [class]="'px-3 py-1.5 rounded-lg text-xs font-medium transition ' + (tab() === 'open' ? 'bg-brand-navy text-white' : 'bg-white text-gray-600 border border-gray-200')">
+      Open ({{ openCount() }})
+    </button>
+    <button type="button" (click)="tab.set('resolved')" [class]="'px-3 py-1.5 rounded-lg text-xs font-medium transition ' + (tab() === 'resolved' ? 'bg-brand-navy text-white' : 'bg-white text-gray-600 border border-gray-200')">
+      Resolved ({{ resolvedCount() }})
+    </button>
+  </div>
+
+  @if (!loaded()) {
+    <div class="flex justify-center py-12">
+      <div class="animate-spin w-7 h-7 border-4 border-brand-orange border-t-transparent rounded-full"></div>
+    </div>
+  } @else if (filtered().length === 0) {
+    <div class="card p-10 text-center">
+      <svg lucideLifeBuoy class="w-8 h-8 text-gray-300 mx-auto mb-3"></svg>
+      <p class="text-gray-400 text-sm">No {{ tab() }} messages.</p>
+    </div>
+  } @else {
+    <div class="space-y-3">
+      @for (m of filtered(); track m.id) {
+        @let badge = statusBadge(m);
+        @let pending = isPending(m.id);
+        <div class="card p-4">
+          <div class="flex items-center gap-1.5 flex-wrap mb-1.5">
+            <span class="font-mono text-[11px] font-semibold text-brand-navy bg-brand-navy/10 rounded px-1.5 py-0.5">{{ formatTicketNo(m.ticket_number) }}</span>
+            <span class="badge capitalize" [class]="typeStyle[m.type]">{{ m.type }}</span>
+            <span class="badge" [class]="badge.style">{{ badge.label }}</span>
+          </div>
+          <p class="font-semibold text-gray-800 text-sm">{{ m.subject }}</p>
+          <p class="text-xs text-gray-400 mt-0.5">{{ m.first_name }} {{ m.last_name }} &middot; {{ formatDateTime(m.created_at) }}</p>
+          <p class="text-xs text-gray-400 truncate">{{ m.email }}</p>
+
+          <p class="text-sm text-gray-600 mt-3 whitespace-pre-line">{{ m.message }}</p>
+
+          @if (m.replies.length > 0) {
+            <div class="mt-3 space-y-2 border-t border-gray-100 pt-3">
+              @for (r of m.replies; track r.id) {
+                <div class="bg-gray-50 rounded-lg px-3 py-2">
+                  <p class="text-sm text-gray-700 whitespace-pre-line">{{ r.body }}</p>
+                  <p class="text-xs text-gray-400 mt-1">{{ r.author_first_name }} {{ r.author_last_name }} &middot; {{ timeAgo(r.created_at) }}</p>
+                </div>
+              }
+            </div>
+          }
+
+          <form (submit)="$event.preventDefault(); sendReply(m.id)" class="flex items-center gap-2 mt-3">
+            <input
+              [ngModel]="draftOf(m.id)"
+              (ngModelChange)="setDraft(m.id, $event)"
+              [name]="'reply-' + m.id" [attr.name]="'reply-' + m.id"
+              placeholder="Write a reply..."
+              class="input-field text-sm py-2 flex-1 min-w-0"
+            />
+            <button
+              type="submit"
+              [disabled]="sendingId() === m.id || !draftOf(m.id).trim()"
+              class="tap btn-primary flex items-center gap-1.5 text-sm py-2 px-3 disabled:opacity-60 shrink-0"
+            >
+              <svg lucideSend class="w-3.5 h-3.5"></svg> Reply
+            </button>
+          </form>
+
+          @if (m.status === 'open' && !pending) {
+            <button type="button" (click)="requestResolve(m.id)" class="tap mt-3 text-xs font-semibold text-brand-navy">Request Resolution</button>
+          }
+          @if (m.status === 'resolved') {
+            <button type="button" (click)="reopen(m.id)" class="tap mt-3 text-xs font-semibold text-brand-navy">Reopen</button>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>
