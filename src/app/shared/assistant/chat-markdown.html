@@ -1,0 +1,52 @@
+<!-- Each text run is bound on its own inside an ng-container, so template whitespace never adds
+     spaces between a word and the bold or link right after it. -->
+<ng-template #inline let-nodes>
+  @for (node of nodes; track $index) {
+    @switch (node.kind) {
+      @case ('strong') {
+        <strong class="font-semibold text-brand-ink"><ng-container *ngTemplateOutlet="inline; context: { $implicit: node.children }" /></strong>
+      }
+      @case ('em') {
+        <em><ng-container *ngTemplateOutlet="inline; context: { $implicit: node.children }" /></em>
+      }
+      @case ('route') {
+        <a [href]="node.href" (click)="follow($event, node.href)" class="font-semibold text-brand-teal underline decoration-brand-teal/30 underline-offset-2 active:decoration-brand-teal">{{ node.label }}</a>
+      }
+      @case ('external') {
+        <a [href]="node.href" target="_blank" rel="noopener noreferrer" class="font-semibold text-brand-teal underline decoration-brand-teal/30 underline-offset-2 active:decoration-brand-teal">{{ node.label }}</a>
+      }
+      @default {
+        <ng-container>{{ node.text }}</ng-container>
+      }
+    }
+  }
+</ng-template>
+
+<ng-template #lines let-lines>
+  @for (line of lines; track $index) {
+    @if (!$first) {
+      <br />
+    }
+    <ng-container *ngTemplateOutlet="inline; context: { $implicit: line }" />
+  }
+</ng-template>
+
+<div class="space-y-2">
+  @for (block of blocks(); track $index) {
+    @if (block.type === 'p') {
+      <p><ng-container *ngTemplateOutlet="lines; context: { $implicit: block.lines }" /></p>
+    } @else if (block.type === 'ul') {
+      <ul class="pl-5 space-y-1 list-disc marker:text-brand-orange">
+        @for (item of block.items; track $index) {
+          <li><ng-container *ngTemplateOutlet="lines; context: { $implicit: item }" /></li>
+        }
+      </ul>
+    } @else {
+      <ol class="pl-5 space-y-1 list-decimal marker:text-gray-400 marker:font-semibold">
+        @for (item of block.items; track $index) {
+          <li><ng-container *ngTemplateOutlet="lines; context: { $implicit: item }" /></li>
+        }
+      </ol>
+    }
+  }
+</div>

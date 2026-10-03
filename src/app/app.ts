@@ -10,6 +10,7 @@ import { filter, map } from 'rxjs/operators';
 import { isChromelessRoute } from './core/shell-route.util';
 import { AuthService } from './core/auth.service';
 import { ErrorStateService } from './core/error-state.service';
+import { AssistantWidget } from './shared/assistant/assistant-widget';
 import { Navbar } from './shared/navbar/navbar';
 import { SideMenu } from './shared/side-menu/side-menu';
 import { SplashScreen } from './shared/splash-screen/splash-screen';
@@ -33,7 +34,7 @@ function prefersReducedMotion(): boolean {
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Navbar, SideMenu, SplashScreen, ToastViewport, LucideAlertOctagon],
+  imports: [RouterOutlet, Navbar, SideMenu, SplashScreen, ToastViewport, AssistantWidget, LucideAlertOctagon],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
