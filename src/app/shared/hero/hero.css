@@ -36,13 +36,58 @@
   pointer-events: none;
 }
 
+/* The search button beside the cart, which widens leftward over the greeting into the search
+   field. Folded, it's a glass circle the same size as the cart button; open, a white field. */
+.hero-search {
+  z-index: 3;
+  width: 2.75rem;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  transition:
+    width 0.38s cubic-bezier(0.2, 0.9, 0.2, 1),
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
+}
+.hero-search.is-open {
+  width: calc(100% - 3.25rem);
+  background-color: #fff;
+  border-color: #fff;
+  box-shadow: 0 10px 24px -10px rgba(0, 0, 0, 0.45);
+}
+/* The field shows it has focus with a soft orange ring round its own pill shape, in place of the
+   app's square focus ring on the input inside it. */
+.hero-search.is-open:focus-within {
+  box-shadow:
+    0 0 0 3px rgba(255, 107, 53, 0.8),
+    0 10px 24px -10px rgba(0, 0, 0, 0.45);
+}
+.hero-search-input {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+.hero-search.is-open .hero-search-input {
+  opacity: 1;
+  pointer-events: auto;
+  transition-delay: 0.12s;
+}
+/* The browser's own clear button would sit on top of ours. */
+.hero-search-input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
 /* The house stands at the foot of the sky and rises a touch as dawn breaks. It also takes a
    little of the finger's parallax, the opposite way to the stars, so the scene has depth. */
 .hero-house-stage {
   position: relative;
   z-index: 1;
   height: 150px;
-  margin-top: 6px;
+  /* Room for the roof below the greeting row, which the house would otherwise crowd. */
+  margin-top: 64px;
   transform: translate3d(calc(var(--mx) * -6px), calc(var(--progress) * -10px), 0);
   will-change: transform;
   pointer-events: none;
@@ -86,5 +131,9 @@
 @media (prefers-reduced-motion: reduce) {
   .hero-house {
     animation: none;
+  }
+  .hero-search,
+  .hero-search-input {
+    transition: none;
   }
 }

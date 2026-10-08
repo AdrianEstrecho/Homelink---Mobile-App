@@ -1,7 +1,7 @@
 import { Component, DestroyRef, ElementRef, afterNextRender, inject, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { LucideArrowRight, LucideSearch, LucideShoppingCart, LucideSlidersHorizontal, LucideTag, LucideUser } from '@lucide/angular';
+import { LucideArrowRight, LucideSearch, LucideShoppingCart, LucideTag, LucideX } from '@lucide/angular';
 
 import { ApiService } from '../../core/api.service';
 import { AuthService } from '../../core/auth.service';
@@ -25,29 +25,20 @@ interface Announcement {
   content: string;
 }
 
-/** GET /customers/served — only a first name and last initial ever leave the server. */
-interface Served {
-  count: number;
-  buyers: { name: string; initials: string; avatar: string | null }[];
-}
-
-// Fallback colours for buyers without a profile photo, one per avatar slot.
-const BUYER_GRADIENTS = ['from-sky-400 to-brand-navy', 'from-amber-300 to-brand-orange', 'from-emerald-300 to-brand-teal'];
-
 // How far the sky has to scroll up, as a share of its height, for dawn to fully break.
 const DAWN_SCROLL_SHARE = 0.75;
 
 const BANNER_AUTOPLAY_MS = 10_000;
 
 /**
- * The home tab's "shop front": greeting + cart, search, categories, and a
+ * The home tab's "shop front": greeting, search and cart, categories, and a
  * promo banner built from real /announcements data. Replaces the earlier
  * marketing-style hero — this is a functional storefront header, not a
- * landing-page pitch, so it's self-sufficient (loads its own categories,
- * announcements and served count) rather than a purely presentational child
- * of Home.
+ * landing-page pitch, so it's self-sufficient (loads its own categories and
+ * announcements) rather than a purely presentational child of Home. The web
+ * hero's "Homeowners Served" pill was left off here on purpose.
  *
- * The greeting and search sit on the web hero's night sky (HeroSky), with the
+ * The greeting, search and cart sit on the web hero's night sky (HeroSky), with the
  * house rising out of a mist at its foot. Scrolling writes --progress (0-1)
  * onto the sky, which fades the stars and warms the horizon into a sunrise.
  * The web's product-card collage and category chips aren't carried over: the
@@ -61,9 +52,8 @@ const BANNER_AUTOPLAY_MS = 10_000;
     CategoryIcon,
     CategorySkeleton,
     HeroSky,
-    LucideUser,
     LucideSearch,
-    LucideSlidersHorizontal,
+    LucideX,
     LucideShoppingCart,
     LucideArrowRight,
     LucideTag,
@@ -82,13 +72,13 @@ export class Hero {
   protected readonly cartCount = this.cart.count;
 
   protected readonly searchQuery = signal('');
+  protected readonly searchOpen = signal(false);
+  private readonly searchInput = viewChild.required<ElementRef<HTMLInputElement>>('searchInput');
   protected readonly activeBanner = signal(0);
   protected readonly bannerScroll = viewChild<ElementRef<HTMLElement>>('bannerScroll');
 
   protected readonly categories = signal<CategoryState>({ data: [], loading: true, error: false });
   protected readonly announcements = signal<Announcement[]>([]);
-  /** undefined while loading, null when the request failed. */
-  protected readonly served = signal<Served | null | undefined>(undefined);
   private readonly sky = viewChild.required<ElementRef<HTMLElement>>('sky');
 
   protected readonly categoryAccent = categoryAccent;
@@ -105,16 +95,8 @@ export class Hero {
         this.startBannerAutoplay();
       })
       .catch(() => {});
-    this.api
-      .get<Served>('/customers/served')
-      .then((data) => this.served.set(data))
-      .catch(() => this.served.set(null));
     this.destroyRef.onDestroy(() => this.stopBannerAutoplay());
     afterNextRender(() => this.trackDawn());
-  }
-
-  protected buyerGradient(i: number): string {
-    return BUYER_GRADIENTS[i % BUYER_GRADIENTS.length];
   }
 
   /** Writes how far the sky has scrolled away (0-1, eased) as --progress. Phones scroll the
@@ -162,7 +144,34 @@ export class Hero {
   onSearch(event: Event): void {
     event.preventDefault();
     const q = this.searchQuery().trim();
-    this.router.navigate(['/products'], { queryParams: q ? { search: q } : {}, state: DRILL_DOWN_STATE });
+    // Nothing typed yet: keep the field open rather than jumping to the full product list.
+    if (!q) {
+      this.searchInput().nativeElement.focus();
+      return;
+    }
+    this.router.navigate(['/products'], { queryParams: { search: q }, state: DRILL_DOWN_STATE });
+  }
+
+  /** While folded, the search icon opens the field instead of submitting it. Focus is moved in
+   *  the same tap, which is what lets a phone raise its keyboard. */
+  onSearchIcon(event: Event): void {
+    if (this.searchOpen()) return;
+    event.preventDefault();
+    this.searchOpen.set(true);
+    this.searchInput().nativeElement.focus();
+  }
+
+  closeSearch(): void {
+    this.searchOpen.set(false);
+    this.searchQuery.set('');
+    this.searchInput().nativeElement.blur();
+  }
+
+  /** Tapping away from an empty field folds it back up; one with text in it stays open. */
+  onSearchFocusOut(event: FocusEvent): void {
+    const form = event.currentTarget as HTMLElement;
+    if (form.contains(event.relatedTarget as Node | null)) return;
+    if (!this.searchQuery().trim()) this.searchOpen.set(false);
   }
 
   onBannerScroll(event: Event): void {

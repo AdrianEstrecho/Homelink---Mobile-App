@@ -5,8 +5,11 @@
   <div class="hero-horizon" aria-hidden="true"></div>
 
   <div class="relative z-[2] px-4 pt-5">
-    <div class="fade-up flex items-center justify-between gap-3 mb-3" style="animation-delay: 0ms">
-      <div class="min-w-0">
+    <!-- Greeting, then search and cart. Search is a round button beside the cart that widens
+         into the search field over the greeting when tapped; closing it (the X, Escape, or
+         leaving it empty) folds it back into the button. -->
+    <div class="fade-up relative flex items-center justify-between gap-3 h-11" style="animation-delay: 0ms">
+      <div class="min-w-0 transition-opacity duration-200" [class.opacity-0]="searchOpen()" [attr.aria-hidden]="searchOpen() || null">
         <p class="text-white/55 text-xs font-medium">Hello,</p>
         <h1 class="font-display text-xl font-extrabold text-white truncate">
           {{ user()?.firstName ?? 'Welcome' }}
@@ -18,54 +21,43 @@
           <span class="absolute -top-1 -right-1 bg-brand-orange text-white text-[10px] font-bold min-w-[1.25rem] h-5 px-1 rounded-full flex items-center justify-center ring-2 ring-brand-navy">{{ cartCount() > 9 ? '9+' : cartCount() }}</span>
         }
       </a>
-    </div>
 
-    <!-- "N Homeowners Served" with real buyers' faces (GET /customers/served). The slot keeps its
-         height while that loads so the search bar doesn't jump; with no buyers yet (or a failed
-         request) it folds away rather than showing a made-up count. -->
-    @if (served() === undefined || (served()?.count ?? 0) > 0) {
-      <div class="h-[38px] mb-4">
-        @if (served(); as s) {
-          <div class="fade-up inline-flex items-center gap-2 bg-gradient-to-br from-white/[0.22] to-white/[0.06] backdrop-blur-md border border-white/25 rounded-full pl-1.5 pr-3.5 py-1 text-[13px] font-semibold text-white/90">
-            <span class="flex -space-x-1.5 shrink-0">
-              @for (b of s.buyers; track $index; let i = $index) {
-                <span
-                  [attr.title]="b.name"
-                  class="w-7 h-7 rounded-full ring-2 ring-white bg-gradient-to-br flex items-center justify-center overflow-hidden text-[9px] font-bold text-white"
-                  [class]="buyerGradient(i)"
-                >
-                  @if (b.avatar) {
-                    <img [src]="b.avatar" alt="" class="w-full h-full object-cover" />
-                  } @else if (b.initials) {
-                    {{ b.initials }}
-                  } @else {
-                    <svg lucideUser class="w-3 h-3"></svg>
-                  }
-                </span>
-              }
-            </span>
-            {{ s.count.toLocaleString() }} {{ s.count === 1 ? 'Homeowner' : 'Homeowners' }} Served
-          </div>
-        }
-      </div>
-    }
-
-    <form (submit)="onSearch($event)" class="fade-up flex items-center gap-2" style="animation-delay: 60ms">
-      <div class="relative flex-1 min-w-0">
-        <svg lucideSearch class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></svg>
+      <form
+        role="search"
+        (submit)="onSearch($event)"
+        (focusout)="onSearchFocusOut($event)"
+        (keydown.escape)="closeSearch()"
+        class="hero-search absolute inset-y-0 right-[3.25rem] rounded-full"
+        [class.is-open]="searchOpen()"
+      >
+        <button
+          type="submit"
+          (click)="onSearchIcon($event)"
+          [attr.aria-label]="searchOpen() ? 'Search' : 'Open search'"
+          [attr.aria-expanded]="searchOpen()"
+          class="tap absolute left-0 inset-y-0 w-11 flex items-center justify-center rounded-full"
+        >
+          <svg lucideSearch class="w-5 h-5 transition-colors duration-200" [class]="searchOpen() ? 'text-gray-400' : 'text-white'"></svg>
+        </button>
         <input
-          type="text"
+          #searchInput
+          type="search"
+          enterkeyhint="search"
           [ngModel]="searchQuery()"
           (ngModelChange)="searchQuery.set($event)"
           name="search"
           placeholder="Search products & services..."
-          class="w-full bg-white border border-white/10 elevation-2 rounded-2xl pl-10 pr-4 py-3 text-sm text-brand-ink placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-brand-orange/40"
+          aria-label="Search products and services"
+          [attr.tabindex]="searchOpen() ? null : -1"
+          class="hero-search-input w-full h-full bg-transparent rounded-full pl-11 pr-10 text-sm text-brand-ink placeholder:text-gray-400 outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
         />
-      </div>
-      <button type="submit" aria-label="Search" class="tap shrink-0 w-11 h-11 rounded-2xl bg-brand-orange flex items-center justify-center elevation-2">
-        <svg lucideSlidersHorizontal class="w-4 h-4 text-white"></svg>
-      </button>
-    </form>
+        @if (searchOpen()) {
+          <button type="button" (click)="closeSearch()" aria-label="Close search" class="tap absolute right-1 inset-y-0 w-9 flex items-center justify-center text-gray-400">
+            <svg lucideX class="w-4 h-4"></svg>
+          </button>
+        }
+      </form>
+    </div>
   </div>
 
   <div class="hero-house-stage" aria-hidden="true">
