@@ -135,74 +135,63 @@
   backdrop-filter: blur(2px);
   animation: chipIn 0.5s cubic-bezier(0.22, 1.3, 0.36, 1) both, chipFloat 5s ease-in-out infinite;
 }
-.splash-chip-tl .splash-chip-in { animation-delay: 0.62s, 1.3s; }
-.splash-chip-tr .splash-chip-in { animation-delay: 0.71s, 1.55s; }
-.splash-chip-bl .splash-chip-in { animation-delay: 0.8s, 1.8s; }
-.splash-chip-br .splash-chip-in { animation-delay: 0.89s, 2.05s; }
+.splash-chip-tl .splash-chip-in { animation-delay: 0.95s, 1.6s; }
+.splash-chip-tr .splash-chip-in { animation-delay: 1.04s, 1.85s; }
+.splash-chip-bl .splash-chip-in { animation-delay: 1.13s, 2.1s; }
+.splash-chip-br .splash-chip-in { animation-delay: 1.22s, 2.35s; }
 
 /* --- The mark -------------------------------------------------------- */
 
-.splash-tile {
+/* A soft pool of light the mark is built in, in place of the old orange tile:
+   the native splash and app icon show the mark straight on navy. */
+.splash-halo {
+  position: absolute;
+  width: 10rem;
+  height: 10rem;
+  border-radius: 9999px;
+  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0));
+  animation: planIn 0.9s ease-out 0.1s both;
+}
+
+.splash-mark {
   position: relative;
   z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 5.5rem;
-  height: 5.5rem;
-  border-radius: 1.75rem;
-  color: #fff;
-  background-image: linear-gradient(140deg, #ff8354, #ff6b35 55%, #e25020);
-  box-shadow: 0 18px 40px -12px rgba(255, 107, 53, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.35);
-  animation: tileIn 0.75s cubic-bezier(0.22, 1.2, 0.36, 1) both;
+  width: 7rem;
+  height: auto;
+  overflow: visible;
+  filter: drop-shadow(0 14px 22px rgba(4, 14, 34, 0.55));
 }
 
-.splash-house {
-  width: 3rem;
-  height: 3rem;
+/* The house is traced first (pathLength="1", so a dash of 1 is the whole
+   outline), then fills in as the trace closes. */
+.mark-house {
+  fill: #fff;
+  fill-opacity: 0;
+  stroke: #fff;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: drawStroke 0.85s ease-in-out 0.15s both, houseFill 0.4s ease-out 0.78s both;
 }
 
-/* Each stroke is drawn in, in build order: roof, walls, door. The dash length
-   for each path is just over its measured length, so it fully hides then
-   fully reveals. */
-.house-roof,
-.house-walls,
-.house-door {
-  animation: drawStroke 0.5s ease-out both;
-}
-.house-roof {
-  stroke-dasharray: 48;
-  stroke-dashoffset: 48;
-  animation-delay: 0.24s;
-}
-.house-walls {
-  stroke-dasharray: 70;
-  stroke-dashoffset: 70;
-  animation-delay: 0.42s;
-  animation-duration: 0.6s;
-}
-.house-door {
-  stroke-dasharray: 30;
-  stroke-dashoffset: 30;
-  animation-delay: 0.72s;
-  animation-duration: 0.4s;
+/* The four window panes light up one after another (delays set inline). */
+.mark-pane {
+  fill: #fff;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: paneIn 0.35s cubic-bezier(0.3, 1.5, 0.5, 1) both;
 }
 
-/* The wrench arrives last and settles with a quarter turn, like it's being
-   tightened into place. */
-.splash-badge {
-  position: absolute;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.1rem;
-  height: 2.1rem;
-  margin: 3.85rem 0 0 3.85rem;
-  border-radius: 0.75rem;
-  background: #00a896;
-  box-shadow: 0 8px 18px -6px rgba(0, 168, 150, 0.8);
-  animation: badgeIn 0.55s cubic-bezier(0.22, 1.3, 0.36, 1) 0.98s both;
+/* The wrench swings up into place about the bolt in its jaw, overshoots a
+   little and settles, as if it's tightening the house onto its base. */
+.mark-wrench {
+  fill: #ff6b35;
+  stroke: #ff6b35;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  transform-origin: 151px 118.5px;
+  animation: wrenchIn 0.7s cubic-bezier(0.22, 1.25, 0.36, 1) 1.12s both;
 }
 
 /* --- Type ------------------------------------------------------------ */
@@ -216,8 +205,8 @@
   line-height: 1.15;
   font-weight: 800;
   letter-spacing: -0.035em;
-  animation: riseIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.85s both,
-    wipeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.95s both;
+  animation: riseIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) 1.2s both,
+    wipeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) 1.28s both;
 }
 
 .splash-tagline {
@@ -226,8 +215,8 @@
   letter-spacing: 0.24em;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.5);
-  animation: riseIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) 1s both,
-    wipeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) 1.12s both;
+  animation: riseIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) 1.32s both,
+    wipeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) 1.4s both;
 }
 
 /* --- Indeterminate progress ------------------------------------------ */
@@ -240,7 +229,7 @@
   overflow: hidden;
   border-radius: 9999px;
   background: rgba(255, 255, 255, 0.1);
-  animation: riseIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) 1.12s both;
+  animation: riseIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) 1.42s both;
 }
 .splash-bar > span {
   position: absolute;
@@ -256,7 +245,7 @@
   position: relative;
   padding: 0 2rem 2.25rem;
   text-align: center;
-  animation: riseIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) 1.25s both;
+  animation: riseIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) 1.5s both;
 }
 
 /* --- Keyframes -------------------------------------------------------- */
@@ -269,16 +258,21 @@
   from { transform: translate3d(0, 0, 0); }
   to { transform: translate3d(-30px, -30px, 0); }
 }
-@keyframes tileIn {
-  0% { opacity: 0; transform: scale(0.62) rotate(-8deg); }
-  100% { opacity: 1; transform: scale(1) rotate(0deg); }
-}
 @keyframes drawStroke {
   to { stroke-dashoffset: 0; }
 }
-@keyframes badgeIn {
-  0% { opacity: 0; transform: scale(0.3) rotate(-90deg); }
-  100% { opacity: 1; transform: scale(1) rotate(0deg); }
+@keyframes houseFill {
+  to { fill-opacity: 1; }
+}
+@keyframes paneIn {
+  0% { opacity: 0; transform: scale(0.2); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes wrenchIn {
+  0% { opacity: 0; transform: rotate(58deg); }
+  35% { opacity: 1; }
+  72% { transform: rotate(-12deg); }
+  100% { opacity: 1; transform: rotate(0deg); }
 }
 @keyframes planIn {
   0% { opacity: 0; transform: scale(0.88); }
@@ -317,8 +311,9 @@
 @media (prefers-reduced-motion: reduce) {
   .splash-grid,
   .splash-glow,
-  .splash-tile,
-  .splash-badge,
+  .splash-halo,
+  .mark-pane,
+  .mark-wrench,
   .splash-plan,
   .splash-plan-steady,
   .splash-chip-in,
@@ -328,11 +323,10 @@
   .splash-foot {
     animation: none;
   }
-  .house-roof,
-  .house-walls,
-  .house-door {
+  .mark-house {
     animation: none;
     stroke-dashoffset: 0;
+    fill-opacity: 1;
   }
   .splash-bar > span {
     width: 100%;

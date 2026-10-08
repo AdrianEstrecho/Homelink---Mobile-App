@@ -28,20 +28,18 @@
         <span class="splash-chip-in"><svg lucideZap class="w-3.5 h-3.5"></svg></span>
       </span>
 
-      <div class="splash-tile">
-        <!-- Hand-rolled rather than the Lucide component so each stroke can be
-             drawn in sequence: roof, then walls, then door. -->
-        <svg class="splash-house" viewBox="0 0 48 48" fill="none" stroke="currentColor"
-             stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path class="house-roof" d="M6 22 L24 7 L42 22" />
-          <path class="house-walls" d="M10 20 V40 H38 V20" />
-          <path class="house-door" d="M20 40 V30 H28 V40" />
-        </svg>
-      </div>
-
-      <span class="splash-badge" aria-hidden="true">
-        <svg lucideWrench class="w-4 h-4 text-white"></svg>
-      </span>
+      <!-- The HomeLink mark, built in order: the house is traced and filled, its windows
+           light up, then the wrench swings in beneath it and gives a turn. Drawn from the
+           same paths as shared/logo-mark rather than through it, so each part can be
+           animated on its own. -->
+      <span class="splash-halo" aria-hidden="true"></span>
+      <svg class="splash-mark" [attr.viewBox]="viewBox" aria-hidden="true">
+        <path class="mark-house" [attr.d]="housePath" pathLength="1" />
+        @for (p of panes; track $index; let i = $index) {
+          <rect class="mark-pane" [attr.x]="p[0]" [attr.y]="p[1]" width="15.5" height="15.5" rx="1.2" [style.animation-delay]="0.9 + i * 0.07 + 's'" />
+        }
+        <path class="mark-wrench" [attr.d]="wrenchPath" />
+      </svg>
     </div>
 
     <h1 class="splash-wordmark font-display">Home<span class="text-brand-orange">Link</span></h1>
