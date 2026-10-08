@@ -1,0 +1,90 @@
+/* The web hero's night sky (frontend/src/index.css .hero-pin), cut down to a band behind the
+   greeting and search. Its top colour is the topbar's navy so the two read as one surface.
+   --progress (0-1) is written by Hero.trackDawn() as the band scrolls away; --mx/--my (-1..1) by
+   HeroSky while a finger is on the sky. */
+.hero-sky {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background: linear-gradient(180deg, #0f2b5b 0%, #123a73 55%, #1a4a8a 100%);
+  --progress: 0;
+  --mx: 0;
+  --my: 0;
+}
+/* Sky brightens toward dawn as it scrolls away. */
+.hero-sky::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(180deg, #0f2b5b 0%, #1d4f8f 55%, #3a78bd 100%);
+  opacity: var(--progress);
+  pointer-events: none;
+}
+
+/* Sunrise warmth rising from behind the house. A little is there from the start (the house's
+   backlight on the web carries that), and it swells as the page scrolls. */
+.hero-horizon {
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 75%;
+  background: radial-gradient(75% 70% at 50% 100%, rgba(255, 150, 90, 0.5) 0%, rgba(255, 107, 53, 0.18) 45%, rgba(255, 107, 53, 0) 80%);
+  opacity: calc(0.35 + var(--progress) * 0.65);
+  pointer-events: none;
+}
+
+/* The house stands at the foot of the sky and rises a touch as dawn breaks. It also takes a
+   little of the finger's parallax, the opposite way to the stars, so the scene has depth. */
+.hero-house-stage {
+  position: relative;
+  z-index: 1;
+  height: 150px;
+  margin-top: 6px;
+  transform: translate3d(calc(var(--mx) * -6px), calc(var(--progress) * -10px), 0);
+  will-change: transform;
+  pointer-events: none;
+}
+/* The second drop-shadow is a warm backlight tracing the house's own silhouette, lifting the
+   dark concrete off the navy sky. Static on purpose: animating a blurred filter is costly. */
+.hero-house {
+  position: absolute;
+  left: 50%;
+  bottom: -18px;
+  width: min(118%, 560px);
+  max-width: none;
+  transform: translateX(-50%);
+  filter: drop-shadow(0 18px 26px rgba(0, 0, 0, 0.45)) drop-shadow(0 -4px 26px rgba(255, 150, 90, 0.4));
+  animation: heroHouseSway 7s ease-in-out infinite;
+  transform-origin: 50% 100%;
+}
+@keyframes heroHouseSway {
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateX(-50%) translateY(-4px) rotate(0.35deg);
+  }
+}
+
+/* Stands in for the web's cloud bank (a 12MB image, too heavy to ship in the app): a mist the
+   house rises out of, fading into the page below. */
+.hero-mist {
+  position: absolute;
+  z-index: 2;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 56px;
+  background: linear-gradient(to bottom, rgba(247, 245, 241, 0) 0%, rgba(247, 245, 241, 0.75) 55%, #f7f5f1 100%);
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-house {
+    animation: none;
+  }
+}

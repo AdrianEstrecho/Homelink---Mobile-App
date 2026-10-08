@@ -9,7 +9,6 @@ import {
   LucideLock,
   LucideMapPinned,
   LucidePackage,
-  LucideShieldCheck,
   LucideSparkles,
   LucideStar,
 } from '@lucide/angular';
@@ -18,6 +17,7 @@ import { ApiService } from '../../../core/api.service';
 import { AuthService } from '../../../core/auth.service';
 import { User } from '../../../core/user.model';
 import { CountUp } from '../../../shared/count-up/count-up';
+import { EditableAvatar } from '../../../shared/editable-avatar/editable-avatar';
 import { RevealDirective } from '../../../shared/reveal.directive';
 import { ProfileTab } from '../tabs/profile-tab/profile-tab';
 
@@ -76,10 +76,10 @@ const QUICK_LINKS: QuickLink[] = [
   selector: 'app-profile-page',
   imports: [
     RouterLink,
+    EditableAvatar,
     ProfileTab,
     RevealDirective,
     CountUp,
-    LucideShieldCheck,
     LucideCircleCheck,
     LucideSparkles,
     LucideChevronRight,

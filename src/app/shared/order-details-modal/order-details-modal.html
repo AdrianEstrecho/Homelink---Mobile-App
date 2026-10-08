@@ -3,6 +3,7 @@
   <div class="absolute inset-0 bg-brand-navy/50 backdrop-blur-sm no-print" (click)="closed.emit()"></div>
   <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto fade-up print-area">
     <div class="hidden print:block text-center px-6 pt-6">
+      <app-logo-mark class="w-10 text-brand-navy mx-auto mb-1 block" />
       <p class="font-display text-xl font-bold text-brand-navy">Home<span class="text-brand-orange">Link</span></p>
       <p class="text-xs text-gray-500 tracking-wide uppercase">Official Receipt</p>
     </div>
@@ -170,10 +171,23 @@
             <span>-{{ o.discount | homelinkPrice }}</span>
           </div>
         }
+        @if ((o.shipping_fee ?? 0) > 0) {
+          <div class="flex justify-between text-gray-600">
+            <span>Shipping</span>
+            <span>{{ o.shipping_fee | homelinkPrice }}</span>
+          </div>
+        }
         <div class="flex justify-between font-bold text-base pt-1.5 border-t border-gray-100">
           <span>Total</span>
           <span class="text-brand-navy">{{ o.total | homelinkPrice }}</span>
         </div>
+        <!-- VAT is already inside the total, so it's noted under it rather than listed as a charge. -->
+        @if ((o.tax ?? 0) > 0) {
+          <div class="flex justify-between text-xs text-gray-400">
+            <span>Includes VAT ({{ +(o.tax_rate ?? 0) }}%)</span>
+            <span>{{ o.tax | homelinkPrice }}</span>
+          </div>
+        }
       </div>
 
       <p class="hidden print:block text-center text-xs text-gray-400 pt-4">Thank you for shopping with HomeLink!</p>

@@ -1,94 +1,145 @@
-<div class="route-fade pb-10">
-  <!-- Opening -->
-  <section class="relative overflow-hidden bg-brand-light px-4 pt-7 pb-8 border-b border-gray-100">
-    <p class="eyebrow mb-3"><svg lucideCode class="w-3.5 h-3.5"></svg> Credits</p>
-    <h1 class="font-display text-[26px] leading-[1.18] font-extrabold tracking-tight text-brand-ink mb-3">
-      The people behind<br />HomeLink
-    </h1>
-    <p class="text-gray-500 text-sm leading-relaxed max-w-[20rem]">{{ teamNote }}</p>
-  </section>
-
-  <!-- Team -->
-  <section class="px-4 pt-8">
-    <div appReveal class="mb-4">
-      <p class="eyebrow mb-1.5">The Team</p>
-      <h2 class="font-display text-xl font-extrabold tracking-tight text-brand-ink">Who built what</h2>
+<div class="route-fade">
+  <!-- Header. The delivery lane's road runs straight into the team section below. -->
+  <section class="pt-7 bg-brand-light">
+    <div class="px-4 text-center">
+      <p class="eyebrow justify-center mb-3"><svg lucideUsers class="w-3.5 h-3.5"></svg> Meet the Team</p>
+      <h1 class="font-display text-[26px] leading-[1.18] font-extrabold tracking-tight text-brand-ink mb-3">The people behind HomeLink</h1>
+      <p class="text-gray-500 text-sm leading-relaxed">
+        From the storefront and service booking to the staff portal, the API, and this app, HomeLink was designed and built by this
+        team of developers.
+      </p>
     </div>
-
-    <div class="flex flex-col gap-3.5">
-      @for (d of developers; track d.name; let i = $index) {
-        <div appReveal [revealDelay]="i * 70" class="relative overflow-hidden rounded-2xl border border-gray-100 bg-white elevation-1 p-4">
-          <div class="flex items-start gap-3.5">
-            <div
-              class="w-14 h-14 rounded-2xl bg-gradient-to-br flex items-center justify-center shrink-0 elevation-2"
-              [class]="accent(d.accent).avatar"
-            >
-              <span class="font-display font-extrabold text-white text-base tracking-tight">{{ d.initials }}</span>
-            </div>
-            <div class="min-w-0 flex-1">
-              <h3 class="font-display font-extrabold text-[15px] text-brand-ink leading-snug">{{ d.name }}</h3>
-              <p class="text-xs font-semibold mt-0.5" [class]="d.accent === 'orange' ? 'text-brand-orange' : 'text-brand-teal'">{{ d.role }}</p>
-              <p class="text-gray-500 text-[13px] leading-relaxed mt-2">{{ d.focus }}</p>
-            </div>
-          </div>
-          <ul class="flex flex-wrap gap-1.5 mt-3.5">
-            @for (t of d.tags; track t) {
-              <li class="badge" [class]="accent(d.accent).chip">{{ t }}</li>
-            }
-          </ul>
-        </div>
-      }
+    <div class="mt-5">
+      <app-delivery-lane />
     </div>
   </section>
 
-  <!-- What shipped -->
-  <section class="px-4 pt-9">
-    <div appReveal class="mb-4">
-      <p class="eyebrow mb-1.5">The Scope</p>
-      <h2 class="font-display text-xl font-extrabold tracking-tight text-brand-ink">Four surfaces, one system</h2>
+  <!-- Members -->
+  <section class="relative overflow-hidden py-10 bg-gradient-to-br from-brand-navy to-brand-blue">
+    <div class="absolute inset-0 opacity-[0.18] pointer-events-none" aria-hidden="true">
+      <div class="float-blob absolute -top-24 left-1/4 w-72 h-72 bg-brand-orange rounded-full blur-3xl"></div>
+      <div class="float-blob-delayed absolute -bottom-32 right-1/4 w-72 h-72 bg-brand-teal rounded-full blur-3xl"></div>
     </div>
-    <div class="card divide-y divide-gray-100">
-      @for (b of built; track b.label) {
-        <div class="flex items-start gap-3 px-4 py-3.5">
-          <span class="flex items-center justify-center w-9 h-9 rounded-xl bg-brand-navy/[0.07] text-brand-navy shrink-0">
-            @switch (b.icon) {
-              @case ('layers') { <svg lucideLayers class="w-4 h-4"></svg> }
-              @case ('database') { <svg lucideDatabase class="w-4 h-4"></svg> }
-              @case ('smartphone') { <svg lucideSmartphone class="w-4 h-4"></svg> }
-              @case ('sparkles') { <svg lucideSparkles class="w-4 h-4"></svg> }
-            }
-          </span>
-          <div class="min-w-0">
-            <h3 class="font-display font-bold text-sm text-brand-ink">{{ b.label }}</h3>
-            <p class="text-gray-500 text-xs leading-relaxed mt-0.5">{{ b.desc }}</p>
-          </div>
-        </div>
-      }
-    </div>
-  </section>
-
-  <!-- Acknowledgement -->
-  <section class="px-4 pt-8">
-    <div appReveal class="relative overflow-hidden rounded-2xl bg-brand-navy text-white px-5 py-6 elevation-2">
-      <div class="absolute inset-0 opacity-25 pointer-events-none" aria-hidden="true">
-        <div class="float-blob absolute -top-14 -right-10 w-44 h-44 bg-brand-orange rounded-full blur-3xl"></div>
+    <div class="relative px-4">
+      <div appReveal class="mb-6">
+        <p class="eyebrow mb-2">The Developers</p>
+        <h2 class="font-display text-xl font-extrabold tracking-tight text-white">{{ team.length }} developers, one platform</h2>
+        <p class="text-white/60 text-sm leading-relaxed mt-1.5">Tap anyone to open their profile, then browse the rest of the team from there.</p>
       </div>
-      <div class="relative flex items-start gap-3.5">
-        <span class="flex items-center justify-center w-10 h-10 rounded-xl bg-white/10 shrink-0">
-          <svg lucideGraduationCap class="w-5 h-5 text-white"></svg>
-        </span>
-        <div class="min-w-0">
-          <h2 class="font-display font-extrabold text-base leading-snug mb-1.5">An academic build, shipped for real</h2>
-          <p class="text-white/60 text-[13px] leading-relaxed">
-            HomeLink runs on a live backend, a real database and a real payment gateway — built to be
-            demonstrated, not mocked up. Thanks to everyone who tested it and told us what was broken.
-          </p>
-        </div>
+
+      <!-- Flex rather than grid so the odd one out sits centred on its own row. -->
+      <div class="flex flex-wrap justify-center gap-x-3 gap-y-6">
+        @for (b of badges; track b.member.slug; let i = $index) {
+          <div appReveal [revealDelay]="i * 80" class="w-[calc(50%-0.375rem)]">
+            <div class="badge-settle origin-top" [style.animation-delay]="i * 90 + 'ms'">
+              <div class="badge-hanger flex flex-col items-center">
+                <span aria-hidden="true" class="badge-strap block w-2.5 h-9"></span>
+                <span aria-hidden="true" class="relative z-10 -mb-3.5 block w-6 h-3.5 rounded-[4px] bg-gradient-to-b from-gray-100 to-gray-400 shadow ring-1 ring-black/10"></span>
+
+                <button
+                  type="button"
+                  (click)="tapBadge($event, b.member)"
+                  aria-haspopup="dialog"
+                  [attr.aria-label]="fullNameOf(b.member) + ', ' + b.member.role + '. View profile'"
+                  class="badge-card tap relative block w-full text-left rounded-2xl bg-white overflow-hidden"
+                >
+                  <span class="relative block h-[76px] bg-gradient-to-br" [class]="b.member.gradient">
+                    <span aria-hidden="true" class="badge-grid absolute inset-0"></span>
+                    <span aria-hidden="true" class="absolute top-2.5 left-1/2 -translate-x-1/2 w-9 h-2 rounded-full bg-black/25 shadow-inner"></span>
+                    <span class="absolute top-6 inset-x-0 flex items-center justify-center gap-1.5 text-white">
+                      <app-logo-mark wrench="currentColor" class="w-[18px]" />
+                      <span class="font-display text-[11px] font-extrabold tracking-tight">HomeLink</span>
+                      <span class="text-[9px] font-bold uppercase tracking-[0.16em] text-white/75">Dev</span>
+                    </span>
+                    <span aria-hidden="true" class="absolute top-2 right-2 w-6 h-6 rounded-full bg-white/20 text-white flex items-center justify-center">
+                      <svg lucideArrowUpRight class="w-3.5 h-3.5"></svg>
+                    </span>
+                  </span>
+
+                  <span class="relative block -mt-8 px-3 pb-3.5 text-center">
+                    <app-safe-image [src]="b.member.photo" alt="" class="block mx-auto w-16 h-16 rounded-2xl ring-4 ring-white shadow-lg object-cover" iconClass="w-6 h-6" />
+                    <span class="block mt-3 font-display text-base font-extrabold leading-tight text-brand-ink">{{ b.member.firstName }}</span>
+                    <span class="block mt-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">{{ b.member.lastName }}</span>
+                    <span class="mt-3 inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-semibold text-gray-700">
+                      <span class="w-1.5 h-1.5 rounded-full" [style.background-color]="b.member.color"></span>
+                      {{ b.member.role }}
+                    </span>
+                    <span class="mt-3.5 pt-3 flex items-center justify-between gap-2 border-t border-dashed border-gray-200">
+                      <span class="font-mono text-[10px] tracking-wider text-gray-400">HL-DEV-{{ b.number }}</span>
+                      <svg aria-hidden="true" [attr.viewBox]="'0 0 ' + b.code.width + ' 14'" class="h-3.5 w-auto text-brand-ink/70">
+                        @for (bar of b.code.bars; track bar.x) {
+                          <rect [attr.x]="bar.x" [attr.width]="bar.w" height="14" fill="currentColor" />
+                        }
+                      </svg>
+                    </span>
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+        }
       </div>
     </div>
   </section>
 
-  <section class="px-4 pt-7">
+  <!-- What we built -->
+  <section class="py-10 bg-brand-light">
+    <div class="px-4">
+      <div appReveal class="text-center mb-6">
+        <p class="eyebrow justify-center mb-2">Our Work</p>
+        <h2 class="font-display text-xl font-extrabold tracking-tight text-brand-ink mb-1.5">What we built together</h2>
+        <p class="text-gray-500 text-sm">One platform for buying home-improvement products and booking the people who install them, plus everything that keeps it running.</p>
+      </div>
+      <div class="flex flex-col gap-3">
+        @for (b of built; track b.title; let i = $index) {
+          <div appReveal [revealDelay]="(i % 3) * 60">
+            <ng-template #tile>
+              <div class="flex items-start gap-3.5">
+                <div class="w-11 h-11 rounded-xl bg-brand-navy/5 flex items-center justify-center shrink-0">
+                  @switch (b.icon) {
+                    @case ('bag') { <svg lucideShoppingBag class="w-5 h-5 text-brand-orange"></svg> }
+                    @case ('wrench') { <svg lucideWrench class="w-5 h-5 text-brand-orange"></svg> }
+                    @case ('phone') { <svg lucideSmartphone class="w-5 h-5 text-brand-orange"></svg> }
+                    @case ('dashboard') { <svg lucideLayoutDashboard class="w-5 h-5 text-brand-orange"></svg> }
+                    @case ('server') { <svg lucideServer class="w-5 h-5 text-brand-orange"></svg> }
+                    @case ('bot') { <svg lucideBot class="w-5 h-5 text-brand-orange"></svg> }
+                  }
+                </div>
+                <div class="min-w-0">
+                  <h3 class="font-display font-bold text-brand-ink">{{ b.title }}</h3>
+                  <p class="text-gray-500 text-[13px] leading-relaxed mt-1">{{ b.desc }}</p>
+                  @if (b.cta) {
+                    <span class="mt-2.5 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-orange">
+                      {{ b.cta }} <svg lucideArrowRight class="w-4 h-4"></svg>
+                    </span>
+                  }
+                </div>
+              </div>
+            </ng-template>
+            @if (b.to) {
+              <a [routerLink]="b.to" class="tap card block p-4 active:bg-gray-50">
+                <ng-container [ngTemplateOutlet]="tile" />
+              </a>
+            } @else {
+              <div class="card p-4">
+                <ng-container [ngTemplateOutlet]="tile" />
+              </div>
+            }
+          </div>
+        }
+      </div>
+      <div appReveal class="mt-8 text-center">
+        <p class="text-xs font-semibold uppercase tracking-[0.14em] text-gray-400 mb-3">Built with</p>
+        <ul class="flex flex-wrap justify-center gap-2">
+          @for (s of stack; track s) {
+            <li class="px-3 py-1.5 rounded-full bg-white border border-gray-200 text-sm text-gray-600">{{ s }}</li>
+          }
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="px-4 pb-10 bg-brand-light">
     <a routerLink="/about" class="tap card flex items-center gap-3 px-4 py-3.5 active:bg-gray-50">
       <span class="flex-1 min-w-0">
         <span class="block text-[11px] uppercase tracking-[0.14em] text-gray-400">Back to</span>
@@ -98,3 +149,106 @@
     </a>
   </section>
 </div>
+
+<!-- A teammate's profile, as a sheet you can step through. -->
+@if (active(); as m) {
+  @let pos = position()!;
+  <div class="fixed inset-0 z-[100] flex items-end justify-center" role="dialog" aria-modal="true" [attr.aria-label]="fullNameOf(m)">
+    <div class="modal-scrim" (click)="closeMember()"></div>
+    <div class="modal-panel relative w-full max-w-md rounded-b-none max-h-[88vh] flex flex-col overflow-hidden fade-up">
+      <div class="relative shrink-0 overflow-hidden bg-gradient-to-br from-brand-navy to-brand-blue px-5 py-6 text-white">
+        <div
+          aria-hidden="true"
+          class="absolute -top-20 -right-16 w-64 h-64 rounded-full blur-3xl opacity-40 transition-colors duration-500"
+          [style.background-color]="m.color"
+        ></div>
+        <button type="button" (click)="closeMember()" aria-label="Close" class="tap absolute top-3 right-3 p-2 rounded-lg text-white/60">
+          <svg lucideX class="w-[18px] h-[18px]"></svg>
+        </button>
+        <!-- Re-keyed so the entrance replays as you step from one teammate to the next. -->
+        @for (k of [m.slug]; track k) {
+          <div class="fade-up relative flex items-center gap-4 pr-8">
+            <app-safe-image [src]="m.photo" alt="" class="block w-20 h-20 rounded-2xl shadow-xl shadow-black/25 shrink-0 object-cover" iconClass="w-6 h-6" />
+            <div class="min-w-0">
+              <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/50 tabular-nums">{{ pad(pos.at + 1) }} / {{ pad(team.length) }}</p>
+              <h2 class="font-display text-2xl font-extrabold leading-tight tracking-tight mt-1">{{ fullNameOf(m) }}</h2>
+              <span class="badge bg-white/15 text-white mt-2.5">{{ m.role }}</span>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="flex-1 overflow-y-auto px-5 py-5">
+        @for (k of [m.slug]; track k) {
+          <div class="fade-up space-y-5">
+            <p class="text-gray-600 leading-relaxed">{{ m.bio || m.firstName + ' is part of the development team behind HomeLink.' }}</p>
+
+            @if (m.contributions.length > 0) {
+              <div>
+                <h3 class="text-xs font-semibold uppercase tracking-[0.14em] text-gray-400 mb-3">Contributions to HomeLink</h3>
+                <ul class="space-y-2.5">
+                  @for (c of m.contributions; track c) {
+                    <li class="flex items-start gap-2.5 text-sm text-gray-700 leading-relaxed">
+                      <span class="mt-0.5 w-5 h-5 rounded-full bg-brand-orange/10 text-[#c8461a] flex items-center justify-center shrink-0">
+                        <svg lucideCheck class="w-3 h-3"></svg>
+                      </span>
+                      {{ c }}
+                    </li>
+                  }
+                </ul>
+              </div>
+            }
+
+            @if (m.links.github || m.links.linkedin || m.links.email) {
+              <div class="flex flex-wrap gap-2">
+                @if (m.links.github) {
+                  <a [href]="m.links.github" target="_blank" rel="noopener noreferrer" class="tap inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-700">
+                    <svg lucideArrowUpRight class="w-4 h-4"></svg> GitHub
+                  </a>
+                }
+                @if (m.links.linkedin) {
+                  <a [href]="m.links.linkedin" target="_blank" rel="noopener noreferrer" class="tap inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-700">
+                    <svg lucideArrowUpRight class="w-4 h-4"></svg> LinkedIn
+                  </a>
+                }
+                @if (m.links.email) {
+                  <a [href]="'mailto:' + m.links.email" class="tap inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-700">
+                    <svg lucideMail class="w-4 h-4"></svg> {{ m.links.email }}
+                  </a>
+                }
+              </div>
+            }
+          </div>
+        }
+
+        <div class="mt-6 pt-5 border-t border-[#eef1f5]">
+          <h3 class="text-xs font-semibold uppercase tracking-[0.14em] text-gray-400 mb-3">The team</h3>
+          <div class="flex flex-wrap gap-2">
+            @for (t of team; track t.slug) {
+              <button
+                type="button"
+                (click)="openMember(t.slug)"
+                [attr.aria-current]="t === m ? 'true' : null"
+                [attr.aria-label]="fullNameOf(t)"
+                class="tap inline-flex items-center gap-2 pl-1 pr-3 py-1 rounded-full border text-sm font-medium transition"
+                [class]="t === m ? 'bg-brand-navy border-brand-navy text-white' : 'border-gray-200 text-gray-600'"
+              >
+                <app-safe-image [src]="t.photo" alt="" class="block w-7 h-7 rounded-full object-cover" iconClass="w-3 h-3" />
+                {{ t.firstName }}
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="shrink-0 flex items-center justify-between gap-3 px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] border-t border-[#eef1f5] bg-[#f8fafc]">
+        <button type="button" (click)="openMember(pos.prev.slug)" [attr.aria-label]="'Previous: ' + fullNameOf(pos.prev)" class="tap inline-flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700">
+          <svg lucideArrowLeft class="w-4 h-4"></svg> {{ pos.prev.firstName }}
+        </button>
+        <button type="button" (click)="openMember(pos.next.slug)" [attr.aria-label]="'Next: ' + fullNameOf(pos.next)" class="tap inline-flex items-center gap-1.5 rounded-xl bg-brand-navy px-4 py-2.5 text-sm font-semibold text-white">
+          {{ pos.next.firstName }} <svg lucideArrowRight class="w-4 h-4"></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+}

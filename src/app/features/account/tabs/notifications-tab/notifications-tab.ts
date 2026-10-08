@@ -3,6 +3,7 @@ import { LucideCalendar, LucideCheck, LucideMegaphone, LucidePackage } from '@lu
 
 import { ApiService } from '../../../../core/api.service';
 import { AuthService } from '../../../../core/auth.service';
+import { Switch } from '../../../../shared/switch/switch';
 
 interface NotificationPrefs {
   notifyOrders: boolean;
@@ -18,7 +19,7 @@ const OPTIONS: { key: keyof NotificationPrefs; icon: 'package' | 'calendar' | 'm
 
 @Component({
   selector: 'app-notifications-tab',
-  imports: [LucidePackage, LucideCalendar, LucideMegaphone, LucideCheck],
+  imports: [Switch, LucidePackage, LucideCalendar, LucideMegaphone, LucideCheck],
   templateUrl: './notifications-tab.html',
   styleUrl: './notifications-tab.css',
 })

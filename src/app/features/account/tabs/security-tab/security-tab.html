@@ -1,89 +1,184 @@
 <div>
   <h2 class="font-display font-bold text-lg text-brand-ink mb-1">Security</h2>
-  <p class="text-sm text-gray-500 mb-6">Update your password to keep your account secure.</p>
+  <p class="text-sm text-gray-500 mb-6">Manage your password and how you sign in to HomeLink.</p>
 
-  <form (submit)="$event.preventDefault(); handleSubmit()" class="max-w-sm space-y-4">
-    <div>
-      <label class="block text-sm font-medium mb-1.5 text-gray-700">Current Password</label>
-      <input type="password" [ngModel]="form().currentPassword" (ngModelChange)="updateField('currentPassword', $event)" name="currentPassword" class="input-field" required />
-    </div>
-    <div>
-      <label class="block text-sm font-medium mb-1.5 text-gray-700">New Password</label>
-      <input type="password" [ngModel]="form().newPassword" (ngModelChange)="updateField('newPassword', $event)" name="newPassword" class="input-field" required minlength="6" />
-    </div>
-    <div>
-      <label class="block text-sm font-medium mb-1.5 text-gray-700">Confirm New Password</label>
-      <input type="password" [ngModel]="form().confirmPassword" (ngModelChange)="updateField('confirmPassword', $event)" name="confirmPassword" class="input-field" required minlength="6" />
-    </div>
-    @if (error()) {
-      <p class="text-red-600 text-sm">{{ error() }}</p>
-    }
-    @if (success()) {
-      <p class="flex items-center gap-1.5 text-brand-teal text-sm font-medium"><svg lucideCircleCheck class="w-4 h-4"></svg> Password updated successfully.</p>
-    }
-    <button type="submit" [disabled]="saving()" class="btn-primary flex items-center gap-2 disabled:opacity-60">
-      <svg lucideKeyRound class="w-4 h-4"></svg> {{ saving() ? 'Updating...' : 'Update Password' }}
-    </button>
-  </form>
-
-  <div class="mt-8 pt-6 border-t border-gray-100 max-w-sm">
-    <h3 class="font-display font-bold text-brand-ink flex items-center gap-2 mb-1">
-      <svg lucideShieldCheck class="w-4 h-4 text-brand-teal"></svg> Two-Factor Authentication
-    </h3>
-    <p class="text-sm text-gray-500 mb-3">When enabled, we'll email you a one-time code to enter each time you sign in.</p>
-
-    @if (setupStage() === 'code') {
-      <form (submit)="$event.preventDefault(); verifyAndEnable()" class="space-y-3">
-        <p class="text-sm text-gray-600">Enter the verification code we emailed you to turn on two-factor authentication.</p>
-        <input
-          required
-          [ngModel]="setupCode()"
-          (ngModelChange)="onSetupCodeInput($event)"
-          name="setupCode"
-          maxlength="8"
-          autocomplete="one-time-code"
-          autocapitalize="characters"
-          class="input-field tracking-widest font-mono uppercase"
-          placeholder="XXXXXXXX"
-        />
-        <p class="text-xs text-gray-500">
-          Didn't receive a code?
-          <button type="button" (click)="resendSetupCode()" class="tap text-brand-orange font-semibold">Resend</button>
-          @if (setupResent()) {
-            <span class="text-green-600 ml-1">Sent!</span>
-          }
-        </p>
-        <div class="flex items-center gap-3">
-          <button type="submit" [disabled]="twoFactorSaving()" class="btn-primary flex items-center gap-2 disabled:opacity-60">
-            <svg lucideShieldCheck class="w-4 h-4"></svg> {{ twoFactorSaving() ? 'Verifying...' : 'Enable' }}
-          </button>
-          <button type="button" (click)="cancelSetup()" class="tap text-sm text-gray-500">Cancel</button>
+  <div class="space-y-5">
+    <section class="rounded-2xl border border-gray-100 bg-gray-50/70 p-4">
+      <div class="flex items-start gap-3">
+        <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center shrink-0 border border-gray-100 shadow-sm">
+          <svg lucideKeyRound class="w-[18px] h-[18px] text-brand-navy"></svg>
         </div>
-      </form>
-    } @else {
-      <div class="flex items-center">
-        <button
-          type="button"
-          role="switch"
-          [attr.aria-checked]="twoFactorEnabled()"
-          aria-label="Two-factor authentication"
-          (click)="toggleTwoFactor()"
-          [disabled]="twoFactorSaving()"
-          class="tap relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-60"
-          [class]="twoFactorEnabled() ? 'bg-brand-teal' : 'bg-gray-300'"
-        >
-          <span class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform" [class]="twoFactorEnabled() ? 'translate-x-6' : 'translate-x-1'"></span>
-        </button>
-        <span class="ml-3 text-sm text-gray-700">{{ twoFactorEnabled() ? 'Enabled' : 'Disabled' }}</span>
+        <div class="min-w-0 flex-1">
+          <h3 class="font-display font-bold text-brand-ink">Change password</h3>
+          <p class="text-sm text-gray-500 mt-0.5">Pick a strong password you don't use for any other site.</p>
+        </div>
       </div>
-    }
-    @if (twoFactorError()) {
-      <p class="text-red-600 text-sm mt-2">{{ twoFactorError() }}</p>
-    }
+
+      <form (submit)="$event.preventDefault(); handleSubmit()" novalidate class="mt-5 space-y-5">
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label for="security-current-password" class="text-sm font-medium text-gray-700">Current password</label>
+            <a routerLink="/forgot-password" class="tap text-xs font-semibold text-brand-orange">Forgot it?</a>
+          </div>
+          <app-password-input
+            name="currentPassword"
+            inputId="security-current-password"
+            autocomplete="current-password"
+            [value]="form().currentPassword"
+            [invalid]="!!fieldErrors().currentPassword"
+            (valueChange)="updateField('currentPassword', $event)"
+          />
+          @if (fieldErrors().currentPassword) {
+            <p class="mt-1.5 text-xs text-red-600">{{ fieldErrors().currentPassword }}</p>
+          }
+        </div>
+
+        <div>
+          <label for="security-new-password" class="block text-sm font-medium mb-1.5 text-gray-700">New password</label>
+          <app-password-input
+            name="newPassword"
+            inputId="security-new-password"
+            autocomplete="new-password"
+            [value]="form().newPassword"
+            [invalid]="!!fieldErrors().newPassword"
+            (valueChange)="updateField('newPassword', $event)"
+          />
+          @if (fieldErrors().newPassword) {
+            <p class="mt-1.5 text-xs text-red-600">{{ fieldErrors().newPassword }}</p>
+          }
+          <app-password-requirements [password]="form().newPassword" />
+        </div>
+
+        <div>
+          <label for="security-confirm-password" class="block text-sm font-medium mb-1.5 text-gray-700">Confirm new password</label>
+          <app-password-input
+            name="confirmPassword"
+            inputId="security-confirm-password"
+            autocomplete="new-password"
+            [value]="form().confirmPassword"
+            [invalid]="!!fieldErrors().confirmPassword"
+            (valueChange)="updateField('confirmPassword', $event)"
+          />
+          @if (fieldErrors().confirmPassword) {
+            <p class="mt-1.5 text-xs text-red-600">{{ fieldErrors().confirmPassword }}</p>
+          } @else if (passwordsMatch()) {
+            <p class="mt-1.5 inline-flex items-center gap-1 text-xs font-medium text-teal-700">
+              <svg lucideCheck class="w-3.5 h-3.5" [attr.stroke-width]="2.5"></svg> Passwords match
+            </p>
+          }
+        </div>
+
+        @if (error()) {
+          <p role="alert" class="rounded-xl bg-red-50 border border-red-100 px-3.5 py-3 text-sm text-red-700">{{ error() }}</p>
+        }
+        @if (success()) {
+          <div role="status" class="flex items-start gap-2.5 rounded-xl bg-brand-teal/10 px-3.5 py-3 text-sm text-brand-navy">
+            <svg lucideCircleCheck class="w-4 h-4 mt-0.5 shrink-0 text-teal-700"></svg>
+            <p>Password updated. Use your new password the next time you sign in.</p>
+          </div>
+        }
+
+        <button type="submit" [disabled]="saving()" class="btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-60">
+          @if (saving()) {
+            <svg lucideLoaderCircle class="w-4 h-4 animate-spin"></svg> Updating…
+          } @else {
+            <svg lucideKeyRound class="w-4 h-4"></svg> Update password
+          }
+        </button>
+      </form>
+    </section>
+
+    <section class="rounded-2xl border border-gray-100 bg-gray-50/70 p-4">
+      <div class="flex items-start gap-3">
+        <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center shrink-0 border border-gray-100 shadow-sm">
+          <svg lucideShieldCheck class="w-[18px] h-[18px] text-brand-navy"></svg>
+        </div>
+        <div class="min-w-0 flex-1">
+          <h3 class="font-display font-bold text-brand-ink">Two-factor authentication</h3>
+          <p class="text-sm text-gray-500 mt-0.5">Adds a one-time email code to every sign-in, so a leaked password alone can't get anyone in.</p>
+        </div>
+        <div class="pt-2">
+          <app-switch
+            [checked]="twoFactorEnabled()"
+            [disabled]="busy() || stage() === 'code'"
+            label="Two-factor authentication"
+            (toggled)="handleToggle()"
+          />
+        </div>
+      </div>
+
+      <div class="mt-4 flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-xs text-gray-500">
+        @if (twoFactorEnabled()) {
+          <span class="badge gap-1 bg-brand-teal/15 text-teal-700"><svg lucideShieldCheck class="w-3 h-3"></svg> On</span>
+          <span class="min-w-0 break-all">Codes go to <span class="font-medium text-gray-700">{{ email() }}</span></span>
+        } @else {
+          <span class="badge bg-gray-200/70 text-gray-600">Off</span>
+          <span>Recommended for every account</span>
+        }
+      </div>
+
+      @if (stage() === 'code') {
+        <form (submit)="$event.preventDefault(); verify()" novalidate class="mt-5 pt-5 border-t border-gray-200/70 space-y-4">
+          <div>
+            <p id="security-2fa-code-label" class="text-sm font-medium text-brand-ink">Enter the code we just emailed you</p>
+            <p class="text-xs text-gray-500 mt-0.5 break-all">
+              Sent to <span class="font-medium text-gray-700">{{ email() }}</span> · expires in 10 minutes
+            </p>
+          </div>
+          <app-code-input
+            inputId="security-2fa-code"
+            labelledBy="security-2fa-code-label"
+            [value]="code()"
+            [length]="codeLength"
+            (valueChange)="onCodeChange($event)"
+            (completed)="verify($event)"
+            [invalid]="!!twoFactorError()"
+            [disabled]="busy()"
+            [autofocus]="true"
+          />
+          <app-resend-code [sentAt]="codeSentAt()" [onResend]="handleResend" />
+          @if (twoFactorError()) {
+            <p role="alert" class="rounded-xl bg-red-50 border border-red-100 px-3.5 py-3 text-sm text-red-700">{{ twoFactorError() }}</p>
+          }
+          <div class="flex items-center gap-4">
+            <button type="submit" [disabled]="busy()" class="btn-primary flex items-center gap-2 disabled:opacity-60">
+              @if (busy()) {
+                <svg lucideLoaderCircle class="w-4 h-4 animate-spin"></svg> Verifying…
+              } @else {
+                <svg lucideShieldCheck class="w-4 h-4"></svg> Verify &amp; turn on
+              }
+            </button>
+            <button type="button" (click)="cancelSetup()" class="tap text-sm font-medium text-gray-500">Cancel</button>
+          </div>
+        </form>
+      } @else {
+        @if (twoFactorError()) {
+          <p role="alert" class="mt-4 rounded-xl bg-red-50 border border-red-100 px-3.5 py-3 text-sm text-red-700">{{ twoFactorError() }}</p>
+        }
+        @if (justEnabled() && twoFactorEnabled()) {
+          <div role="status" class="mt-4 flex items-start gap-2.5 rounded-xl bg-brand-teal/10 px-3.5 py-3 text-sm text-brand-navy">
+            <svg lucideCircleCheck class="w-4 h-4 mt-0.5 shrink-0 text-teal-700"></svg>
+            <p>Two-factor authentication is on. You'll be asked for a code the next time you sign in.</p>
+          </div>
+        }
+      }
+    </section>
+
+    <div class="flex items-start gap-3 rounded-2xl border border-dashed border-gray-200 p-4 text-sm text-gray-500">
+      <svg lucideLock class="w-4 h-4 text-gray-400 mt-0.5 shrink-0"></svg>
+      <p>Your password is never stored in plain text — HomeLink only keeps a one-way hash of it.</p>
+    </div>
   </div>
 
-  <div class="mt-8 pt-6 border-t border-gray-100 flex items-start gap-3 text-sm text-gray-500 max-w-sm">
-    <svg lucideLock class="w-4 h-4 text-gray-400 mt-0.5 shrink-0"></svg>
-    <p>Your password is never stored in plain text — HomeLink only keeps a one-way hash of it.</p>
-  </div>
+  <app-confirm-dialog
+    [open]="confirmingOff()"
+    tone="update"
+    title="Turn off two-factor authentication?"
+    message="You'll sign in with just your password. You can turn it back on at any time."
+    confirmLabel="Turn off"
+    (confirmed)="turnOff()"
+    (cancelled)="confirmingOff.set(false)"
+  >
+    <svg icon lucideShieldOff></svg>
+  </app-confirm-dialog>
 </div>

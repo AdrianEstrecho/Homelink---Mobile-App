@@ -1,5 +1,6 @@
 import { jsPDF } from 'jspdf';
 
+import { currencyCode } from './format.util';
 import { Order } from './order.model';
 import { paymentMethodLabel } from './payment-methods';
 
@@ -12,8 +13,8 @@ const LINE = '#e5e7eb';
 const MARGIN = 48;
 const RIGHT = 595.28 - MARGIN;
 
-// jsPDF's standard fonts can't render the ₱ glyph, so PDFs spell out "PHP" instead.
-const pdfMoney = (n: number) => `PHP ${Number(n).toLocaleString('en-PH', { minimumFractionDigits: 0 })}`;
+// jsPDF's standard fonts can't render a symbol like ₱, so PDFs spell out the currency code instead.
+const pdfMoney = (n: number) => `${currencyCode()} ${Number(n).toLocaleString('en-PH', { minimumFractionDigits: 0 })}`;
 
 function capitalize(s?: string | null): string {
   return s ? s.charAt(0).toUpperCase() + s.slice(1) : (s ?? '');
@@ -150,6 +151,13 @@ export function downloadReceiptPdf(order: Order, person: ReceiptPerson | null, p
     y += 18;
   }
 
+  if ((order.shipping_fee ?? 0) > 0) {
+    doc.setTextColor('#374151');
+    doc.text('Shipping', MARGIN, y);
+    doc.text(pdfMoney(order.shipping_fee ?? 0), RIGHT, y, { align: 'right' });
+    y += 18;
+  }
+
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(13);
   doc.setTextColor(NAVY);
@@ -157,6 +165,17 @@ export function downloadReceiptPdf(order: Order, person: ReceiptPerson | null, p
   doc.setTextColor(ORANGE);
   doc.text(pdfMoney(order.total), RIGHT, y, { align: 'right' });
   y += 40;
+
+  // VAT is already inside the total, so it's noted beneath it rather than listed as a charge.
+  if ((order.tax ?? 0) > 0) {
+    y -= 22;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(GRAY);
+    doc.text(`Includes VAT (${Number(order.tax_rate ?? 0)}%)`, MARGIN, y);
+    doc.text(pdfMoney(order.tax ?? 0), RIGHT, y, { align: 'right' });
+    y += 30;
+  }
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);

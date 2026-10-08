@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { LucideArrowRight, LucideFlag, LucideHouse, LucideQuote, LucideWrench } from '@lucide/angular';
+import { LucideArrowRight, LucideFlag, LucideQuote } from '@lucide/angular';
 
 import { ABOUT_STATS, MILESTONES } from '../about.data';
 import { CountUp } from '../../../shared/count-up/count-up';
 import { RevealDirective } from '../../../shared/reveal.directive';
+import { LogoMark } from '../../../shared/logo-mark/logo-mark';
 
 const NODE_ACCENTS: Record<string, { dot: string; year: string }> = {
   navy: { dot: 'bg-brand-navy', year: 'text-brand-navy' },
@@ -15,7 +16,7 @@ const NODE_ACCENTS: Record<string, { dot: string; year: string }> = {
 /** The founding story, as a vertical timeline — the shape a phone reads best. */
 @Component({
   selector: 'app-company-history',
-  imports: [RouterLink, RevealDirective, CountUp, LucideHouse, LucideWrench, LucideQuote, LucideFlag, LucideArrowRight],
+  imports: [LogoMark, RouterLink, RevealDirective, CountUp, LucideQuote, LucideFlag, LucideArrowRight],
   templateUrl: './company-history.html',
   styleUrl: './company-history.css',
 })

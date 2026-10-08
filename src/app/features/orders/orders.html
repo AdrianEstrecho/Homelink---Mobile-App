@@ -222,6 +222,18 @@
               }
             </div>
           }
+          @if (canTrack(o)) {
+            <!-- The same tracking map the order details open, without opening them first. -->
+            <div class="px-4 pb-4 -mt-1">
+              <button
+                type="button"
+                (click)="openTrack($event, o)"
+                class="tap w-full inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand-navy px-2 py-2.5 text-[13px] font-semibold text-white shadow-sm shadow-brand-navy/25"
+              >
+                <svg lucideTruck class="w-4 h-4"></svg> Track Order
+              </button>
+            </div>
+          }
         </article>
       }
     </div>

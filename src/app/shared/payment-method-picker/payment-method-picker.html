@@ -18,29 +18,121 @@
 
   @if (method() === 'card') {
     <div class="mt-5 pt-5 border-t border-gray-100 space-y-4">
-      <div>
-        <label class="block text-sm font-medium mb-1.5 text-gray-700">Card Number</label>
-        <input [ngModel]="cardForm().cardNumber" (ngModelChange)="updateCard('cardNumber', $event)" placeholder="1234 5678 9012 3456" class="input-field" inputmode="numeric" />
-      </div>
-      <div class="grid grid-cols-3 gap-4">
-        <div>
-          <label class="block text-sm font-medium mb-1.5 text-gray-700">Month</label>
-          <app-select [value]="cardForm().expMonth" (valueChange)="updateCard('expMonth', $event)" placeholder="MM" [options]="monthOptions" />
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1.5 text-gray-700">Year</label>
-          <app-select [value]="cardForm().expYear" (valueChange)="updateCard('expYear', $event)" placeholder="YYYY" [options]="yearOptions" />
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1.5 text-gray-700">CVC</label>
-          <input [ngModel]="cardForm().cvc" (ngModelChange)="onCvcInput($event)" placeholder="123" maxlength="4" class="input-field" inputmode="numeric" />
-        </div>
-      </div>
+      @if (savedCards(); as cards) {
+        @if (cards.length > 0) {
+          <div>
+            <div class="flex items-center justify-between mb-2.5">
+              <p class="text-sm font-medium text-gray-700">Your cards</p>
+              <a routerLink="/account/payment" class="tap text-xs font-semibold text-brand-navy">Manage cards</a>
+            </div>
+            <div role="radiogroup" aria-label="Choose a card" class="space-y-2.5">
+              @for (c of cards; track c.id) {
+                @let expired = isCardExpired(+c.exp_month, +c.exp_year);
+                @let selected = selectedCard() === c.id;
+                <label
+                  class="flex items-center gap-3 p-3.5 rounded-xl border transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-orange"
+                  [class]="expired ? 'border-gray-200 opacity-60' : selected ? 'border-brand-orange bg-brand-orange/5' : 'border-gray-200'"
+                >
+                  <input type="radio" name="saved-card" class="sr-only" [checked]="selected" [disabled]="expired" (change)="chooseCard(c.id)" />
+                  <span class="w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition" [class]="selected ? 'border-brand-orange' : 'border-gray-300'">
+                    @if (selected) {
+                      <span class="w-2 h-2 rounded-full bg-brand-orange"></span>
+                    }
+                  </span>
+                  <span class="w-10 h-7 rounded-md bg-white border border-gray-200 flex items-center justify-center shrink-0">
+                    <svg lucideCreditCard class="w-4 h-4 text-brand-navy"></svg>
+                  </span>
+                  <span class="min-w-0 flex-1">
+                    <span class="block text-sm font-semibold text-brand-ink">{{ c.brand }} •••• {{ c.last4 }}</span>
+                    <span class="block text-xs" [class]="expired ? 'text-red-600' : 'text-gray-500'">
+                      {{ expired ? 'Expired' : 'Expires' }} {{ (c.exp_month + '').padStart(2, '0') }}/{{ c.exp_year }}
+                    </span>
+                  </span>
+                  @if (c.is_default) {
+                    <span class="badge bg-brand-teal/15 text-brand-teal shrink-0">Default</span>
+                  }
+                </label>
+              }
+              <label
+                class="flex items-center gap-3 p-3.5 rounded-xl border transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-orange"
+                [class]="selectedCard() === 'new' ? 'border-brand-orange bg-brand-orange/5' : 'border-dashed border-gray-300'"
+              >
+                <input type="radio" name="saved-card" class="sr-only" [checked]="selectedCard() === 'new'" (change)="chooseCard('new')" />
+                <span class="w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition" [class]="selectedCard() === 'new' ? 'border-brand-orange' : 'border-gray-300'">
+                  @if (selectedCard() === 'new') {
+                    <span class="w-2 h-2 rounded-full bg-brand-orange"></span>
+                  }
+                </span>
+                <span class="w-10 h-7 rounded-md bg-white border border-gray-200 flex items-center justify-center shrink-0">
+                  <svg lucidePlus class="w-4 h-4 text-brand-orange"></svg>
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="block text-sm font-semibold text-brand-ink">Add a new card</span>
+                  <span class="block text-xs text-gray-500">Visa, Mastercard, Amex &amp; more</span>
+                </span>
+              </label>
+            </div>
+          </div>
+        }
+
+        @if (selectedCard() === 'new') {
+          <div class="space-y-4" [class]="cards.length > 0 ? 'p-4 rounded-xl bg-gray-50 border border-gray-100' : ''">
+            <div>
+              <label for="card-number" class="block text-sm font-medium mb-1.5 text-gray-700">Card Number</label>
+              <input
+                #cardNumberInput
+                id="card-number"
+                [ngModel]="cardForm().cardNumber"
+                (ngModelChange)="onCardNumberInput($event, cardNumberInput)"
+                placeholder="1234 5678 9012 3456"
+                class="input-field tabular-nums"
+                inputmode="numeric"
+                autocomplete="cc-number"
+              />
+            </div>
+            <div class="grid grid-cols-3 gap-4">
+              <div>
+                <label class="block text-sm font-medium mb-1.5 text-gray-700">Month</label>
+                <app-select [value]="cardForm().expMonth" (valueChange)="updateCard('expMonth', $event)" placeholder="MM" [options]="monthOptions" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-1.5 text-gray-700">Year</label>
+                <app-select [value]="cardForm().expYear" (valueChange)="updateCard('expYear', $event)" placeholder="YYYY" [options]="yearOptions" />
+              </div>
+              <div>
+                <label for="card-cvc" class="block text-sm font-medium mb-1.5 text-gray-700">CVC</label>
+                <input
+                  #cvcInput
+                  id="card-cvc"
+                  [ngModel]="cardForm().cvc"
+                  (ngModelChange)="onCvcInput($event, cvcInput)"
+                  placeholder="123"
+                  maxlength="4"
+                  class="input-field"
+                  inputmode="numeric"
+                  autocomplete="cc-csc"
+                />
+              </div>
+            </div>
+            <label class="flex items-start gap-2.5">
+              <input type="checkbox" [checked]="saveNewCard()" (change)="saveNewCard.set($any($event.target).checked)" class="w-4 h-4 mt-0.5 rounded accent-brand-orange shrink-0" />
+              <span class="text-sm text-gray-700">
+                Save this card for next time
+                <span class="block text-xs text-gray-400 mt-0.5">Only the card brand, last 4 digits and expiry are kept — never the full number or CVC.</span>
+              </span>
+            </label>
+          </div>
+        }
+      } @else {
+        <p class="flex items-center gap-2 text-sm text-gray-400">
+          <svg lucideLoaderCircle class="w-4 h-4 animate-spin"></svg> Loading your saved cards…
+        </p>
+      }
       @if (cardError()) {
         <p class="text-red-600 text-sm">{{ cardError() }}</p>
       }
       <p class="flex items-center gap-1.5 text-xs text-gray-500">
-        <svg lucideShieldCheck class="w-3.5 h-3.5 text-brand-teal"></svg> Your card details go directly and securely to PayMongo, our payment processor — HomeLink never sees or stores your card number or CVC.
+        <svg lucideShieldCheck class="w-3.5 h-3.5 text-brand-teal shrink-0"></svg> You'll confirm this on a secure PayMongo page next — HomeLink never sees or stores your card number or CVC.
       </p>
     </div>
   }
@@ -52,7 +144,7 @@
       @if (gcashError()) {
         <p class="text-red-600 text-sm mt-1.5">{{ gcashError() }}</p>
       }
-      <p class="text-xs text-gray-400 mt-2">You'll be redirected to GCash to authorize this payment.</p>
+      <p class="text-xs text-gray-400 mt-2">You'll be taken to a secure PayMongo page to log in and authorize this payment.</p>
     </div>
   }
 

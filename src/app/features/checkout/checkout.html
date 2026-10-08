@@ -18,6 +18,17 @@
     (confirmed)="handleConfirmOrder()"
     (closed)="editOrder()"
   />
+} @else if (buySlug() && buyNowProduct() === null) {
+  <div class="px-4 py-24 text-center">
+    <svg lucideLoaderCircle class="w-10 h-10 text-brand-teal mx-auto animate-spin"></svg>
+  </div>
+} @else if (buySlug() && items().length === 0) {
+  <div class="px-4 py-16 text-center">
+    <svg lucideShoppingBag class="w-16 h-16 text-gray-300 mx-auto mb-4"></svg>
+    <h2 class="font-display text-xl font-bold text-brand-ink mb-2">This product isn't available</h2>
+    <p class="text-gray-500 mb-6">It may have sold out or been removed from the store.</p>
+    <a routerLink="/products" class="btn-primary">Browse Products</a>
+  </div>
 } @else if (items().length === 0) {
   <div class="px-4 py-16 text-center">
     <svg lucideShoppingBag class="w-16 h-16 text-gray-300 mx-auto mb-4"></svg>
@@ -76,6 +87,9 @@
       <div>
         <div class="card p-4">
           <h2 class="text-xs font-semibold uppercase tracking-[0.14em] text-gray-400 mb-4">Order Summary</h2>
+          @if (buySlug()) {
+            <p class="text-xs text-gray-400 -mt-2 mb-4">Buying this item only — your cart stays as it is.</p>
+          }
 
           <div class="space-y-3 max-h-64 overflow-y-auto pr-1 -mr-1 mb-4">
             @for (i of items(); track i.productId) {
@@ -98,12 +112,28 @@
             @if (voucherAmt() > 0) {
               <div class="flex justify-between text-green-600"><span>Promo ({{ appliedPromo()!.code }})</span><span>-{{ voucherAmt() | homelinkPrice }}</span></div>
             }
+            @if (chargesShipping()) {
+              <div class="flex justify-between text-gray-500">
+                <span>Shipping</span>
+                @if (charges().shippingFee > 0) {
+                  <span>{{ charges().shippingFee | homelinkPrice }}</span>
+                } @else {
+                  <span class="text-green-600 font-medium">Free</span>
+                }
+              </div>
+            }
+            @if (charges().toFreeShipping !== null) {
+              <p class="text-xs text-brand-teal">Add {{ charges().toFreeShipping! | homelinkPrice }} more for free shipping.</p>
+            }
           </div>
 
           <div class="flex justify-between items-center font-bold text-lg mt-3 pt-3 border-t border-gray-200">
             <span class="text-brand-ink">Total</span>
             <span class="text-brand-navy">{{ orderTotal() | homelinkPrice }}</span>
           </div>
+          @if (charges().tax > 0) {
+            <p class="text-right text-xs text-gray-400 mt-1">Includes {{ charges().tax | homelinkPrice }} VAT ({{ charges().taxRate }}%)</p>
+          }
 
           <button type="submit" class="btn-primary w-full py-3 mt-5">
             Place Order — {{ orderTotal() | homelinkPrice }}
@@ -121,7 +151,7 @@
             </div>
             <div>
               <svg lucideTruck class="w-4 h-4 text-brand-teal mx-auto mb-1"></svg>
-              <p class="text-[11px] text-gray-400 leading-tight">Fast Delivery</p>
+              <p class="text-[11px] text-gray-400 leading-tight">{{ settings().deliveryEstimate ? 'Arrives in ' + settings().deliveryEstimate : 'Fast Delivery' }}</p>
             </div>
           </div>
         </div>

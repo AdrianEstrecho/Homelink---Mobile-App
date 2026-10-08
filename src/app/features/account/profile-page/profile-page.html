@@ -7,17 +7,12 @@
     </div>
 
     <div class="relative flex flex-col items-center text-center">
-      <div class="relative">
-        <div
-          class="w-[4.5rem] h-[4.5rem] rounded-[1.5rem] bg-gradient-to-br flex items-center justify-center font-display font-extrabold text-2xl ring-4 ring-white/15 elevation-3"
-          [class]="avatarGradient()"
-        >
-          {{ initials() }}
-        </div>
-        <span class="absolute -bottom-1.5 -right-1.5 w-7 h-7 rounded-xl bg-brand-teal flex items-center justify-center ring-4 ring-brand-navy">
-          <svg lucideShieldCheck class="w-3.5 h-3.5 text-white"></svg>
-        </span>
-      </div>
+      <app-editable-avatar
+        [avatarClass]="'w-[4.5rem] h-[4.5rem] rounded-[1.5rem] bg-gradient-to-br flex items-center justify-center font-display font-extrabold text-2xl ring-4 ring-white/15 elevation-3 ' + avatarGradient()"
+        buttonClass="ring-brand-navy"
+      >
+        {{ initials() }}
+      </app-editable-avatar>
 
       <h1 class="font-display text-xl font-extrabold tracking-tight mt-4">
         {{ user()?.firstName }} {{ user()?.lastName }}

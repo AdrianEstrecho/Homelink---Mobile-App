@@ -8,12 +8,14 @@ import { Product, Service } from '../../core/product.model';
 import { CountUp } from '../../shared/count-up/count-up';
 import { ErrorState } from '../../shared/error-state/error-state';
 import { Hero } from '../../shared/hero/hero';
+import { HomeBuilder } from '../../shared/home-builder/home-builder';
 import { ProductCard } from '../../shared/product-card/product-card';
 import { RevealDirective } from '../../shared/reveal.directive';
 import { ServiceCard } from '../../shared/service-card/service-card';
 import { ProductCardSkeleton } from '../../shared/skeleton/product-card-skeleton/product-card-skeleton';
 import { ReviewCardSkeleton } from '../../shared/skeleton/review-card-skeleton/review-card-skeleton';
 import { ServiceCardSkeleton } from '../../shared/skeleton/service-card-skeleton/service-card-skeleton';
+import { SplitText } from '../../shared/split-text/split-text';
 import { StarRating } from '../../shared/star-rating/star-rating';
 
 interface LoadState<T> {
@@ -55,6 +57,8 @@ const REVIEW_LOOP_COPIES = 3;
 @Component({
   selector: 'app-home',
   imports: [
+    HomeBuilder,
+    SplitText,
     RouterLink,
     Hero,
     ProductCard,

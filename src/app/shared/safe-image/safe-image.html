@@ -3,5 +3,13 @@
     <svg lucideImageOff [class]="iconClass()"></svg>
   </div>
 } @else {
-  <img [src]="src()" [alt]="alt()" [class]="imgClass()" loading="lazy" (error)="onError()" />
+  <img
+    #img
+    [src]="src()"
+    [alt]="alt()"
+    [class]="imgClass() + (loaded() ? ' img-in' : ' img-pending')"
+    loading="lazy"
+    (load)="onLoad()"
+    (error)="onError()"
+  />
 }

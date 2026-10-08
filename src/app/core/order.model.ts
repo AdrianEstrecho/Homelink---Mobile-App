@@ -19,6 +19,12 @@ export interface Order {
   payment_status: string;
   subtotal: number;
   discount: number;
+  /** Charged at checkout from Platform Settings; total already includes it. */
+  shipping_fee?: number;
+  /** The VAT inside total (prices already include it), recorded for the receipt. */
+  tax?: number;
+  /** The VAT percentage tax was worked out at. */
+  tax_rate?: number;
   total: number;
   promo_code?: string | null;
   shipping_address: string;
@@ -42,5 +48,8 @@ export interface PendingOrder {
   promo_code: string | null;
   subtotal: number;
   discount: number;
+  shipping_fee: number;
+  tax: number;
+  tax_rate: number;
   total: number;
 }

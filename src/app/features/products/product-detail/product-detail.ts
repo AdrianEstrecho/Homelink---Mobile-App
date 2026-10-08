@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
@@ -21,11 +21,13 @@ import {
 import { ApiService } from '../../../core/api.service';
 import { AuthService } from '../../../core/auth.service';
 import { CartService } from '../../../core/cart.service';
+import { flyToCart } from '../../../core/fly-to-cart.util';
 import { paragraphs, specEntries, toHighlights } from '../../../core/catalog-specs.util';
 import { PricePipe } from '../../../core/price.pipe';
 import { Product } from '../../../core/product.model';
 import { requireRole } from '../../../core/require-role';
 import { scrollAppToTop } from '../../../core/scroll-top.util';
+import { SiteSettingsService } from '../../../core/site-settings.service';
 import { ToastService } from '../../../core/toast.service';
 import { WishlistService } from '../../../core/wishlist.service';
 import { ConfirmDialog } from '../../../shared/confirm-dialog/confirm-dialog';
@@ -105,6 +107,7 @@ export class ProductDetail {
   private auth = inject(AuthService);
   private cart = inject(CartService);
   private wishlist = inject(WishlistService);
+  protected readonly settings = inject(SiteSettingsService).settings;
   private toast = inject(ToastService);
 
   protected readonly tabs = TABS;
@@ -120,6 +123,10 @@ export class ProductDetail {
   protected readonly related = signal<Product[]>([]);
   protected readonly tab = signal<Tab>('Overview');
   protected readonly confirmUnfavorite = signal(false);
+  /** Bumped on every save to the wishlist; re-keys the heart's pop and spark burst so each replays. */
+  protected readonly hearts = signal(0);
+  protected readonly sparkAngles = [0, 60, 120, 180, 240, 300];
+  private readonly mainImage = viewChild('mainImage', { read: SafeImage });
   protected readonly confirmAddToCart = signal(false);
 
   protected readonly specs = computed(() => specEntries(this.product()?.specifications));
@@ -198,6 +205,7 @@ export class ProductDetail {
     const p = this.product();
     if (!p) return;
     this.cart.addItem(p, this.qty());
+    flyToCart(this.mainImage()?.element());
     if (this.wishlisted()) this.wishlist.removeItem(p.id);
     this.toast.showToast({
       icon: 'check',
@@ -227,9 +235,10 @@ export class ProductDetail {
     const p = this.product();
     if (!p) return;
     if ((await requireRole(this.auth, this.toast, ['customer'])) !== 'ok') return;
-    this.cart.addItem(p, this.qty());
-    if (this.wishlisted()) this.wishlist.removeItem(p.id);
-    this.router.navigateByUrl('/checkout');
+    // Buy Now checks out just this product at the chosen quantity — it never goes through the
+    // cart, so whatever else is sitting in there is neither ordered nor cleared. The server drops
+    // it from the wishlist once the order actually goes through.
+    this.router.navigate(['/checkout'], { queryParams: { buy: p.slug, qty: this.qty() } });
   }
 
   async handleWishlistToggle(): Promise<void> {
@@ -241,6 +250,7 @@ export class ProductDetail {
       return;
     }
     this.wishlist.addItem(p);
+    this.hearts.update((n) => n + 1);
   }
 
   confirmUnfavoriteAction(): void {

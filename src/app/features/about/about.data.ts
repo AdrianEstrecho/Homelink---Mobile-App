@@ -225,35 +225,40 @@ export const APP_TECH: TechItem[] = [
 
 /* --- The team --------------------------------------------------------- */
 
-export interface Developer {
-  name: string;
+// Mirrors frontend/src/data/team.js — the development team on the Developers page. Everything a
+// member's badge and profile show comes from here, so filling in a field is all it takes to put
+// it on the page; empty ones (bio, contributions, links) are simply left out.
+//
+//   slug           used in the shareable link: /about/developers?member=<slug>
+//   role           shown on the badge
+//   gradient       Tailwind classes for the badge header (written out in full so Tailwind keeps them)
+//   color          the same accent as a hex, for the role dot and the profile's glow
+//   photo          image URL (public/team/), replacing the initials when set
+export interface TeamMember {
+  slug: string;
+  firstName: string;
+  lastName: string;
   role: string;
-  /** Short first-person-free blurb; keep to roughly one sentence. */
-  focus: string;
-  /** Contribution areas, shown as chips. */
-  tags: string[];
-  initials: string;
-  accent: 'orange' | 'teal' | 'navy' | 'blue';
+  gradient: string;
+  color: string;
+  photo: string;
+  bio: string;
+  contributions: string[];
+  links: { github: string; linkedin: string; email: string };
 }
 
-export const DEVELOPERS: Developer[] = [
-  {
-    name: 'Adrian Estrecho',
-    role: 'Lead Developer',
-    focus: 'Built the Express API, the React storefront and admin portal, and this Angular/Capacitor mobile app.',
-    tags: ['Backend & API', 'Web frontend', 'Mobile app', 'Database'],
-    initials: 'AE',
-    accent: 'orange',
-  },
-  {
-    name: 'Aldred Arlan Rapacon',
-    role: 'Developer',
-    focus: 'Contributed to the project repository, documentation and release setup.',
-    tags: ['Documentation', 'Repository setup'],
-    initials: 'AR',
-    accent: 'teal',
-  },
+const noLinks = { github: '', linkedin: '', email: '' };
+
+export const TEAM: TeamMember[] = [
+  { slug: 'adrian-estrecho', firstName: 'Adrian', lastName: 'Estrecho', role: 'Developer', gradient: 'from-brand-orange to-amber-400', color: '#ff6b35', photo: '/team/adrian-estrecho.webp', bio: '', contributions: [], links: noLinks },
+  { slug: 'bianca-galvez', firstName: 'Bianca', lastName: 'Galvez', role: 'Developer', gradient: 'from-brand-teal to-emerald-300', color: '#00a896', photo: '/team/bianca-galvez.webp', bio: '', contributions: [], links: noLinks },
+  { slug: 'rhangel-mansilla', firstName: 'Rhangel', lastName: 'Mansilla', role: 'Developer', gradient: 'from-brand-blue to-sky-400', color: '#38bdf8', photo: '/team/rhangel-mansilla.webp', bio: '', contributions: [], links: noLinks },
+  { slug: 'luigi-natal', firstName: 'Luigi', lastName: 'Natal', role: 'Developer', gradient: 'from-rose-500 to-brand-orange', color: '#f43f5e', photo: '/team/luigi-natal.webp', bio: '', contributions: [], links: noLinks },
+  { slug: 'aldred-rapacon', firstName: 'Aldred', lastName: 'Rapacon', role: 'Developer', gradient: 'from-indigo-500 to-brand-teal', color: '#6366f1', photo: '/team/aldred-rapacon.webp', bio: '', contributions: [], links: noLinks },
 ];
+
+export const initialsOf = (m: TeamMember) => `${m.firstName[0]}${m.lastName[0]}`;
+export const fullNameOf = (m: TeamMember) => `${m.firstName} ${m.lastName}`;
 
 export const TEAM_NOTE =
   'HomeLink was built as an academic capstone project — a full marketplace, staff portal and mobile app, designed and shipped end to end by the team behind it.';

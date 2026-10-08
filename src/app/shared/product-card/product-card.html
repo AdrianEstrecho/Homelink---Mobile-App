@@ -20,7 +20,18 @@
       [attr.aria-pressed]="wishlisted()"
       class="tap absolute top-2 right-2 w-7 h-7 rounded-full bg-white/90 flex items-center justify-center shadow-sm"
     >
-      <svg lucideHeart class="w-3.5 h-3.5" [class]="wishlisted() ? 'fill-red-500 text-red-500' : 'text-gray-500'"></svg>
+      @for (n of [hearts()]; track n) {
+        <svg lucideHeart class="w-3.5 h-3.5" [class]="(n ? 'heart-pop ' : '') + (wishlisted() ? 'fill-red-500 text-red-500' : 'text-gray-500')"></svg>
+      }
+      @if (hearts() > 0) {
+        @for (n of [hearts()]; track n) {
+          <span class="heart-burst" aria-hidden="true">
+            @for (a of sparkAngles; track a) {
+              <i [style.--a]="a + 'deg'"></i>
+            }
+          </span>
+        }
+      }
     </button>
   </div>
   <div class="p-3 flex flex-col flex-1">

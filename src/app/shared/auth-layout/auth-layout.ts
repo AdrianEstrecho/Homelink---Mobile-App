@@ -1,10 +1,11 @@
 import { Component, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { LucideChevronLeft, LucideHouse } from '@lucide/angular';
+import { LucideChevronLeft } from '@lucide/angular';
+import { LogoMark } from '../logo-mark/logo-mark';
 
 @Component({
   selector: 'app-auth-layout',
-  imports: [RouterLink, LucideHouse, LucideChevronLeft],
+  imports: [LogoMark, RouterLink, LucideChevronLeft],
   templateUrl: './auth-layout.html',
   styleUrl: './auth-layout.css',
 })

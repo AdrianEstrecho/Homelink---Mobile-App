@@ -514,3 +514,587 @@
     display: none !important;
   }
 }
+
+/* Motion layer, ported from the web's frontend/src/motion.css. The web's hover-only effects
+   (card tilt with glare, the primary button's light sweep, the navbar underline) need a mouse
+   and aren't carried over; reduced motion keeps everything here still. */
+
+/* Section headings (shared/split-text): each word rises out of its own mask, one after another,
+   once the heading scrolls into view. Words are inline-blocks with overflow hidden, which moves
+   their baseline to the bottom edge, so they're top-aligned to keep the line even; the bottom
+   padding leaves room for descenders. */
+.split-word {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  padding-bottom: 0.12em;
+  margin-bottom: -0.12em;
+}
+.split-word > span {
+  display: inline-block;
+  transform: translateY(110%);
+  transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: calc(var(--i) * 60ms + 80ms);
+}
+.split-in .split-word > span {
+  transform: none;
+}
+
+/* Images (shared/safe-image) stay hidden until they've loaded, then fade in, instead of painting
+   in top to bottom. `backwards` rather than `both`, so once it's done the image's own opacity
+   classes apply again. */
+.img-pending {
+  opacity: 0;
+}
+.img-in {
+  animation: imgIn 0.6s ease backwards;
+}
+@keyframes imgIn {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Adding to the cart (core/fly-to-cart.util.ts): a copy of the product's photo is thrown into
+   the cart icon, which bounces when it lands. */
+.cart-flyer {
+  position: fixed;
+  z-index: 400;
+  pointer-events: none;
+}
+.cart-flyer > img,
+.cart-flyer > span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: 2px solid #fff;
+  box-shadow: 0 14px 30px -10px rgba(15, 43, 91, 0.5);
+}
+.cart-flyer > span {
+  background: #ff6b35;
+}
+
+/* Saving to the wishlist: the heart pops and throws off a ring of sparks. Each spark is turned
+   to its angle (--a) and flies outward along it. */
+.heart-pop {
+  animation: heartPop 0.45s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+@keyframes heartPop {
+  40% {
+    transform: scale(1.35);
+  }
+}
+.heart-burst {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.heart-burst i {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  margin: -2.5px;
+  border-radius: 9999px;
+  background: #ef4444;
+  opacity: 0;
+  animation: heartSpark 0.6s ease-out;
+}
+.heart-burst i:nth-child(even) {
+  background: #ff6b35;
+}
+@keyframes heartSpark {
+  from {
+    transform: rotate(var(--a)) translateY(-6px) scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: rotate(var(--a)) translateY(-20px) scale(0.3);
+    opacity: 0;
+  }
+}
+
+/* A print pass is a fresh paint where the fade never runs, which would leave photos on a
+   printed receipt at the animation's starting opacity of 0. */
+@media print {
+  .img-in {
+    animation: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .split-word > span {
+    transform: none;
+    transition: none;
+  }
+  .img-in,
+  .heart-pop {
+    animation: none;
+  }
+  .heart-burst {
+    display: none;
+  }
+}
+
+/* House builder (shared/home-builder), ported from the web's index.css: the scenery's ambient
+   motion, what each product does once it's installed, and the pops and confetti that answer a
+   correct drop. Global rather than component styles because they run inside the house,
+   product-art and truck child components. SVG pieces that rotate or scale about their own
+   middle use transform-box: fill-box. */
+.hb-fade {
+  transition: opacity 0.8s ease;
+}
+.hb-pop {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: hbPop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes hbPop {
+  from {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+}
+.hb-ring {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: hbRing 0.8s ease-out forwards;
+}
+@keyframes hbRing {
+  from {
+    transform: scale(0.5);
+    opacity: 0.9;
+  }
+  to {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+.hb-sun {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: hbSpin 24s linear infinite;
+}
+@keyframes hbSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.hb-cloud {
+  animation: hbCloud linear infinite;
+}
+@keyframes hbCloud {
+  from {
+    transform: translateX(-90px);
+  }
+  to {
+    transform: translateX(var(--cloud-to, 520px));
+  }
+}
+.hb-sway {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: hbSway 4s ease-in-out infinite alternate;
+}
+@keyframes hbSway {
+  from {
+    transform: rotate(-1.5deg);
+  }
+  to {
+    transform: rotate(1.5deg);
+  }
+}
+.hb-glint {
+  animation: hbGlint 4.5s ease-in-out infinite;
+}
+@keyframes hbGlint {
+  0%,
+  50% {
+    transform: translateX(0) skewX(-20deg);
+  }
+  100% {
+    transform: translateX(170px) skewX(-20deg);
+  }
+}
+.hb-blink {
+  animation: hbBlink 1.4s steps(1) infinite;
+}
+@keyframes hbBlink {
+  50% {
+    opacity: 0.2;
+  }
+}
+.hb-air {
+  animation: hbAir 2s ease-out infinite;
+}
+@keyframes hbAir {
+  from {
+    transform: translateY(-4px);
+    opacity: 0.9;
+  }
+  to {
+    transform: translateY(14px);
+    opacity: 0;
+  }
+}
+.hb-drip {
+  stroke-dasharray: 3 7;
+  animation: hbDrip 0.6s linear infinite;
+}
+@keyframes hbDrip {
+  to {
+    stroke-dashoffset: -10;
+  }
+}
+.hb-steam {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: hbSteam 2.6s ease-out infinite;
+}
+@keyframes hbSteam {
+  from {
+    transform: translateY(0) scale(0.6);
+    opacity: 0.7;
+  }
+  to {
+    transform: translateY(-26px) scale(1.5);
+    opacity: 0;
+  }
+}
+.hb-glow {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: hbGlow 2.4s ease-in-out infinite alternate;
+}
+@keyframes hbGlow {
+  from {
+    opacity: 0.25;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 0.5;
+    transform: scale(1.1);
+  }
+}
+.hb-scan {
+  transform-box: fill-box;
+  transform-origin: 100% 0%;
+  animation: hbScan 3s ease-in-out infinite alternate;
+}
+@keyframes hbScan {
+  from {
+    transform: rotate(-12deg);
+  }
+  to {
+    transform: rotate(12deg);
+  }
+}
+.hb-confetti {
+  animation: hbConfetti 1.6s cubic-bezier(0.2, 0.6, 0.4, 1) forwards;
+}
+@keyframes hbConfetti {
+  from {
+    transform: translate(0, 0) rotate(0);
+    opacity: 1;
+  }
+  to {
+    transform: translate(var(--dx), var(--dy)) rotate(var(--rot));
+    opacity: 0;
+  }
+}
+/* The handyman's bubble pops in each time he has something new to say. */
+.hb-bubble {
+  transform-origin: 50% 0%;
+  animation: hbBubble 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes hbBubble {
+  from {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hb-bubble,
+  .hb-pop,
+  .hb-ring,
+  .hb-sun,
+  .hb-cloud,
+  .hb-sway,
+  .hb-glint,
+  .hb-blink,
+  .hb-air,
+  .hb-drip,
+  .hb-steam,
+  .hb-glow,
+  .hb-scan {
+    animation: none;
+  }
+  .hb-ring,
+  .hb-confetti,
+  .hb-glint {
+    display: none;
+  }
+}
+
+/* The delivery transition (shared/page-transition-overlay), ported from the web's index.css. The
+   truck and smoke are moved from JS; these are the truck's rattle and wheels, and the logo
+   surfacing in the smoke (its wrench gives a turn as it lands). */
+.smoke-truck-body {
+  animation: smokeTruckBob 0.16s ease-in-out infinite alternate;
+}
+@keyframes smokeTruckBob {
+  to {
+    transform: translateY(-1.5px);
+  }
+}
+.smoke-wheel {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: smokeWheel 0.3s linear infinite;
+}
+@keyframes smokeWheel {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.smoke-brand {
+  opacity: 0;
+}
+.smoke-brand-in {
+  animation: smokeBrandIn 0.5s cubic-bezier(0.2, 1.3, 0.4, 1) both;
+}
+.smoke-brand-in .logo-wrench {
+  animation: wrenchTurn 0.8s 0.1s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+}
+@keyframes smokeBrandIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes wrenchTurn {
+  0% {
+    transform: rotate(0);
+  }
+  35% {
+    transform: rotate(-16deg);
+  }
+  100% {
+    transform: rotate(0);
+  }
+}
+/* Added on top of .smoke-brand-in (so the wrench keeps turning while the logo fades), and wins
+   over it by coming later in the file. */
+.smoke-brand-out {
+  animation: smokeBrandOut 0.22s ease-in both;
+}
+@keyframes smokeBrandOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.04);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .smoke-brand-in .logo-wrench {
+    animation: none;
+  }
+  .smoke-brand-in,
+  .smoke-brand-out {
+    animation-duration: 0.01ms;
+  }
+}
+
+/* Delivery lane on the Developers page (shared/delivery-lane), ported from the web's index.css.
+   The truck itself is moved from JS; these are the bits around it: drifting clouds, a bouncing
+   body, exhaust puffs, and the honk. */
+.lane-cloud {
+  animation: laneCloud linear infinite;
+}
+@keyframes laneCloud {
+  from {
+    transform: translateX(-140px);
+  }
+  to {
+    transform: translateX(100vw);
+  }
+}
+.lane-bob {
+  animation: laneBob 0.45s ease-in-out infinite alternate;
+}
+@keyframes laneBob {
+  to {
+    transform: translateY(-3px);
+  }
+}
+.lane-puff {
+  animation: lanePuff 1.2s ease-out infinite;
+}
+@keyframes lanePuff {
+  from {
+    transform: translate(0, 0) scale(0.5);
+    opacity: 0.6;
+  }
+  to {
+    transform: translate(-22px, -8px) scale(1.6);
+    opacity: 0;
+  }
+}
+.lane-honk {
+  animation: laneHonk 1.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes laneHonk {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.6);
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+@keyframes laneFadeOut {
+  0% {
+    opacity: 0;
+  }
+  10%,
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Staff ID badges on the Developers page. Two nested rotations, both pivoting where the lanyard
+   hangs from: .badge-settle wobbles to rest once its reveal wrapper scrolls in, and
+   .badge-hanger swings when the badge is tapped (--swing), on a springy curve, so it overshoots
+   once before settling. */
+.reveal-in .badge-settle {
+  animation: badgeSettle 1.8s cubic-bezier(0.3, 0.6, 0.4, 1) both;
+}
+@keyframes badgeSettle {
+  0% {
+    transform: rotate(9deg);
+  }
+  25% {
+    transform: rotate(-6deg);
+  }
+  50% {
+    transform: rotate(3.5deg);
+  }
+  72% {
+    transform: rotate(-1.5deg);
+  }
+  100% {
+    transform: rotate(0);
+  }
+}
+.badge-hanger {
+  transform: rotate(var(--swing, 0deg));
+  transform-origin: top center;
+  transition: transform 0.7s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+.badge-strap {
+  border-radius: 2px;
+  background: repeating-linear-gradient(180deg, #ff6b35 0 7px, #ff8f66 7px 9px);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 65%);
+  mask-image: linear-gradient(to bottom, transparent, #000 65%);
+}
+.badge-card {
+  box-shadow: 0 18px 36px -16px rgba(0, 0, 0, 0.55), 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+.badge-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.14) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.14) 1px, transparent 1px);
+  background-size: 12px 12px;
+  -webkit-mask-image: linear-gradient(to bottom, #000, transparent);
+  mask-image: linear-gradient(to bottom, #000, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lane-cloud,
+  .lane-bob {
+    animation: none;
+  }
+  .lane-puff {
+    display: none;
+  }
+  .lane-honk {
+    animation-name: laneFadeOut;
+  }
+  .reveal-in .badge-settle {
+    animation: none;
+  }
+  .badge-hanger {
+    transform: none;
+    transition: none;
+  }
+}
+
+/* About page (features/about), ported from the web's index.css: the trades circling the mark
+   (the ring turns while each chip counter-turns to stay upright; a press pauses it), the pulse
+   behind the mark, and the before-and-after steps replaying their entrance on every switch. */
+.about-orbit-track {
+  animation: aboutOrbit 48s linear infinite;
+}
+.about-orbit-upright {
+  animation: aboutOrbit 48s linear infinite reverse;
+}
+.about-orbit:active .about-orbit-track,
+.about-orbit:active .about-orbit-upright,
+.about-orbit:focus-within .about-orbit-track,
+.about-orbit:focus-within .about-orbit-upright {
+  animation-play-state: paused;
+}
+@keyframes aboutOrbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.about-pulse {
+  animation: aboutPulse 3.2s ease-out infinite;
+}
+@keyframes aboutPulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1.45);
+    opacity: 0;
+  }
+}
+.compare-step {
+  animation: compareIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+@keyframes compareIn {
+  from {
+    opacity: 0;
+    transform: translateX(-14px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .about-orbit-track,
+  .about-orbit-upright,
+  .about-pulse,
+  .compare-step {
+    animation: none;
+  }
+}

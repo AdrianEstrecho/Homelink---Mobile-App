@@ -22,6 +22,9 @@
     <app-assistant-widget></app-assistant-widget>
     <app-side-menu></app-side-menu>
     <app-toast-viewport></app-toast-viewport>
+    @if (transition.cover()) {
+      <app-page-transition-overlay />
+    }
   }
 
   @if (splashVisible()) {

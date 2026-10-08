@@ -4,7 +4,7 @@ import { LucidePlus, LucideTicket, LucideTrash2, LucideX } from '@lucide/angular
 
 import { AdminVoucher } from '../../../core/admin.model';
 import { ApiService } from '../../../core/api.service';
-import { formatPrice } from '../../../core/format.util';
+import { currencySymbol, formatPrice } from '../../../core/format.util';
 import { ConfirmDialog } from '../../../shared/confirm-dialog/confirm-dialog';
 import { Select, SelectOption } from '../../../shared/select/select';
 
@@ -46,6 +46,7 @@ export class AdminVouchers {
   private api = inject(ApiService);
 
   protected readonly formatPrice = formatPrice;
+  protected readonly currencySymbol = currencySymbol;
   protected readonly discountTypeOptions = DISCOUNT_TYPE_OPTIONS;
 
   protected readonly vouchers = signal<AdminVoucher[]>([]);

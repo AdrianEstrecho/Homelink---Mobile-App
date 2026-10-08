@@ -345,6 +345,16 @@ export class Orders {
     this.returnTarget.set(o);
   }
 
+  /** The To Ship and To Receive tabs' statuses: still on the way, so worth following. */
+  canTrack(o: Order): boolean {
+    return ['pending', 'processing', 'shipped'].includes(o.status);
+  }
+
+  openTrack(event: Event, o: Order): void {
+    event.stopPropagation();
+    this.trackingOrder.set(o);
+  }
+
   async confirmComplete(): Promise<void> {
     const order = this.completeTarget();
     if (!order || this.completing()) return;

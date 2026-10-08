@@ -1,7 +1,17 @@
 // Ported from frontend/src/api/client.js.
 
+// The currency from Platform Settings. SiteSettingsService sets these from the last visit's copy
+// before the first render and again once /promos/storefront answers, so formatPrice can stay a
+// plain function instead of every caller needing the settings service.
+let currency = { symbol: '₱', code: 'PHP' };
+export function setCurrency({ symbol, code }: { symbol?: string; code?: string }): void {
+  currency = { symbol: symbol || '₱', code: code || 'PHP' };
+}
+export const currencySymbol = () => currency.symbol;
+export const currencyCode = () => currency.code;
+
 export function formatPrice(n: number): string {
-  return `₱${Number(n).toLocaleString('en-PH', { minimumFractionDigits: 0 })}`;
+  return `${currency.symbol}${Number(n).toLocaleString('en-PH', { minimumFractionDigits: 0 })}`;
 }
 
 const STATUS_COLORS: Record<string, string> = {

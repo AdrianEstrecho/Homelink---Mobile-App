@@ -19,6 +19,7 @@ import { filter, map } from 'rxjs/operators';
 
 import { AuthService } from '../../../core/auth.service';
 import { ConfirmDialog } from '../../../shared/confirm-dialog/confirm-dialog';
+import { LogoMark } from '../../../shared/logo-mark/logo-mark';
 
 type NavIcon = 'dashboard' | 'package' | 'wrench' | 'cart' | 'returns' | 'calendar' | 'users' | 'ticket' | 'support';
 
@@ -65,6 +66,7 @@ function avatarColor(seed: string): string {
 @Component({
   selector: 'app-admin-shell',
   imports: [
+    LogoMark,
     RouterOutlet,
     RouterLink,
     RouterLinkActive,
@@ -103,6 +105,10 @@ export class AdminShell {
   );
 
   protected readonly pageTitle = computed(() => PAGE_TITLES[this.url()] ?? 'Admin');
+
+  protected avatar(): string | null {
+    return this.user()?.avatar ?? null;
+  }
 
   protected avatarColor(): string {
     return avatarColor(this.user()?.id ?? 'A');

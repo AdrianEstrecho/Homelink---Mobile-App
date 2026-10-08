@@ -23,7 +23,7 @@
            rise (it starts a viewport below, so nothing intersects) and only
            fade in once the page had already landed. -->
       <div class="card relative mb-4">
-        <app-safe-image [src]="p.image" [alt]="p.name" class="w-full h-72 object-cover" />
+        <app-safe-image #mainImage [src]="p.image" [alt]="p.name" class="w-full h-72 object-cover" />
         @if (p.featured) {
           <span class="absolute top-3 left-3 badge bg-brand-orange text-white flex items-center gap-1">
             <svg lucideStar class="w-3 h-3"></svg> Featured
@@ -122,7 +122,7 @@
         <div class="grid grid-cols-3 gap-2.5 mb-5 text-center">
           <div class="rounded-xl bg-gray-50 border border-gray-100 px-2 py-3">
             <svg lucideTruck class="w-5 h-5 text-brand-teal mx-auto mb-1.5"></svg>
-            <p class="text-[11px] text-gray-500 leading-tight">Local Delivery</p>
+            <p class="text-[11px] text-gray-500 leading-tight">{{ settings().deliveryEstimate ? 'Arrives in ' + settings().deliveryEstimate : 'Local Delivery' }}</p>
           </div>
           <div class="rounded-xl bg-gray-50 border border-gray-100 px-2 py-3">
             <svg lucideShieldCheck class="w-5 h-5 text-brand-teal mx-auto mb-1.5"></svg>
@@ -233,6 +233,17 @@
                 <div>
                   <dt class="font-semibold text-sm text-brand-ink mb-1">Delivery</dt>
                   <dd class="text-sm text-gray-500 leading-relaxed">
+                    @let s = settings();
+                    @if (s.deliveryEstimate) {
+                      Arrives in {{ s.deliveryEstimate }}.
+                    }
+                    @if (s.shippingFee > 0) {
+                      @if (s.freeShippingThreshold > 0) {
+                        Shipping is {{ s.shippingFee | homelinkPrice }} per order, free on orders of {{ s.freeShippingThreshold | homelinkPrice }} or more.
+                      } @else {
+                        Shipping is a flat {{ s.shippingFee | homelinkPrice }} per order.
+                      }
+                    }
                     Delivered across Metro Manila and nearby provinces. Orders confirmed before 2PM are dispatched the next business day, and you can follow the driver on the live tracking map from your Orders page.
                   </dd>
                 </div>
@@ -377,9 +388,20 @@
         (click)="handleWishlistToggle()"
         [attr.aria-label]="(wishlisted() ? 'Remove ' : 'Add ') + p.name + (wishlisted() ? ' from wishlist' : ' to wishlist')"
         [attr.aria-pressed]="wishlisted()"
-        class="tap shrink-0 w-11 h-11 flex items-center justify-center border border-gray-300 rounded-lg"
+        class="tap relative shrink-0 w-11 h-11 flex items-center justify-center border border-gray-300 rounded-lg"
       >
-        <svg lucideHeart class="w-5 h-5" [class]="wishlisted() ? 'fill-red-500 text-red-500' : 'text-gray-500'"></svg>
+        @for (n of [hearts()]; track n) {
+          <svg lucideHeart class="w-5 h-5" [class]="(n ? 'heart-pop ' : '') + (wishlisted() ? 'fill-red-500 text-red-500' : 'text-gray-500')"></svg>
+        }
+        @if (hearts() > 0) {
+      @for (n of [hearts()]; track n) {
+        <span class="heart-burst" aria-hidden="true">
+          @for (a of sparkAngles; track a) {
+            <i [style.--a]="a + 'deg'"></i>
+          }
+        </span>
+      }
+      }
       </button>
       <button type="button" (click)="handleAdd()" [disabled]="p.stock <= 0" class="btn-secondary flex items-center gap-1.5 justify-center flex-1 py-3 text-sm disabled:opacity-50">
         <svg lucideShoppingCart class="w-4 h-4"></svg> Add to Cart

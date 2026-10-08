@@ -9,12 +9,11 @@
     <div class="relative">
       <p class="eyebrow mb-3"><svg lucideHouse class="w-3.5 h-3.5"></svg> About HomeLink</p>
       <h1 class="font-display text-[28px] leading-[1.15] font-extrabold tracking-tight mb-3">
-        Home improvement,<br />done right.
+        @for (h of [hero().heading]; track h) {
+          <app-split-text [text]="h" />
+        }
       </h1>
-      <p class="text-white/65 text-sm leading-relaxed max-w-[19rem]">
-        We bring home improvement products and the professionals who install them into one place — so you
-        can shop, book and get the job done without juggling vendors.
-      </p>
+      <p class="text-white/65 text-sm leading-relaxed max-w-[19rem]">{{ hero().intro }}</p>
 
       <div class="mt-6 flex items-center gap-2.5">
         <a routerLink="/products" class="tap inline-flex items-center gap-1.5 bg-white text-brand-navy text-sm font-semibold px-4 py-2.5 rounded-xl elevation-2">
@@ -39,15 +38,51 @@
     </div>
   </section>
 
+  <!-- The kinds of work HomeLink covers, circling the mark. Each opens that category. -->
+  <section class="px-4 pt-9">
+    <div appReveal class="text-center mb-2">
+      <p class="eyebrow justify-center mb-1.5">Everything For The Home</p>
+      <h2 class="font-display text-xl font-extrabold tracking-tight text-brand-ink">One place for every job</h2>
+      <p class="text-gray-500 text-[13px] mt-1">Tap a trade to shop it.</p>
+    </div>
+    <div appReveal class="flex justify-center">
+      <div class="about-orbit relative w-72 h-72">
+        <div class="absolute inset-[13%] rounded-full border border-dashed border-brand-navy/20" aria-hidden="true"></div>
+        <div class="absolute inset-[3%] rounded-full bg-gradient-to-br from-brand-orange/[0.07] via-transparent to-brand-teal/[0.07]" aria-hidden="true"></div>
+        <span class="about-pulse absolute inset-[31%] rounded-[2rem] bg-brand-orange/25" aria-hidden="true"></span>
+        <div class="absolute inset-[31%] rounded-[2rem] bg-gradient-to-br from-brand-navy to-brand-blue shadow-[0_24px_50px_-18px_rgba(15,43,91,0.6)] flex items-center justify-center">
+          <app-logo-mark class="w-[62%] text-white" />
+        </div>
+        <ul class="about-orbit-track absolute inset-0">
+          @for (o of orbit; track o.slug; let i = $index) {
+            <li class="absolute inset-0 pointer-events-none" [style.transform]="'rotate(' + (360 / orbit.length) * i + 'deg)'">
+              <div class="absolute left-1/2 top-[13%] w-0 h-0">
+                <div [style.transform]="'rotate(' + -(360 / orbit.length) * i + 'deg)'">
+                  <div class="about-orbit-upright">
+                    <a
+                      [routerLink]="['/products']"
+                      [queryParams]="{ category: o.slug }"
+                      [attr.aria-label]="'Shop ' + o.label"
+                      class="tap pointer-events-auto absolute -translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-2xl bg-white border border-gray-100 shadow-[0_10px_24px_-10px_rgba(15,43,91,0.35)] flex items-center justify-center active:bg-brand-orange"
+                    >
+                      <app-category-icon [slug]="o.slug" class="w-5 h-5 text-brand-navy" />
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </li>
+          }
+        </ul>
+      </div>
+    </div>
+  </section>
+
   <!-- Story teaser -->
   <section class="px-4 pt-8">
     <div appReveal class="relative overflow-hidden rounded-2xl bg-brand-light border border-gray-100 p-5">
       <div class="relative flex items-start gap-4">
         <div class="relative w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-navy to-brand-blue flex items-center justify-center shrink-0 elevation-2">
-          <svg lucideHouse class="w-7 h-7 text-white" stroke-width="1.6"></svg>
-          <span class="absolute -bottom-1.5 -right-1.5 w-7 h-7 rounded-xl bg-brand-orange flex items-center justify-center elevation-1">
-            <svg lucideWrench class="w-3.5 h-3.5 text-white"></svg>
-          </span>
+          <app-logo-mark class="w-10 text-white" />
         </div>
         <div class="min-w-0">
           <p class="eyebrow mb-1.5">Our Story</p>
@@ -61,6 +96,66 @@
       <a routerLink="/about/history" class="tap mt-4 flex items-center justify-center gap-1.5 w-full bg-white border border-gray-100 elevation-1 rounded-xl py-2.5 text-sm font-semibold text-brand-navy">
         Read the full story <svg lucideArrowRight class="w-4 h-4"></svg>
       </a>
+    </div>
+
+    <!-- "The old way" against "With HomeLink", as the steps a homeowner takes. It shows the old
+         way first and switches over on its own once it's been on screen a moment, unless someone
+         has already picked a side. -->
+    <div #compare appReveal class="card p-4 mt-4">
+      <div role="tablist" aria-label="Compare" class="relative grid grid-cols-2 p-1 rounded-full bg-brand-light border border-gray-200/70">
+        <span
+          aria-hidden="true"
+          class="absolute inset-y-1 left-1 w-[calc(50%-4px)] rounded-full shadow-sm transition-all duration-500 ease-[cubic-bezier(0.2,0.9,0.2,1)]"
+          [class]="withHomeLink() ? 'translate-x-full bg-brand-navy' : 'bg-white'"
+        ></span>
+        @for (side of compareSides; track side.label) {
+          <button
+            type="button"
+            role="tab"
+            [attr.aria-selected]="withHomeLink() === side.value"
+            (click)="pickSide(side.value)"
+            class="tap relative z-10 py-2 text-sm font-semibold rounded-full transition-colors duration-300"
+            [class]="withHomeLink() === side.value ? (side.value ? 'text-white' : 'text-brand-navy') : 'text-gray-500'"
+          >
+            {{ side.label }}
+          </button>
+        }
+      </div>
+      @for (w of [withHomeLink()]; track w) {
+        <ol class="mt-4 space-y-2.5" role="tabpanel">
+          @for (s of w ? homelinkWay : oldWay; track s.text; let i = $index) {
+            <li
+              class="compare-step flex items-center gap-3 rounded-xl border p-3"
+              [class]="w ? 'border-brand-orange/20 bg-brand-orange/[0.04]' : 'border-gray-200/80 bg-white/60'"
+              [style.animation-delay]="i * 90 + 'ms'"
+            >
+              <span class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" [class]="w ? 'bg-brand-orange text-white shadow-md shadow-brand-orange/25' : 'bg-gray-100 text-gray-400'">
+                @switch (s.icon) {
+                  @case ('cart') { <svg lucideShoppingCart class="w-[18px] h-[18px]"></svg> }
+                  @case ('search') { <svg lucideSearch class="w-[18px] h-[18px]"></svg> }
+                  @case ('calendar') { <svg lucideCalendarClock class="w-[18px] h-[18px]"></svg> }
+                  @case ('alert') { <svg lucideTriangleAlert class="w-[18px] h-[18px]"></svg> }
+                  @case ('package') { <svg lucidePackage class="w-[18px] h-[18px]"></svg> }
+                  @case ('shield') { <svg lucideShieldCheck class="w-[18px] h-[18px]"></svg> }
+                  @case ('card') { <svg lucideCreditCard class="w-[18px] h-[18px]"></svg> }
+                  @case ('done') { <svg lucidePackageCheck class="w-[18px] h-[18px]"></svg> }
+                }
+              </span>
+              <span class="text-[13px] font-medium" [class]="w ? 'text-brand-ink' : 'text-gray-500'">{{ s.text }}</span>
+              <span class="ml-auto w-6 h-6 rounded-full flex items-center justify-center shrink-0" [class]="w ? 'bg-brand-teal/15 text-brand-teal' : 'bg-red-50 text-red-400'">
+                @if (w) {
+                  <svg lucideCheck class="w-3.5 h-3.5" [attr.stroke-width]="3"></svg>
+                } @else {
+                  <svg lucideX class="w-3.5 h-3.5" [attr.stroke-width]="3"></svg>
+                }
+              </span>
+            </li>
+          }
+        </ol>
+        <p class="compare-step mt-4 text-[13px] text-gray-500" style="animation-delay: 380ms">
+          {{ w ? 'One order, one schedule, and one place to check on it.' : 'Two vendors, two schedules, and you stuck in the middle.' }}
+        </p>
+      }
     </div>
   </section>
 
@@ -90,6 +185,45 @@
         </div>
       }
     </div>
+  </section>
+
+  <!-- The team: a portrait tile per teammate, each opening their profile. -->
+  <section class="pt-9 overflow-hidden">
+    <div appReveal class="px-4 flex items-end justify-between gap-3 mb-4">
+      <div class="min-w-0">
+        <p class="eyebrow mb-1.5">The Team</p>
+        <h2 class="font-display text-xl font-extrabold tracking-tight text-brand-ink">
+          <app-split-text text="Meet the people who built HomeLink" />
+        </h2>
+      </div>
+      <a routerLink="/about/developers" class="tap shrink-0 text-sm font-semibold text-brand-navy flex items-center gap-1">
+        All <svg lucideArrowRight class="w-4 h-4"></svg>
+      </a>
+    </div>
+    <ul class="flex gap-3 overflow-x-auto snap-x snap-mandatory scroll-px-4 no-scrollbar px-4 pb-3">
+      @for (m of team; track m.slug; let i = $index) {
+        <li appReveal [revealDelay]="i * 70" class="w-[42%] shrink-0 snap-start">
+          <a
+            [routerLink]="['/about/developers']"
+            [queryParams]="{ member: m.slug }"
+            [attr.aria-label]="m.firstName + ' ' + m.lastName + ', ' + m.role + '. View profile'"
+            class="tap card block h-full p-2 pb-3"
+          >
+            <span class="relative block aspect-[4/5] overflow-hidden rounded-xl bg-gray-100">
+              <app-safe-image [src]="m.photo" alt="" class="w-full h-full object-cover object-top" iconClass="w-6 h-6" />
+              <span class="absolute inset-x-0 bottom-0 h-1" [style.background]="m.color" aria-hidden="true"></span>
+            </span>
+            <span class="block px-1 pt-2.5">
+              <span class="block font-display font-bold text-sm text-brand-ink leading-tight">{{ m.firstName }} {{ m.lastName }}</span>
+              <span class="mt-1 flex items-center gap-1.5 text-[11px] font-medium text-gray-500">
+                <span class="w-1.5 h-1.5 rounded-full shrink-0" [style.background]="m.color" aria-hidden="true"></span>
+                {{ m.role }}
+              </span>
+            </span>
+          </a>
+        </li>
+      }
+    </ul>
   </section>
 
   <!-- Detail pages -->

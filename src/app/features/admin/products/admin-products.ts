@@ -1,5 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import {
   LucideArchive,
   LucideArchiveRestore,
@@ -21,7 +22,7 @@ import {
 import { AdminCategory, AdminProduct } from '../../../core/admin.model';
 import { ApiService } from '../../../core/api.service';
 import { presetsForCategory, specEntries, toHighlights } from '../../../core/catalog-specs.util';
-import { formatPrice } from '../../../core/format.util';
+import { currencySymbol, formatPrice } from '../../../core/format.util';
 import { validateImageFile } from '../../../core/image-upload.util';
 import { ConfirmDialog } from '../../../shared/confirm-dialog/confirm-dialog';
 import { SafeImage } from '../../../shared/safe-image/safe-image';
@@ -134,11 +135,13 @@ export class AdminProducts {
   private api = inject(ApiService);
 
   protected readonly formatPrice = formatPrice;
+  protected readonly currencySymbol = currencySymbol;
 
   protected readonly products = signal<AdminProduct[]>([]);
   protected readonly categories = signal<AdminCategory[]>([]);
   protected readonly tab = signal<'active' | 'archived'>('active');
-  protected readonly search = signal('');
+  // The dashboard's stock warning links here as ?search=<product name>, opening on that product.
+  protected readonly search = signal(inject(ActivatedRoute).snapshot.queryParamMap.get('search') ?? '');
   protected readonly categoryFilter = signal('');
   protected readonly visibleCount = signal(PAGE_SIZE);
 

@@ -1,9 +1,10 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { LucideLoaderCircle, LucideLogIn, LucideShieldCheck } from '@lucide/angular';
+import { LucideLoaderCircle, LucideLogIn } from '@lucide/angular';
 
 import { AuthService } from '../../../core/auth.service';
+import { LogoMark } from '../../../shared/logo-mark/logo-mark';
 
 /**
  * Ported from frontend/src/pages/admin/AdminLogin.jsx, trimmed to the
@@ -17,7 +18,7 @@ import { AuthService } from '../../../core/auth.service';
  */
 @Component({
   selector: 'app-admin-login',
-  imports: [FormsModule, RouterLink, LucideLogIn, LucideLoaderCircle, LucideShieldCheck],
+  imports: [LogoMark, FormsModule, RouterLink, LucideLogIn, LucideLoaderCircle],
   templateUrl: './admin-login.html',
   styleUrl: './admin-login.css',
 })

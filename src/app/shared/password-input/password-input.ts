@@ -19,6 +19,10 @@ export class PasswordInput {
   readonly name = input.required<string>();
   readonly required = input(false);
   readonly autofocus = input(false);
+  readonly autocomplete = input<string>();
+  readonly inputId = input<string>();
+  /** Red border and aria-invalid, for a field-level error shown below it. */
+  readonly invalid = input(false);
   readonly wrapClass = input('', { alias: 'class' });
 
   readonly valueChange = output<string>();

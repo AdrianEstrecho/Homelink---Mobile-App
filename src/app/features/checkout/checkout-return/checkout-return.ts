@@ -7,6 +7,7 @@ import { LucideLoaderCircle, LucideCircleX } from '@lucide/angular';
 import { ApiService } from '../../../core/api.service';
 import { AuthService } from '../../../core/auth.service';
 import { CartService } from '../../../core/cart.service';
+import { WishlistService } from '../../../core/wishlist.service';
 import { Order } from '../../../core/order.model';
 import { pollPaymentStatus } from '../../../core/payment-polling.util';
 import { OrderDetailsModal } from '../../../shared/order-details-modal/order-details-modal';
@@ -30,10 +31,18 @@ export class CheckoutReturn {
   private router = inject(Router);
   private auth = inject(AuthService);
   private cart = inject(CartService);
+  private wishlist = inject(WishlistService);
   private location = inject(Location);
 
   private queryParamMap = toSignal(this.route.queryParamMap, { requireSync: true });
   private pendingCheckoutId = computed(() => this.queryParamMap().get('pcid'));
+  // Set when this payment came from "Buy Now" — that order never included the cart, so the
+  // cart is left alone and a retry goes back to the same single-item checkout.
+  private buySlug = computed(() => this.queryParamMap().get('buy'));
+  protected readonly checkoutQuery = computed(() => {
+    const buy = this.buySlug();
+    return buy ? { buy, qty: this.queryParamMap().get('qty') || '1' } : null;
+  });
 
   protected readonly state = signal<ReturnState>('processing');
   protected readonly order = signal<Order | null>(null);
@@ -52,7 +61,8 @@ export class CheckoutReturn {
     }
     pollPaymentStatus(this.api, pcid).then((result) => {
       if (result.status === 'succeeded') {
-        this.cart.clearCart();
+        if (!this.buySlug()) this.cart.clearCart();
+        this.wishlist.refresh(); // the server drops ordered products from the wishlist
         this.order.set(result.order);
         this.state.set('succeeded');
       } else if (result.status === 'failed') {

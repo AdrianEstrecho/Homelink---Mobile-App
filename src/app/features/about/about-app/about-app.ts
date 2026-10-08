@@ -6,7 +6,6 @@ import {
   LucideBell,
   LucideDownload,
   LucideHeart,
-  LucideHouse,
   LucideLayoutGrid,
   LucideLifeBuoy,
   LucideLock,
@@ -22,6 +21,7 @@ import { APP_BUILD, APP_TAGLINE, APP_VERSION, SUPPORT_EMAIL, SUPPORT_PHONE } fro
 import { APP_FEATURES, APP_TECH } from '../about.data';
 import { RevealDirective } from '../../../shared/reveal.directive';
 import { ToastService } from '../../../core/toast.service';
+import { LogoMark } from '../../../shared/logo-mark/logo-mark';
 
 function webPlatform(): string {
   const installed =
@@ -38,6 +38,7 @@ function webPlatform(): string {
 @Component({
   selector: 'app-about-app',
   imports: [
+    LogoMark,
     RouterLink,
     RevealDirective,
     LucideSmartphone,
@@ -50,7 +51,6 @@ function webPlatform(): string {
     LucideBell,
     LucideLock,
     LucideMapPin,
-    LucideHouse,
     LucideLifeBuoy,
     LucideShare,
     LucideDownload,

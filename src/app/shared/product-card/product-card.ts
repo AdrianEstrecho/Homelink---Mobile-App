@@ -1,9 +1,10 @@
-import { Component, inject, input, signal } from '@angular/core';
+import { Component, inject, input, signal, viewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { LucideHeart, LucideShoppingCart, LucideStar } from '@lucide/angular';
 
 import { AuthService } from '../../core/auth.service';
 import { CartService } from '../../core/cart.service';
+import { flyToCart } from '../../core/fly-to-cart.util';
 import { PricePipe } from '../../core/price.pipe';
 import { Product } from '../../core/product.model';
 import { requireRole } from '../../core/require-role';
@@ -29,6 +30,10 @@ export class ProductCard {
 
   protected readonly confirmUnfavorite = signal(false);
   protected readonly confirmAddToCart = signal(false);
+  /** Bumped on every save to the wishlist; re-keys the heart's pop and spark burst so each replays. */
+  protected readonly hearts = signal(0);
+  protected readonly sparkAngles = [0, 60, 120, 180, 240, 300];
+  private readonly image = viewChild(SafeImage);
 
   outOfStock(): boolean {
     return this.product().stock === 0;
@@ -45,6 +50,7 @@ export class ProductCard {
   private addToCart(): void {
     const product = this.product();
     this.cart.addItem(product);
+    flyToCart(this.image()?.element());
     if (this.wishlisted()) this.wishlist.removeItem(product.id);
     this.toast.showToast({
       icon: 'check',
@@ -78,6 +84,7 @@ export class ProductCard {
       return;
     }
     this.wishlist.addItem(this.product());
+    this.hearts.update((n) => n + 1);
   }
 
   confirmUnfavoriteAction(): void {

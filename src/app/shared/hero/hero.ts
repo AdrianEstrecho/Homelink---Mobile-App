@@ -1,7 +1,7 @@
-import { Component, DestroyRef, ElementRef, inject, signal, viewChild } from '@angular/core';
+import { Component, DestroyRef, ElementRef, afterNextRender, inject, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { LucideArrowRight, LucideSearch, LucideShoppingCart, LucideSlidersHorizontal, LucideTag } from '@lucide/angular';
+import { LucideArrowRight, LucideSearch, LucideShoppingCart, LucideSlidersHorizontal, LucideTag, LucideUser } from '@lucide/angular';
 
 import { ApiService } from '../../core/api.service';
 import { AuthService } from '../../core/auth.service';
@@ -10,6 +10,7 @@ import { Category } from '../../core/product.model';
 import { DRILL_DOWN_STATE } from '../../core/shell-route.util';
 import { categoryAccent } from '../category-accent';
 import { CategoryIcon } from '../category-icon/category-icon';
+import { HeroSky } from '../hero-sky/hero-sky';
 import { CategorySkeleton } from '../skeleton/category-skeleton/category-skeleton';
 
 interface CategoryState {
@@ -24,14 +25,33 @@ interface Announcement {
   content: string;
 }
 
+/** GET /customers/served — only a first name and last initial ever leave the server. */
+interface Served {
+  count: number;
+  buyers: { name: string; initials: string; avatar: string | null }[];
+}
+
+// Fallback colours for buyers without a profile photo, one per avatar slot.
+const BUYER_GRADIENTS = ['from-sky-400 to-brand-navy', 'from-amber-300 to-brand-orange', 'from-emerald-300 to-brand-teal'];
+
+// How far the sky has to scroll up, as a share of its height, for dawn to fully break.
+const DAWN_SCROLL_SHARE = 0.75;
+
 const BANNER_AUTOPLAY_MS = 10_000;
 
 /**
  * The home tab's "shop front": greeting + cart, search, categories, and a
  * promo banner built from real /announcements data. Replaces the earlier
  * marketing-style hero — this is a functional storefront header, not a
- * landing-page pitch, so it's self-sufficient (loads its own categories and
- * announcements) rather than a purely presentational child of Home.
+ * landing-page pitch, so it's self-sufficient (loads its own categories,
+ * announcements and served count) rather than a purely presentational child
+ * of Home.
+ *
+ * The greeting and search sit on the web hero's night sky (HeroSky), with the
+ * house rising out of a mist at its foot. Scrolling writes --progress (0-1)
+ * onto the sky, which fades the stars and warms the horizon into a sunrise.
+ * The web's product-card collage and category chips aren't carried over: the
+ * Categories row and Featured products just below already do those jobs.
  */
 @Component({
   selector: 'app-hero',
@@ -40,6 +60,8 @@ const BANNER_AUTOPLAY_MS = 10_000;
     RouterLink,
     CategoryIcon,
     CategorySkeleton,
+    HeroSky,
+    LucideUser,
     LucideSearch,
     LucideSlidersHorizontal,
     LucideShoppingCart,
@@ -65,6 +87,9 @@ export class Hero {
 
   protected readonly categories = signal<CategoryState>({ data: [], loading: true, error: false });
   protected readonly announcements = signal<Announcement[]>([]);
+  /** undefined while loading, null when the request failed. */
+  protected readonly served = signal<Served | null | undefined>(undefined);
+  private readonly sky = viewChild.required<ElementRef<HTMLElement>>('sky');
 
   protected readonly categoryAccent = categoryAccent;
   protected readonly drillDown = DRILL_DOWN_STATE;
@@ -80,7 +105,50 @@ export class Hero {
         this.startBannerAutoplay();
       })
       .catch(() => {});
+    this.api
+      .get<Served>('/customers/served')
+      .then((data) => this.served.set(data))
+      .catch(() => this.served.set(null));
     this.destroyRef.onDestroy(() => this.stopBannerAutoplay());
+    afterNextRender(() => this.trackDawn());
+  }
+
+  protected buyerGradient(i: number): string {
+    return BUYER_GRADIENTS[i % BUYER_GRADIENTS.length];
+  }
+
+  /** Writes how far the sky has scrolled away (0-1, eased) as --progress. Phones scroll the
+   *  window; wider screens scroll .app-scroll-region instead, so the listener is a capturing one
+   *  on the document, which hears both. */
+  private trackDawn(): void {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const sky = this.sky().nativeElement;
+    const region = sky.closest('.app-scroll-region') as HTMLElement | null;
+    const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+    let ticking = false;
+
+    const update = () => {
+      ticking = false;
+      // Where the sky's top sits before any scrolling: just under the topbar.
+      const restTop = region ? region.getBoundingClientRect().top + parseFloat(getComputedStyle(region).paddingTop) : 0;
+      const rect = sky.getBoundingClientRect();
+      const raw = Math.min(1, Math.max(0, (restTop - rect.top) / (rect.height * DAWN_SCROLL_SHARE)));
+      sky.style.setProperty('--progress', easeOutCubic(raw).toFixed(4));
+    };
+    const onScroll = () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(update);
+      }
+    };
+
+    update();
+    document.addEventListener('scroll', onScroll, { passive: true, capture: true });
+    window.addEventListener('resize', onScroll);
+    this.destroyRef.onDestroy(() => {
+      document.removeEventListener('scroll', onScroll, { capture: true });
+      window.removeEventListener('resize', onScroll);
+    });
   }
 
   loadCategories(): void {

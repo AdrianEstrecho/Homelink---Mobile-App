@@ -26,8 +26,10 @@ import {
 
 import { ApiService } from '../../core/api.service';
 import { AuthService } from '../../core/auth.service';
+import { PageTransitionService } from '../../core/page-transition.service';
 import { ConfirmDialog } from '../../shared/confirm-dialog/confirm-dialog';
 import { CountUp } from '../../shared/count-up/count-up';
+import { EditableAvatar } from '../../shared/editable-avatar/editable-avatar';
 import { RevealDirective } from '../../shared/reveal.directive';
 
 const AVATAR_COLORS = ['bg-brand-navy', 'bg-brand-blue', 'bg-[#00806f]', 'bg-[#c8461a]'];
@@ -57,6 +59,7 @@ function greeting(): string {
   selector: 'app-account',
   imports: [
     RouterLink,
+    EditableAvatar,
     RevealDirective,
     CountUp,
     ConfirmDialog,
@@ -86,6 +89,7 @@ function greeting(): string {
   styleUrl: './account.css',
 })
 export class Account {
+  private transition = inject(PageTransitionService);
   private auth = inject(AuthService);
   private api = inject(ApiService);
   private router = inject(Router);
@@ -96,7 +100,6 @@ export class Account {
   protected readonly bookingsCount = signal<number | null>(null);
 
   protected readonly confirmLogout = signal(false);
-  protected readonly loggingOut = signal(false);
 
   protected readonly memberSince = computed(() => {
     const created = this.user()?.createdAt;
@@ -118,12 +121,9 @@ export class Account {
       .catch(() => this.bookingsCount.set(0));
   }
 
+  // The delivery transition covers the screen, signs out underneath it and clears over Home.
   handleLogout(): void {
     this.confirmLogout.set(false);
-    this.loggingOut.set(true);
-    setTimeout(async () => {
-      await this.auth.logout();
-      window.location.href = '/';
-    }, 600);
+    this.transition.coverTo('/', () => this.auth.logout());
   }
 }

@@ -1,0 +1,45 @@
+<div class="relative shrink-0">
+  <div class="relative overflow-hidden" [class]="avatarClass()">
+    @if (avatar(); as src) {
+      <img [src]="src" alt="" class="w-full h-full object-cover" />
+    } @else {
+      <ng-content></ng-content>
+    }
+    @if (busy()) {
+      <div class="absolute inset-0 bg-black/45 flex items-center justify-center">
+        <svg lucideLoaderCircle class="w-6 h-6 text-white animate-spin"></svg>
+      </div>
+    }
+  </div>
+
+  <button
+    type="button"
+    (click)="onButton()"
+    [disabled]="busy()"
+    [attr.aria-label]="avatar() ? 'Change profile photo' : 'Add profile photo'"
+    [attr.aria-haspopup]="avatar() ? 'menu' : null"
+    [attr.aria-expanded]="avatar() ? menuOpen() : null"
+    class="tap absolute -bottom-1.5 -right-1.5 w-8 h-8 rounded-full bg-brand-orange text-white ring-[3px] shadow-md flex items-center justify-center disabled:opacity-60"
+    [class]="buttonClass()"
+  >
+    <svg lucideCamera class="w-4 h-4"></svg>
+  </button>
+
+  <input #fileInput type="file" [accept]="accept" (change)="onFile($event)" class="hidden" />
+</div>
+
+@if (menuOpen()) {
+  <div class="fixed inset-0 z-[100] flex items-end justify-center">
+    <div class="modal-scrim" (click)="menuOpen.set(false)"></div>
+    <div role="menu" aria-label="Profile photo" class="modal-panel relative w-full max-w-md rounded-b-none p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] fade-up text-left">
+      <p class="px-3 pt-1 pb-2 text-xs font-semibold uppercase tracking-[0.12em] text-gray-400">Profile photo</p>
+      <button type="button" role="menuitem" (click)="pickFile()" class="tap w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-semibold text-brand-ink active:bg-gray-50">
+        <svg lucideUpload class="w-5 h-5 text-brand-navy"></svg> Upload new photo
+      </button>
+      <button type="button" role="menuitem" (click)="removePhoto()" class="tap w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-semibold text-red-600 active:bg-red-50">
+        <svg lucideTrash2 class="w-5 h-5"></svg> Remove photo
+      </button>
+      <button type="button" (click)="menuOpen.set(false)" class="tap w-full mt-1 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-600">Cancel</button>
+    </div>
+  </div>
+}

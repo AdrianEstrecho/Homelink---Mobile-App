@@ -11,9 +11,7 @@
     }
 
     @if (isHome()) {
-      <div class="w-7 h-7 bg-brand-orange rounded-lg flex items-center justify-center shrink-0 ml-0.5">
-        <svg lucideHouse class="w-4 h-4 text-white"></svg>
-      </div>
+      <app-logo-mark class="w-8 text-white ml-0.5" />
     }
 
     <h1 class="font-display font-bold text-lg truncate flex-1 ml-1">
@@ -25,7 +23,7 @@
     </h1>
 
     @if (showCart() && auth.user()) {
-      <a routerLink="/cart" aria-label="Cart" class="tap relative shrink-0 p-2 rounded-full active:bg-white/10">
+      <a routerLink="/cart" aria-label="Cart" data-cart-target class="tap relative shrink-0 p-2 rounded-full active:bg-white/10">
         <svg lucideShoppingCart class="w-5 h-5"></svg>
         @if (cartCount() > 0) {
           <span class="absolute top-0.5 right-0.5 bg-brand-orange text-white text-[10px] font-bold min-w-[1.05rem] h-[1.05rem] px-1 rounded-full flex items-center justify-center ring-2 ring-brand-navy">
@@ -36,8 +34,10 @@
     }
 
     @if (!auth.loading() && !auth.user()) {
+      <!-- A plain href, not routerLink: the delivery transition navigates once the screen is covered. -->
       <a
-        routerLink="/login"
+        href="/login"
+        (click)="$event.preventDefault(); transition.coverTo('/login')"
         class="tap shrink-0 flex items-center gap-1.5 text-sm font-semibold px-3 py-1.5 rounded-full bg-brand-orange text-white active:opacity-80"
       >
         <svg lucideLogIn class="w-3.5 h-3.5"></svg>

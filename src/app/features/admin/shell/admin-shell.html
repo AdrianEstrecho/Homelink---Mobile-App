@@ -8,10 +8,14 @@
       <button
         type="button"
         (click)="confirmLogout.set(true)"
-        [class]="'tap w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ' + avatarColor()"
+        [class]="'tap w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden ' + avatarColor()"
         aria-label="Log out"
       >
-        {{ initials() }}
+        @if (avatar()) {
+          <img [src]="avatar()" alt="" class="w-full h-full object-cover" />
+        } @else {
+          {{ initials() }}
+        }
       </button>
     </div>
   </header>
@@ -21,7 +25,10 @@
       <div class="absolute inset-0 bg-brand-navy/50 backdrop-blur-sm" (click)="closeNav()"></div>
       <nav class="absolute left-0 top-0 bottom-0 w-72 max-w-[82%] bg-brand-navy text-white flex flex-col slide-in-left pt-safe pb-safe">
         <div class="flex items-center justify-between px-4 h-14 border-b border-white/10 shrink-0">
-          <span class="font-display font-bold text-lg">Home<span class="text-brand-orange">Link</span></span>
+          <span class="flex items-center gap-2">
+            <app-logo-mark class="w-7 text-white" />
+            <span class="font-display font-bold text-lg">Home<span class="text-brand-orange">Link</span></span>
+          </span>
           <button type="button" (click)="closeNav()" class="tap p-1.5 rounded-lg hover:bg-white/10" aria-label="Close menu">
             <svg lucideX class="w-4 h-4"></svg>
           </button>
@@ -54,8 +61,12 @@
 
         <div class="p-3 border-t border-white/10 shrink-0">
           <div class="flex items-center gap-2.5 px-2 py-2">
-            <div [class]="'w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 ' + avatarColor()">
-              {{ initials() }}
+            <div [class]="'w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden ' + avatarColor()">
+              @if (avatar()) {
+                <img [src]="avatar()" alt="" class="w-full h-full object-cover" />
+              } @else {
+                {{ initials() }}
+              }
             </div>
             <div class="min-w-0">
               <p class="text-sm font-medium truncate">{{ user()?.firstName }} {{ user()?.lastName }}</p>

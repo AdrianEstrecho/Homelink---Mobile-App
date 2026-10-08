@@ -1,0 +1,2 @@
+/* The scene's animations (hb-*) live in styles.css: they run inside the house, product-art and
+   truck child components, which this component's encapsulated styles can't reach. */

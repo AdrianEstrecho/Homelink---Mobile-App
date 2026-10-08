@@ -1,0 +1,54 @@
+<div #root class="fixed inset-0 z-[500] overflow-hidden" role="status" aria-live="polite">
+  <span class="sr-only">Loading</span>
+  <canvas #canvas aria-hidden="true" class="absolute inset-0 w-full h-full"></canvas>
+
+  <div #truck aria-hidden="true" class="absolute left-0 top-0 w-[150px] will-change-transform" style="transform: translate3d(-200%, 0, 0)">
+    <svg viewBox="0 0 212 112" class="block w-full h-auto overflow-visible">
+      <ellipse cx="110" cy="106" rx="98" ry="4.5" fill="#0b1324" opacity=".2" />
+      <g class="smoke-truck-body">
+        <rect x="8" y="80" width="200" height="6" rx="3" fill="#0b1f44" />
+        <!-- Exhaust pipe under the back of the box: the smoke starts at its mouth. -->
+        <rect x="1" y="80" width="18" height="5" rx="2" fill="#94a3b8" />
+
+        <!-- Cargo box, in the brand's livery -->
+        <rect x="10" y="6" width="134" height="76" rx="7" fill="#0f2b5b" />
+        <path d="M18 12.5h118" stroke="#1a4a8a" stroke-width="2.5" stroke-linecap="round" />
+        <rect x="10" y="68" width="134" height="5" fill="#ff6b35" />
+        <rect x="6" y="56" width="5" height="10" rx="1.5" fill="#ef4444" />
+        <g transform="translate(19 26) scale(.17)">
+          <path [attr.d]="housePath" fill="#fff" stroke="#fff" stroke-width="2" stroke-linejoin="round" />
+          @for (p of panes; track $index) {
+            <rect [attr.x]="p[0]" [attr.y]="p[1]" width="15.5" height="15.5" rx="1.2" fill="#fff" />
+          }
+        </g>
+        <text x="56" y="45" font-family="Archivo, system-ui, sans-serif" font-weight="800" font-size="15" letter-spacing="-.3" fill="#fff">Home<tspan fill="#ff6b35">Link</tspan></text>
+
+        <!-- Cab -->
+        <rect x="140" y="40" width="10" height="42" fill="#0b1f44" />
+        <path d="M146 84V32a8 8 0 0 1 8-8h26a8 8 0 0 1 6.5 3.4L201 48a6 6 0 0 1 5 5.9V84Z" fill="#ff6b35" />
+        <path d="M166 29h13a4 4 0 0 1 3.3 1.8L192 48h-26Z" fill="#bfe3ff" />
+        <path d="M172 32l-3 12" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".6" />
+        <path d="M162 52v30" stroke="#e2531f" stroke-width="1.2" />
+        <rect x="166" y="55" width="7" height="2.5" rx="1" fill="#c2410c" />
+        <rect x="201" y="58" width="6" height="7" rx="2" fill="#fde68a" />
+        <rect x="198" y="78" width="12" height="7" rx="2" fill="#cbd5e1" />
+      </g>
+
+      @for (cx of [46, 176]; track cx) {
+        <path [attr.d]="'M' + (cx - 17) + ' 90a17 17 0 0 1 34 0Z'" fill="#0b1f44" />
+        <g class="smoke-wheel">
+          <circle [attr.cx]="cx" cy="92" r="13" fill="#1f2937" />
+          <circle [attr.cx]="cx" cy="92" r="6" fill="#cbd5e1" />
+          <path [attr.d]="'M' + (cx - 6) + ' 92h12M' + cx + ' 86v12'" stroke="#64748b" stroke-width="2" />
+        </g>
+      }
+    </svg>
+  </div>
+
+  <div #brand aria-hidden="true" class="smoke-brand absolute inset-0 flex items-center justify-center pointer-events-none">
+    <span class="inline-flex items-center gap-3 text-brand-navy">
+      <app-logo-mark class="w-20" />
+      <span class="font-display font-extrabold tracking-tight leading-none text-4xl">Home<span class="text-brand-orange">Link</span></span>
+    </span>
+  </div>
+</div>

@@ -17,6 +17,12 @@ export interface AdminStats {
   pendingBookings: number;
   lowStockCount: number;
   outOfStockCount: number;
+  // The punch list's counts, each matching what its own page counts. Optional: an older backend
+  // deploy doesn't send them, and the dashboard just leaves those rows out.
+  unassignedBookings?: number;
+  pendingApprovals?: number;
+  pendingReturns?: number;
+  openSupport?: number;
 }
 
 export interface AdminOrderSummary {
@@ -41,9 +47,12 @@ export interface AdminBookingSummary {
 export interface AdminDashboardData {
   stats: AdminStats;
   orderStatusBreakdown: { status: string; count: number }[];
-  salesByMonth: { month: string; revenue: number }[];
+  /** `revenue` is paid product orders; `services` is that month's paid bookings. */
+  salesByMonth: { month: string; revenue: number; services?: number }[];
   recentOrders: AdminOrderSummary[];
   recentBookings: AdminBookingSummary[];
+  /** The products behind lowStockCount + outOfStockCount, emptiest first (up to 8). */
+  lowStockProducts?: { id: string; name: string; stock: number }[];
 }
 
 export interface AdminCategory {

@@ -2,6 +2,7 @@
 // payload into a readable sentence. Must stay in sync by hand with the actions the backend's
 // logActivity() calls write (backend/routes/*.js); an action missing here just shows its raw key.
 import { POSITION_LABELS } from './admin.model';
+import { currencySymbol } from './format.util';
 import { formatTicketNo } from './ticket-number.util';
 
 export type AuditCategory = 'create' | 'update' | 'delete' | 'login' | 'archive';
@@ -16,7 +17,7 @@ interface ActionMeta {
 
 const ROLE_LABELS: Record<string, string> = { admin: 'Administrator', employee: 'Employee' };
 
-const peso = (n: unknown) => `₱${Number(n || 0).toLocaleString('en-PH')}`;
+const peso = (n: unknown) => `${currencySymbol()}${Number(n || 0).toLocaleString('en-PH')}`;
 const plural = (n: unknown, word: string) => `${word}${n === 1 ? '' : 's'}`;
 const ticket = (d: Details) => (d['ticketNumber'] ? formatTicketNo(d['ticketNumber']) : '');
 

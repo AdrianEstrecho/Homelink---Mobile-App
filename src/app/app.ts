@@ -10,8 +10,11 @@ import { filter, map } from 'rxjs/operators';
 import { isChromelessRoute } from './core/shell-route.util';
 import { AuthService } from './core/auth.service';
 import { ErrorStateService } from './core/error-state.service';
+import { PageTransitionService } from './core/page-transition.service';
+import { SiteSettingsService } from './core/site-settings.service';
 import { AssistantWidget } from './shared/assistant/assistant-widget';
 import { Navbar } from './shared/navbar/navbar';
+import { PageTransitionOverlay } from './shared/page-transition-overlay/page-transition-overlay';
 import { SideMenu } from './shared/side-menu/side-menu';
 import { SplashScreen } from './shared/splash-screen/splash-screen';
 import { ToastViewport } from './shared/toast-viewport/toast-viewport';
@@ -34,14 +37,17 @@ function prefersReducedMotion(): boolean {
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Navbar, SideMenu, SplashScreen, ToastViewport, AssistantWidget, LucideAlertOctagon],
+  imports: [RouterOutlet, Navbar, SideMenu, SplashScreen, ToastViewport, AssistantWidget, PageTransitionOverlay, LucideAlertOctagon],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
 export class App implements OnInit {
   protected readonly errorState = inject(ErrorStateService);
+  protected readonly transition = inject(PageTransitionService);
   private auth = inject(AuthService);
   private router = inject(Router);
+  // Injected here only so currency, shipping and VAT load at boot rather than on first checkout.
+  private siteSettings = inject(SiteSettingsService);
 
   protected readonly splashVisible = signal(true);
   protected readonly splashLeaving = signal(false);

@@ -1,0 +1,230 @@
+<section
+  #root
+  [attr.aria-labelledby]="uid + '-title'"
+  (pointerdown.capture)="takeOver()"
+  (keydown.capture)="takeOver()"
+  class="relative overflow-hidden bg-gradient-to-b from-[#bfe1f7] via-[#dcf0fb] to-[#eef8fd]"
+>
+  <!-- Heading and progress, up in the sky -->
+  <div class="relative px-4 pt-8">
+    <p class="eyebrow mb-2">Try it</p>
+    <h2 [id]="uid + '-title'" class="font-display text-xl font-extrabold tracking-tight text-brand-ink">Kit out a HomeLink home</h2>
+    <p class="mt-1.5 text-sm text-gray-600 leading-relaxed">
+      Everything's on the delivery truck. Drag each product to where it belongs on the house, or tap a product and then its spot.
+    </p>
+    <div class="mt-3 flex flex-wrap items-center gap-2">
+      <span class="inline-flex items-center gap-2.5 rounded-full bg-white/80 pl-3 pr-3.5 py-1.5 shadow-sm">
+        <span class="w-16 h-1.5 rounded-full bg-brand-navy/10 overflow-hidden">
+          <span
+            class="block h-full rounded-full bg-gradient-to-r from-brand-orange to-brand-teal transition-[width] duration-500"
+            [style.width.%]="(count() / products.length) * 100"
+          ></span>
+        </span>
+        <span class="text-xs font-semibold tabular-nums text-brand-navy">{{ count() }}/{{ products.length }} installed</span>
+      </span>
+      <button
+        type="button"
+        (click)="reset()"
+        [disabled]="!count()"
+        class="tap inline-flex items-center gap-1.5 rounded-full bg-white/80 px-3 py-1.5 text-xs font-semibold text-gray-600 shadow-sm disabled:opacity-50"
+      >
+        <svg lucideRotateCcw class="w-3.5 h-3.5"></svg> Start over
+      </button>
+    </div>
+  </div>
+
+  <!-- The scene -->
+  <div class="relative mt-2">
+    <!-- Over the sky rather than in the row above, so it appearing never shifts the scene while
+         the demo is measuring where to carry a product. -->
+    @if (demo()) {
+      <span class="absolute z-10 left-4 top-1 inline-flex items-center gap-1.5 rounded-full bg-white/85 px-3 py-1.5 text-xs font-semibold text-brand-navy shadow-sm">
+        <span class="hb-blink w-2 h-2 rounded-full bg-brand-orange"></span>
+        Demo playing. Grab a product to take over
+      </span>
+    }
+    <svg [attr.viewBox]="'0 0 ' + L.w + ' ' + L.h" class="relative block w-full h-auto overflow-visible" aria-hidden="true">
+      <defs>
+        <radialGradient [attr.id]="uid + '-warm'" cx="50%" cy="35%" r="60%">
+          <stop offset="0%" stop-color="#ffd27a" stop-opacity=".6" />
+          <stop offset="100%" stop-color="#ffd27a" stop-opacity="0" />
+        </radialGradient>
+        <clipPath [attr.id]="uid + '-living'"><rect x="70" y="272" width="166" height="94" /></clipPath>
+        <clipPath [attr.id]="uid + '-solar'"><rect x="-2" y="-2" width="124" height="66" rx="3" /></clipPath>
+      </defs>
+
+      <!-- Sky -->
+      <g class="hb-sun">
+        @for (t of scene.sunRays; track $index) {
+          <rect [attr.x]="L.sun[0] - 2" [attr.y]="L.sun[1] - 33" width="4" height="11" rx="2" fill="#ffd27a" [attr.transform]="t" />
+        }
+      </g>
+      <circle [attr.cx]="L.sun[0]" [attr.cy]="L.sun[1]" r="17" fill="#ffd27a" />
+      @for (c of scene.clouds; track c.delay) {
+        <g class="hb-cloud" [style.--cloud-to]="L.w + 120 + 'px'" [style.animation-duration]="c.dur + 's'" [style.animation-delay]="c.delay + 's'">
+          <g [attr.transform]="'translate(0 ' + c.y + ') scale(' + c.s + ')'" fill="#fff" opacity=".9">
+            <circle cx="24" cy="18" r="12" />
+            <circle cx="44" cy="12" r="15" />
+            <circle cx="64" cy="19" r="11" />
+            <rect x="24" y="18" width="40" height="12" />
+          </g>
+        </g>
+      }
+
+      <!-- Hills, lawn, sidewalk, road -->
+      <path [attr.d]="scene.hillBack" fill="#d3ecd9" />
+      <path [attr.d]="scene.hillFront" fill="#c2e6cc" />
+      <rect [attr.x]="scene.x0" [attr.y]="L.grass" [attr.width]="scene.width" [attr.height]="L.walk - L.grass" fill="#b3dfc0" />
+      <rect [attr.x]="scene.x0" [attr.y]="L.walk" [attr.width]="scene.width" [attr.height]="L.road - L.walk" fill="#e7e2d8" />
+      <path [attr.d]="scene.joints" stroke="#d6cfc2" stroke-width="1.5" />
+      <rect [attr.x]="scene.x0" [attr.y]="L.road" [attr.width]="scene.width" [attr.height]="L.h - L.road" fill="#1c2536" />
+      <rect [attr.x]="scene.x0" [attr.y]="L.road" [attr.width]="scene.width" height="3" fill="#cfc8ba" />
+      <path [attr.d]="'M' + scene.x0 + ' ' + scene.laneY + 'H' + (scene.x0 + scene.width)" stroke="#fff" stroke-opacity=".55" stroke-width="3" stroke-dasharray="28 24" />
+
+      <g [attr.transform]="scene.houseTransform">
+        <g appHbHouse [installed]="installed()" [uid]="uid" />
+      </g>
+      <g [attr.transform]="scene.truckTransform">
+        <g appDeliveryTruck [open]="true" [hazards]="true" />
+      </g>
+    </svg>
+
+    <!-- The truck's load. Before the drop spots in the DOM, so keyboard users meet the products
+         first and then the spots they go in. -->
+    @for (p of products; track p.id; let i = $index) {
+      @if (installed()[p.id]) {
+        <span aria-hidden="true" class="absolute flex items-center justify-center rounded-lg border-2 border-dashed border-brand-teal/40" [style]="cells[i]">
+          <span class="w-6 h-6 rounded-full bg-brand-teal text-white flex items-center justify-center shadow">
+            <svg lucideCheck class="w-3.5 h-3.5" [attr.stroke-width]="3"></svg>
+          </span>
+        </span>
+      } @else {
+        <button
+          #item
+          type="button"
+          [attr.data-id]="p.id"
+          (pointerdown)="onItemDown($event, p.id)"
+          (pointermove)="onItemMove($event)"
+          (pointerup)="endDrag($event)"
+          (pointercancel)="endDrag($event, true)"
+          (click)="onItemClick(p.id)"
+          [attr.aria-pressed]="selected() === p.id"
+          [attr.aria-label]="p.name"
+          [style]="cells[i]"
+          class="absolute flex flex-col items-center justify-center gap-1 rounded-lg select-none touch-none transition duration-200"
+          [class]="itemClass(p.id)"
+        >
+          <svg [attr.viewBox]="iconViewBox(p.id)" class="w-[78%] h-[58%] drop-shadow-sm" aria-hidden="true">
+            <g appHbProductArt [productId]="p.id" />
+          </svg>
+        </button>
+      }
+    }
+
+    <!-- Drop spots on the house -->
+    @for (p of products; track p.id; let i = $index) {
+      @if (!installed()[p.id]) {
+        @let tone = slotTone(p);
+        <button
+          #slot
+          type="button"
+          [attr.data-id]="p.id"
+          (click)="onSlotClick(p.id)"
+          [attr.aria-label]="slotAria(p)"
+          class="absolute rounded-xl border-2 border-dashed transition duration-200"
+          [class]="slotTones[tone]"
+          [style]="slots[i]"
+        >
+          @if (tone === 'idle') {
+            <span aria-hidden="true" class="absolute inset-0 flex items-center justify-center text-lg font-bold leading-none text-brand-navy/40">+</span>
+          }
+          <span
+            aria-hidden="true"
+            class="absolute -top-1.5 -translate-y-full whitespace-nowrap rounded-full px-2 py-0.5 text-[10px] font-bold shadow-sm transition-opacity"
+            [class]="(p.labelStart ? 'left-0 ' : 'left-1/2 -translate-x-1/2 ') + (tone === 'idle' ? 'opacity-0 ' : 'opacity-100 ') + labelTones[tone]"
+          >
+            {{ slotLabel(p, tone) }}
+          </span>
+        </button>
+      }
+    }
+
+    <!-- The handyman's head and what he has to say, on the lawn between the house and the truck -->
+    <div class="pointer-events-none absolute left-[3%] right-[3%] top-[50.8%]">
+      @for (m of [message()]; track m.key) {
+        <div
+          role="status"
+          class="hb-bubble pointer-events-auto relative flex items-start gap-2.5 rounded-2xl border-2 bg-white px-3.5 py-2.5 text-[13px] leading-snug text-brand-ink shadow-lg"
+          [class]="bubbleTones[m.tone]"
+        >
+          <img [src]="'/mascot/' + heads[m.tone] + '.webp'" alt="" aria-hidden="true" class="w-9 h-9 shrink-0 object-contain" />
+          <div class="min-w-0">
+            <p>{{ m.text }}</p>
+            @if (complete()) {
+              <span class="mt-2.5 flex flex-wrap gap-2">
+                <a routerLink="/products" class="btn-primary inline-flex items-center gap-1.5 text-xs py-1.5 px-3">
+                  <svg lucideShoppingBag class="w-3.5 h-3.5"></svg> Shop products
+                </a>
+                <a routerLink="/services" class="btn-secondary inline-flex items-center gap-1.5 text-xs py-1.5 px-3">
+                  <svg lucideWrench class="w-3.5 h-3.5"></svg> Book an installation
+                </a>
+              </span>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    @if (complete()) {
+      <span class="pointer-events-none absolute -translate-x-1/2" [style.left]="houseCenter.left" style="top: 2%">
+        <span class="fade-up inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-brand-teal px-3 py-1 text-xs font-bold text-white shadow-md">
+          <svg lucideSparkles class="w-3.5 h-3.5"></svg> Fully HomeLinked!
+        </span>
+      </span>
+      @for (r of [round()]; track r) {
+        <div aria-hidden="true" class="pointer-events-none absolute" [style.left]="houseCenter.left" [style.top]="houseCenter.top">
+          @for (c of confetti; track $index) {
+            <span
+              class="hb-confetti absolute w-2 h-3 rounded-[2px]"
+              [style.background-color]="c.color"
+              [style.--dx]="c.dx + 'px'"
+              [style.--dy]="c.dy + 'px'"
+              [style.--rot]="c.rot + 'deg'"
+              [style.animation-delay]="c.delay + 'ms'"
+            ></span>
+          }
+        </div>
+      }
+    }
+  </div>
+
+  @if (dragId(); as id) {
+    <div #ghost class="fixed left-0 top-0 z-[200] pointer-events-none" [style.transform]="'translate(' + dragPos.x + 'px, ' + dragPos.y + 'px)'">
+      <div class="-translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1.5">
+        <ng-container *ngTemplateOutlet="ghostCard; context: { $implicit: id, tone: ghostTone() }" />
+        @if (over(); as o) {
+          <span class="rounded-full px-2 py-0.5 text-[10px] font-bold shadow" [class]="labelTones[o === id ? 'good' : 'bad']">
+            {{ o === id ? 'Drop to install' : 'Not here' }}
+          </span>
+        }
+      </div>
+    </div>
+  }
+  @if (flight(); as f) {
+    <div #flightEl class="fixed left-0 top-0 z-[200] pointer-events-none" style="opacity: 0">
+      <div class="relative -translate-x-1/2 -translate-y-1/2">
+        <ng-container *ngTemplateOutlet="ghostCard; context: { $implicit: f.id, tone: 'idle' }" />
+        <svg lucideHand class="absolute -right-3 -bottom-3 w-8 h-8 text-brand-navy drop-shadow" fill="#fff" [attr.stroke-width]="1.6"></svg>
+      </div>
+    </div>
+  }
+</section>
+
+<ng-template #ghostCard let-id let-tone="tone">
+  <div class="w-[88px] rounded-2xl bg-white p-2 shadow-2xl ring-2 flex flex-col items-center gap-1 rotate-[-4deg]" [class]="ghostRing(tone)">
+    <svg [attr.viewBox]="iconViewBox(id)" class="h-11 w-auto max-w-full" aria-hidden="true">
+      <g appHbProductArt [productId]="id" />
+    </svg>
+    <span class="text-[10px] font-semibold leading-tight text-center text-brand-ink">{{ productName(id) }}</span>
+  </div>
+</ng-template>

@@ -24,11 +24,17 @@ export class WishlistService {
         this.items.set([]);
         return;
       }
-      this.api
-        .get<Product[]>('/wishlist/my')
-        .then((items) => this.items.set(items))
-        .catch(() => this.items.set([]));
+      this.refresh();
     });
+  }
+
+  /** Refetches from the server, e.g. after an order, which drops the ordered products. */
+  refresh(): void {
+    if (this.auth.user()?.role !== 'customer') return;
+    this.api
+      .get<Product[]>('/wishlist/my')
+      .then((items) => this.items.set(items))
+      .catch(() => this.items.set([]));
   }
 
   has(productId: string): boolean {

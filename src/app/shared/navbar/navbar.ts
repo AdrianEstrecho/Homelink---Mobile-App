@@ -2,12 +2,14 @@ import { Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { filter, map } from 'rxjs/operators';
-import { LucideArrowLeft, LucideHouse, LucideLogIn, LucideMenu, LucideShoppingCart } from '@lucide/angular';
+import { LucideArrowLeft, LucideLogIn, LucideMenu, LucideShoppingCart } from '@lucide/angular';
 
 import { AuthService } from '../../core/auth.service';
 import { CartService } from '../../core/cart.service';
 import { SideMenuService } from '../../core/side-menu.service';
 import { isDrillDown, isRootRoute } from '../../core/shell-route.util';
+import { PageTransitionService } from '../../core/page-transition.service';
+import { LogoMark } from '../logo-mark/logo-mark';
 
 const ROOT_TITLES: Record<string, string> = {
   '/': 'HomeLink',
@@ -53,11 +55,12 @@ const SECTION_TITLES: { test: (url: string) => boolean; title: string }[] = [
  */
 @Component({
   selector: 'app-navbar',
-  imports: [RouterLink, LucideArrowLeft, LucideHouse, LucideLogIn, LucideMenu, LucideShoppingCart],
+  imports: [LogoMark, RouterLink, LucideArrowLeft, LucideLogIn, LucideMenu, LucideShoppingCart],
   templateUrl: './navbar.html',
   styleUrl: './navbar.css',
 })
 export class Navbar {
+  protected readonly transition = inject(PageTransitionService);
   private router = inject(Router);
   private cart = inject(CartService);
   private sideMenu = inject(SideMenuService);

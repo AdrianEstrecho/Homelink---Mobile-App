@@ -33,7 +33,9 @@ import { AuthService } from '../../core/auth.service';
 import { CartService } from '../../core/cart.service';
 import { SideMenuService } from '../../core/side-menu.service';
 import { WishlistService } from '../../core/wishlist.service';
+import { PageTransitionService } from '../../core/page-transition.service';
 import { ConfirmDialog } from '../confirm-dialog/confirm-dialog';
+import { LogoMark } from '../logo-mark/logo-mark';
 
 type MenuIcon =
   | 'house'
@@ -138,6 +140,7 @@ const EXIT_MS = 230;
 @Component({
   selector: 'app-side-menu',
   imports: [
+    LogoMark,
     RouterLink,
     RouterLinkActive,
     ConfirmDialog,
@@ -173,6 +176,7 @@ const EXIT_MS = 230;
   },
 })
 export class SideMenu {
+  private transition = inject(PageTransitionService);
   protected readonly menu = inject(SideMenuService);
   private auth = inject(AuthService);
   private cart = inject(CartService);
@@ -245,10 +249,15 @@ export class SideMenu {
     return created ? new Date(created).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : '—';
   }
 
-  async handleLogout(): Promise<void> {
+  signIn(): void {
+    this.close();
+    this.transition.coverTo('/login');
+  }
+
+  // The delivery transition covers the screen, signs out underneath it and clears over Home.
+  handleLogout(): void {
     this.confirmLogout.set(false);
     this.menu.close();
-    await this.auth.logout();
-    window.location.href = '/';
+    this.transition.coverTo('/', () => this.auth.logout());
   }
 }

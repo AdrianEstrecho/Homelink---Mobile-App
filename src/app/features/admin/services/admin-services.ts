@@ -22,7 +22,7 @@ import {
 import { AdminService } from '../../../core/admin.model';
 import { ApiService } from '../../../core/api.service';
 import { presetsForServiceCategory, specEntries, toHighlights } from '../../../core/catalog-specs.util';
-import { formatPrice } from '../../../core/format.util';
+import { currencySymbol, formatPrice } from '../../../core/format.util';
 import { validateImageFile } from '../../../core/image-upload.util';
 import { ConfirmDialog } from '../../../shared/confirm-dialog/confirm-dialog';
 import { SafeImage } from '../../../shared/safe-image/safe-image';
@@ -130,6 +130,7 @@ export class AdminServices {
   private api = inject(ApiService);
 
   protected readonly formatPrice = formatPrice;
+  protected readonly currencySymbol = currencySymbol;
 
   protected readonly services = signal<AdminService[]>([]);
   protected readonly categories = signal<string[]>([]);

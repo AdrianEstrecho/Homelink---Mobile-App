@@ -128,6 +128,12 @@ export class AuthService {
     this.user.update((prev) => (prev ? { ...prev, twoFactorEnabled: data.twoFactorEnabled } : prev));
   }
 
+  /** A data URL to set the profile photo, or null to remove it. */
+  async updateAvatar(avatar: string | null): Promise<void> {
+    const data = await this.api.put<{ avatar: string | null }>('/auth/avatar', { avatar });
+    this.user.update((prev) => (prev ? { ...prev, avatar: data.avatar } : prev));
+  }
+
   async refreshUser(): Promise<User> {
     const data = await this.api.get<User>('/auth/me');
     this.user.set(data);

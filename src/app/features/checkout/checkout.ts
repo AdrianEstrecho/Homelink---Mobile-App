@@ -1,19 +1,33 @@
 import { Browser } from '@capacitor/browser';
 import { Capacitor } from '@capacitor/core';
 import { Location } from '@angular/common';
-import { Component, computed, inject, signal, viewChild } from '@angular/core';
+import { Component, computed, effect, inject, signal, viewChild } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
-import { LucideCheck, LucideLock, LucideShieldCheck, LucideShoppingBag, LucideSparkles, LucideTruck, LucideX } from '@lucide/angular';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import {
+  LucideCheck,
+  LucideLoaderCircle,
+  LucideLock,
+  LucideShieldCheck,
+  LucideShoppingBag,
+  LucideSparkles,
+  LucideTruck,
+  LucideX,
+} from '@lucide/angular';
 
 import { ApiService } from '../../core/api.service';
 import { AuthService } from '../../core/auth.service';
-import { CartService } from '../../core/cart.service';
+import { CartItem, CartService } from '../../core/cart.service';
 import { Order, PendingOrder } from '../../core/order.model';
+import { orderCharges } from '../../core/order-charges.util';
 import { isOfflinePayment } from '../../core/payment-methods';
 import { pollPaymentStatus } from '../../core/payment-polling.util';
 import { PricePipe } from '../../core/price.pipe';
+import { Product } from '../../core/product.model';
 import { ActivePromos, AppliedVoucher, calcDiscount } from '../../core/promo.model';
+import { SiteSettingsService } from '../../core/site-settings.service';
+import { WishlistService } from '../../core/wishlist.service';
 import { AddressPicker } from '../../shared/address-picker/address-picker';
 import { OrderDetailsModal } from '../../shared/order-details-modal/order-details-modal';
 import { PaymentMethodPicker } from '../../shared/payment-method-picker/payment-method-picker';
@@ -25,7 +39,22 @@ interface CheckoutSessionResponse {
 
 @Component({
   selector: 'app-checkout',
-  imports: [FormsModule, RouterLink, AddressPicker, PaymentMethodPicker, OrderDetailsModal, PricePipe, LucideShoppingBag, LucideSparkles, LucideCheck, LucideX, LucideLock, LucideShieldCheck, LucideTruck],
+  imports: [
+    FormsModule,
+    RouterLink,
+    AddressPicker,
+    PaymentMethodPicker,
+    OrderDetailsModal,
+    PricePipe,
+    LucideShoppingBag,
+    LucideSparkles,
+    LucideCheck,
+    LucideX,
+    LucideLock,
+    LucideShieldCheck,
+    LucideTruck,
+    LucideLoaderCircle,
+  ],
   templateUrl: './checkout.html',
   styleUrl: './checkout.css',
 })
@@ -33,11 +62,45 @@ export class Checkout {
   private api = inject(ApiService);
   private auth = inject(AuthService);
   private cart = inject(CartService);
+  private wishlist = inject(WishlistService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private location = inject(Location);
+  protected readonly settings = inject(SiteSettingsService).settings;
 
-  protected readonly items = this.cart.items;
-  protected readonly subtotal = this.cart.total;
+  // "Buy Now" from a product page lands here as ?buy=<slug>&qty=<n>: only that product is
+  // ordered, and the cart is left exactly as it was. It's carried in the URL (not router state)
+  // so PayMongo's cancel redirect can bring the customer back to this same single-item checkout.
+  private readonly queryParamMap = toSignal(this.route.queryParamMap, { requireSync: true });
+  protected readonly buySlug = computed(() => this.queryParamMap().get('buy'));
+  private readonly buyQty = computed(() => Math.max(1, parseInt(this.queryParamMap().get('qty') ?? '', 10) || 1));
+  /** null = loading, false = unavailable. */
+  protected readonly buyNowProduct = signal<Product | null | false>(null);
+
+  private readonly buyNowItem = computed<CartItem | null>(() => {
+    const p = this.buyNowProduct();
+    if (!p || p.stock <= 0) return null;
+    return {
+      productId: p.id,
+      name: p.name,
+      price: p.price,
+      image: p.image,
+      slug: p.slug,
+      stock: p.stock,
+      quantity: Math.min(this.buyQty(), p.stock),
+    };
+  });
+
+  protected readonly items = computed(() => {
+    if (!this.buySlug()) return this.cart.items();
+    const item = this.buyNowItem();
+    return item ? [item] : [];
+  });
+  protected readonly subtotal = computed(() => {
+    if (!this.buySlug()) return this.cart.total();
+    const item = this.buyNowItem();
+    return item ? item.price * item.quantity : 0;
+  });
 
   protected readonly addressPicker = viewChild(AddressPicker);
   protected readonly paymentPicker = viewChild(PaymentMethodPicker);
@@ -59,7 +122,12 @@ export class Checkout {
     const promo = this.appliedPromo();
     return promo ? calcDiscount(this.subtotal() - this.holidayAmt(), promo) : 0;
   });
-  protected readonly orderTotal = computed(() => Math.max(0, this.subtotal() - this.holidayAmt() - this.voucherAmt()));
+  protected readonly charges = computed(() =>
+    orderCharges(Math.max(0, this.subtotal() - this.holidayAmt() - this.voucherAmt()), this.settings()),
+  );
+  protected readonly orderTotal = computed(() => this.charges().total);
+  // A store with no shipping fee set has nothing to say about shipping, not "Free" on every order.
+  protected readonly chargesShipping = computed(() => Number(this.settings().shippingFee) > 0);
 
   protected readonly billedTo = computed(() => {
     const u = this.auth.user();
@@ -67,6 +135,16 @@ export class Checkout {
   });
 
   constructor() {
+    effect(() => {
+      const slug = this.buySlug();
+      if (!slug) return;
+      this.buyNowProduct.set(null);
+      this.api
+        .get<Product>(`/products/${encodeURIComponent(slug)}`)
+        .then((p) => this.buyNowProduct.set(p))
+        .catch(() => this.buyNowProduct.set(false));
+    });
+
     this.api
       .get<ActivePromos>('/promos/active')
       .then((data) => this.activePromos.set(data))
@@ -118,6 +196,9 @@ export class Checkout {
       promo_code: this.appliedPromo()?.code ?? null,
       subtotal: this.subtotal(),
       discount: this.holidayAmt() + this.voucherAmt(),
+      shipping_fee: this.charges().shippingFee,
+      tax: this.charges().tax,
+      tax_rate: this.charges().taxRate,
       total: this.orderTotal(),
     });
   }
@@ -144,8 +225,7 @@ export class Checkout {
           paymentMethod: pending.payment_method,
           promoCode: pending.promo_code || undefined,
         });
-        this.cart.clearCart();
-        this.pendingOrder.set(null);
+        this.finishOrder();
         this.confirmedOrder.set(order);
         return;
       }
@@ -160,6 +240,7 @@ export class Checkout {
         shippingAddress: pending.shipping_address,
         paymentMethod: pending.payment_method,
         promoCode: pending.promo_code || undefined,
+        buyNow: Boolean(this.buySlug()),
       });
 
       await this.openCheckoutSession(checkoutUrl, pendingCheckoutId);
@@ -193,14 +274,20 @@ export class Checkout {
     await Browser.close();
 
     if (result.status === 'succeeded') {
-      this.cart.clearCart();
-      this.pendingOrder.set(null);
+      this.finishOrder();
       this.confirmedOrder.set(result.order);
     } else if (result.status === 'failed') {
       this.error.set(result.error || 'Payment could not be completed. Please try again.');
     } else {
       this.error.set("We couldn't confirm this payment in time. Check your order history in a moment.");
     }
+  }
+
+  /** A Buy Now order never included the cart, so only a cart checkout empties it. */
+  private finishOrder(): void {
+    if (!this.buySlug()) this.cart.clearCart();
+    this.wishlist.refresh(); // the server drops ordered products from the wishlist
+    this.pendingOrder.set(null);
   }
 
   goToHome(): void {

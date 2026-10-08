@@ -1,9 +1,12 @@
 <div class="px-4 py-4">
   <div appReveal class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand-navy via-brand-blue to-brand-navy text-white p-5 pb-12 elevation-2">
     <div class="relative flex items-center gap-4">
-      <div class="relative w-16 h-16 rounded-full flex items-center justify-center text-xl font-display font-bold ring-4 ring-white/20 shrink-0" [class]="avatarColor()">
+      <app-editable-avatar
+        [avatarClass]="'w-16 h-16 rounded-full flex items-center justify-center text-xl font-display font-bold ring-4 ring-white/20 ' + avatarColor()"
+        buttonClass="ring-brand-navy"
+      >
         {{ initials() }}
-      </div>
+      </app-editable-avatar>
       <div class="flex-1 min-w-0">
         <p class="text-xs font-semibold uppercase tracking-[0.14em] text-white/50 mb-1">{{ greeting }}</p>
         <div class="flex items-center gap-2 flex-wrap">

@@ -22,6 +22,7 @@ import { downloadReceiptPdf, ReceiptPerson } from '../../core/receipt-pdf.util';
 import { statusColor } from '../../core/format.util';
 import { SafeImage } from '../safe-image/safe-image';
 import { StarRating } from '../star-rating/star-rating';
+import { LogoMark } from '../logo-mark/logo-mark';
 
 const REVIEWABLE_STATUSES = new Set(['delivered', 'completed']);
 
@@ -42,6 +43,7 @@ const REVIEWABLE_STATUSES = new Set(['delivered', 'completed']);
 @Component({
   selector: 'app-order-details-modal',
   imports: [
+    LogoMark,
     DatePipe,
     FormsModule,
     SafeImage,

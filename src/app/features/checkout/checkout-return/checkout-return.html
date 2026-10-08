@@ -12,7 +12,7 @@
       <svg lucideCircleX class="w-12 h-12 text-red-500 mx-auto mb-4"></svg>
       <h2 class="font-display text-xl font-bold text-brand-ink mb-2">Payment didn't go through</h2>
       <p class="text-gray-500 mb-6">{{ errorMsg() || "We couldn't confirm this payment. Your cart is still saved — you can try again." }}</p>
-      <a routerLink="/checkout" class="btn-primary">Back to Checkout</a>
+      <a routerLink="/checkout" [queryParams]="checkoutQuery()" class="btn-primary">Back to Checkout</a>
     }
 
     @if (state() === 'timeout') {
