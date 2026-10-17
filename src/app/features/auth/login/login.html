@@ -63,16 +63,14 @@
         <p class="text-red-600 text-sm text-center">{{ error() }}</p>
       }
 
-      @if (googleSupported) {
-        <div class="flex items-center gap-3 my-1">
-          <div class="flex-1 h-px bg-gray-200"></div>
-          <span class="text-xs text-gray-400">or</span>
-          <div class="flex-1 h-px bg-gray-200"></div>
-        </div>
-        <app-google-signin-button text="signin_with" (credential)="onGoogleCredential($event)" />
-        @if (googleError()) {
-          <p class="text-red-600 text-sm text-center mt-2">{{ googleError() }}</p>
-        }
+      <div class="flex items-center gap-3 my-1">
+        <div class="flex-1 h-px bg-gray-200"></div>
+        <span class="text-xs text-gray-400">or</span>
+        <div class="flex-1 h-px bg-gray-200"></div>
+      </div>
+      <app-google-signin-button text="signin_with" (credential)="onGoogleCredential($event)" (failed)="googleError.set($event)" />
+      @if (googleError()) {
+        <p class="text-red-600 text-sm text-center mt-2">{{ googleError() }}</p>
       }
 
       <p class="text-center text-sm text-gray-600">

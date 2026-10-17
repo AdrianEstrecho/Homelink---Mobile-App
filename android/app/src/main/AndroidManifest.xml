@@ -18,6 +18,14 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- PayMongo's return page (backend /api/app-return) reopens the app through
+                 com.homelink.mobile://checkout/return?pcid=... and the like. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="com.homelink.mobile" />
+            </intent-filter>
         </activity>
 
         <provider

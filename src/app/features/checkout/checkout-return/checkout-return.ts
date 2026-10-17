@@ -16,8 +16,10 @@ type ReturnState = 'processing' | 'succeeded' | 'failed' | 'timeout';
 
 /**
  * PayMongo lands the browser back here after a GCash or 3D-Secure card
- * redirect (web flow only — the native flow polls in-place in Checkout, see
- * mobile port plan §3.5). Ported from frontend/src/pages/CheckoutReturn.jsx.
+ * redirect. On the web that's every PayMongo checkout; in the APK, Checkout
+ * normally polls in place (NativePaymentService), and this page only gets the
+ * com.homelink.mobile:// return link when Android killed the app while
+ * PayMongo was open. Ported from frontend/src/pages/CheckoutReturn.jsx.
  */
 @Component({
   selector: 'app-checkout-return',

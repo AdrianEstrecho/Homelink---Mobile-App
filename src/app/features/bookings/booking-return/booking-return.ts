@@ -14,9 +14,10 @@ type ReturnState = 'processing' | 'succeeded' | 'failed' | 'timeout';
 
 /**
  * PayMongo lands the browser back here after a GCash or 3D-Secure card
- * redirect (web flow only — the native flow polls in-place in ServiceBook,
- * same split as CheckoutReturn/Checkout for orders). Ported from
- * frontend/src/pages/BookingReturn.jsx.
+ * redirect. In the APK, ServiceBook normally polls in place instead, and this
+ * page only gets the com.homelink.mobile:// return link when Android killed
+ * the app while PayMongo was open (same split as CheckoutReturn/Checkout for
+ * orders). Ported from frontend/src/pages/BookingReturn.jsx.
  */
 @Component({
   selector: 'app-booking-return',

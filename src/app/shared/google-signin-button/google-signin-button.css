@@ -1,0 +1,28 @@
+/* Native stand-in for Google's "outline / large" web button, per Google's branding rules
+   (white fill, grey border, the four-colour G, Roboto-weight label). */
+.gsi-native {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 360px;
+  height: 44px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  border: 1px solid #dadce0;
+  border-radius: 9999px;
+  background: #fff;
+  color: #3c4043;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background-color 150ms ease;
+}
+
+.gsi-native:active:not(:disabled) {
+  background: #f1f3f4;
+}
+
+.gsi-native:disabled {
+  opacity: 0.7;
+}

@@ -15,6 +15,16 @@ const config: CapacitorConfig = {
       splashFullScreen: true,
       splashImmersive: false,
     },
+    // Google sign-in only (shared/google-signin-button); the other providers' SDKs stay out of the APK.
+    SocialLogin: {
+      providers: {
+        google: true,
+        facebook: false,
+        apple: false,
+        twitter: false,
+      },
+      logLevel: 1,
+    },
   },
 };
 

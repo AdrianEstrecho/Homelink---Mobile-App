@@ -6,6 +6,7 @@ import { LucideChevronDown, LucideSearch, LucideWrench } from '@lucide/angular';
 import { AdminBooking, AdminUser } from '../../../core/admin.model';
 import { ApiService } from '../../../core/api.service';
 import { formatPrice, statusColor } from '../../../core/format.util';
+import { refreshWhileVisible } from '../../../core/refresh-while-visible.util';
 import { ConfirmDialog } from '../../../shared/confirm-dialog/confirm-dialog';
 import { Select, SelectOption } from '../../../shared/select/select';
 
@@ -66,8 +67,12 @@ export class AdminBookings {
       .filter((b) => !q || `${b.first_name} ${b.last_name}`.toLowerCase().includes(q) || b.service_name.toLowerCase().includes(q));
   });
 
-  private load(): void {
+  private loadBookings(): void {
     this.api.get<AdminBooking[]>('/admin/bookings').then((b) => this.bookings.set(b)).catch(() => {});
+  }
+
+  private load(): void {
+    this.loadBookings();
     this.api
       .get<AdminUser[]>('/admin/users?role=employee&position=installer')
       .then((u) => this.installers.set(u))
@@ -80,6 +85,8 @@ export class AdminBookings {
     const match = STATUSES.find((s) => s === status);
     if (match) this.tab.set(match);
     this.load();
+    // New customer bookings (including ones just paid through PayMongo) appear without a reload.
+    refreshWhileVisible(() => this.loadBookings(), 30_000);
   }
 
   toggleExpand(id: string): void {

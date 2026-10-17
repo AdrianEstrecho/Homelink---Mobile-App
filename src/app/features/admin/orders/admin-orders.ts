@@ -9,6 +9,7 @@ import { ApiService } from '../../../core/api.service';
 import { formatPrice, statusColor } from '../../../core/format.util';
 import { Order } from '../../../core/order.model';
 import { paymentMethodLabel } from '../../../core/payment-methods';
+import { refreshWhileVisible } from '../../../core/refresh-while-visible.util';
 import { ConfirmDialog } from '../../../shared/confirm-dialog/confirm-dialog';
 import { OrderDetailsModal } from '../../../shared/order-details-modal/order-details-modal';
 import { SafeImage } from '../../../shared/safe-image/safe-image';
@@ -116,6 +117,8 @@ export class AdminOrders {
     const match = STATUSES.find((s) => s === status);
     if (match) this.tab.set(match);
     this.load();
+    // New customer orders (including ones just paid through PayMongo) appear without a reload.
+    refreshWhileVisible(() => this.load(), 30_000);
   }
 
   setTab(t: 'all' | (typeof STATUSES)[number]): void {

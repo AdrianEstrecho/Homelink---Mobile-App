@@ -1,4 +1,3 @@
-import { Browser } from '@capacitor/browser';
 import { Capacitor } from '@capacitor/core';
 import { Location } from '@angular/common';
 import { Component, effect, inject, signal, viewChild } from '@angular/core';
@@ -10,7 +9,7 @@ import { ApiService } from '../../core/api.service';
 import { AuthService } from '../../core/auth.service';
 import { AvailabilitySlot, Booking, DiscountPreview } from '../../core/booking.model';
 import { formatTimeAmPm } from '../../core/format.util';
-import { pollBookingPaymentStatus } from '../../core/payment-polling.util';
+import { NativePaymentService } from '../../core/native-payment.service';
 import { PricePipe } from '../../core/price.pipe';
 import { calcDiscount } from '../../core/promo.model';
 import { Service } from '../../core/product.model';
@@ -26,6 +25,12 @@ interface BookingCheckoutSessionResponse {
   checkoutUrl: string;
 }
 
+interface BookingStatusResponse {
+  status: 'processing' | 'succeeded' | 'failed';
+  booking?: Booking;
+  error?: string;
+}
+
 @Component({
   selector: 'app-service-book',
   imports: [ErrorState, Skeleton, SafeImage, AddressPicker, PaymentMethodPicker, BookingDetailsModal, PricePipe, LucideCalendar, LucideClock, LucideShieldCheck, LucideAward, LucideTimer],
@@ -38,6 +43,7 @@ export class ServiceBook {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private location = inject(Location);
+  private nativePayment = inject(NativePaymentService);
 
   protected readonly formatTimeAmPm = formatTimeAmPm;
 
@@ -167,19 +173,19 @@ export class ServiceBook {
       return;
     }
 
-    // Native: open a separate in-app browser tab rather than navigating our own WebView
-    // away — see Checkout.openCheckoutSession for why. We just poll underneath and
-    // dismiss it once we know the result.
-    await Browser.open({ url: checkoutUrl });
-    const result = await pollBookingPaymentStatus(this.api, pendingBookingId);
-    await Browser.close();
+    // Native: PayMongo opens in a browser tab over the app, and NativePaymentService brings
+    // the customer back here once the payment is confirmed, cancelled, or the tab is closed.
+    const outcome = await this.nativePayment.pay(checkoutUrl, async () => {
+      const res = await this.api.get<BookingStatusResponse>(`/bookings/status/${pendingBookingId}`);
+      return { status: res.status, error: res.error, result: res.booking };
+    });
 
-    if (result.status === 'succeeded') {
-      this.confirmedBooking.set(result.booking);
-    } else if (result.status === 'failed') {
-      this.error.set(result.error || 'Payment could not be completed. Please try again.');
+    if (outcome.status === 'succeeded') {
+      this.confirmedBooking.set(outcome.result);
+    } else if (outcome.status === 'failed') {
+      this.error.set(outcome.error || 'Payment could not be completed. Please try again.');
     } else {
-      this.error.set("We couldn't confirm this payment in time. Check My Bookings in a moment.");
+      this.error.set("Payment wasn't completed. If you did pay, the booking will show up in My Bookings in a few minutes.");
     }
   }
 

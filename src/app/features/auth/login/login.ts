@@ -1,7 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { Capacitor } from '@capacitor/core';
 import { LucideLoaderCircle, LucideLogIn } from '@lucide/angular';
 
 import { ApiError } from '../../../core/api.service';
@@ -36,7 +35,6 @@ export class Login {
   protected readonly error = signal('');
   protected readonly loading = signal(false);
   protected readonly googleError = signal('');
-  protected readonly googleSupported = !Capacitor.isNativePlatform();
 
   protected readonly stage = signal<Stage>('credentials');
   protected code = '';

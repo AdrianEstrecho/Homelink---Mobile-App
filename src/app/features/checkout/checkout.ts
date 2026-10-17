@@ -1,4 +1,3 @@
-import { Browser } from '@capacitor/browser';
 import { Capacitor } from '@capacitor/core';
 import { Location } from '@angular/common';
 import { Component, computed, effect, inject, signal, viewChild } from '@angular/core';
@@ -19,10 +18,10 @@ import {
 import { ApiService } from '../../core/api.service';
 import { AuthService } from '../../core/auth.service';
 import { CartItem, CartService } from '../../core/cart.service';
+import { NativePaymentService } from '../../core/native-payment.service';
 import { Order, PendingOrder } from '../../core/order.model';
 import { orderCharges } from '../../core/order-charges.util';
 import { isOfflinePayment } from '../../core/payment-methods';
-import { pollPaymentStatus } from '../../core/payment-polling.util';
 import { PricePipe } from '../../core/price.pipe';
 import { Product } from '../../core/product.model';
 import { ActivePromos, AppliedVoucher, calcDiscount } from '../../core/promo.model';
@@ -35,6 +34,12 @@ import { PaymentMethodPicker } from '../../shared/payment-method-picker/payment-
 interface CheckoutSessionResponse {
   pendingCheckoutId: string;
   checkoutUrl: string;
+}
+
+interface CheckoutStatusResponse {
+  status: 'processing' | 'succeeded' | 'failed';
+  order?: Order;
+  error?: string;
 }
 
 @Component({
@@ -66,6 +71,7 @@ export class Checkout {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private location = inject(Location);
+  private nativePayment = inject(NativePaymentService);
   protected readonly settings = inject(SiteSettingsService).settings;
 
   // "Buy Now" from a product page lands here as ?buy=<slug>&qty=<n>: only that product is
@@ -258,28 +264,20 @@ export class Checkout {
       return;
     }
 
-    // Native: open a separate in-app browser tab rather than navigating our own
-    // WebView away. It doesn't need to redirect back into the app at all — we
-    // just keep polling underneath and dismiss it once we know the result.
-    // Browser must be a plain static import (not dynamically imported/returned
-    // through an async function) -- a Capacitor plugin proxy object flowing
-    // through a Promise's resolved value triggers JS's "thenable assimilation"
-    // (Promise machinery calls .then() on anything that looks thenable), and
-    // Capacitor's proxy throws "Browser.then() is not implemented on android"
-    // when that happens. Confirmed via on-device testing (Phase 8) -- this
-    // never surfaces in `ng serve`, since Capacitor.isNativePlatform() is
-    // false there and this whole branch never runs.
-    await Browser.open({ url: checkoutUrl });
-    const result = await pollPaymentStatus(this.api, pendingCheckoutId);
-    await Browser.close();
+    // Native: PayMongo opens in a browser tab over the app, and NativePaymentService brings
+    // the customer back here once the payment is confirmed, cancelled, or the tab is closed.
+    const outcome = await this.nativePayment.pay(checkoutUrl, async () => {
+      const res = await this.api.get<CheckoutStatusResponse>(`/payments/status/${pendingCheckoutId}`);
+      return { status: res.status, error: res.error, result: res.order };
+    });
 
-    if (result.status === 'succeeded') {
+    if (outcome.status === 'succeeded') {
       this.finishOrder();
-      this.confirmedOrder.set(result.order);
-    } else if (result.status === 'failed') {
-      this.error.set(result.error || 'Payment could not be completed. Please try again.');
+      this.confirmedOrder.set(outcome.result);
+    } else if (outcome.status === 'failed') {
+      this.error.set(outcome.error || 'Payment could not be completed. Please try again.');
     } else {
-      this.error.set("We couldn't confirm this payment in time. Check your order history in a moment.");
+      this.error.set("Payment wasn't completed. If you did pay, the order will show up in My Orders in a few minutes.");
     }
   }
 

@@ -1,5 +1,6 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
+import { Capacitor } from '@capacitor/core';
 import { firstValueFrom } from 'rxjs';
 
 import { environment } from '../../environments/environment';
@@ -18,6 +19,8 @@ export interface ApiError extends Error {
 export class ApiService {
   private http = inject(HttpClient);
   private base = environment.apiUrl;
+  // 'android'/'ios' from the APK, 'mobile' from the mobile web build.
+  private client = Capacitor.isNativePlatform() ? Capacitor.getPlatform() : 'mobile';
 
   get<T>(path: string): Promise<T> {
     return this.request<T>('GET', path);
@@ -41,8 +44,9 @@ export class ApiService {
         // The native Capacitor WebView often sends no usable Origin header on cross-origin
         // requests, so the backend can't tell "this is the mobile app" from Origin alone
         // (see backend/utils/frontendUrl.js) -- this header is a reliable stand-in, used to
-        // pick where PayMongo's hosted checkout redirects back to after payment.
-        this.http.request<T>(method, `${this.base}${path}`, { body, headers: { 'X-Homelink-Client': 'mobile' } })
+        // pick where PayMongo's hosted checkout redirects back to after payment (the APK gets
+        // a page that reopens the app).
+        this.http.request<T>(method, `${this.base}${path}`, { body, headers: { 'X-Homelink-Client': this.client } })
       );
     } catch (e) {
       const err = e as HttpErrorResponse;

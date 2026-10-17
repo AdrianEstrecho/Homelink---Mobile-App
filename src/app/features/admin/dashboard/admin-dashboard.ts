@@ -28,6 +28,7 @@ import {
 import { AdminAuditLog, AdminDashboardData, AdminUser } from '../../../core/admin.model';
 import { ApiService } from '../../../core/api.service';
 import { ACTION_META, AuditCategory, describeAudit, timeAgo } from '../../../core/audit-actions';
+import { refreshWhileVisible } from '../../../core/refresh-while-visible.util';
 import { AuthService } from '../../../core/auth.service';
 import { currencySymbol, formatPrice, statusColor } from '../../../core/format.util';
 import { ToastService } from '../../../core/toast.service';
@@ -353,6 +354,8 @@ export class AdminDashboard {
 
   constructor() {
     this.load();
+    // Coming back to the app shows sales made meanwhile, without tapping refresh.
+    refreshWhileVisible(() => this.load());
     this.api
       .get<AdminUser[]>('/admin/users')
       .then((users) => this.staff.set(users.filter((u) => u.role !== 'customer')))

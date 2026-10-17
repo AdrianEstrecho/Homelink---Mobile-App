@@ -10,6 +10,7 @@ import { filter, map } from 'rxjs/operators';
 import { isChromelessRoute } from './core/shell-route.util';
 import { AuthService } from './core/auth.service';
 import { ErrorStateService } from './core/error-state.service';
+import { NativePaymentService } from './core/native-payment.service';
 import { PageTransitionService } from './core/page-transition.service';
 import { SiteSettingsService } from './core/site-settings.service';
 import { AssistantWidget } from './shared/assistant/assistant-widget';
@@ -48,6 +49,7 @@ export class App implements OnInit {
   private router = inject(Router);
   // Injected here only so currency, shipping and VAT load at boot rather than on first checkout.
   private siteSettings = inject(SiteSettingsService);
+  private nativePayment = inject(NativePaymentService);
 
   protected readonly splashVisible = signal(true);
   protected readonly splashLeaving = signal(false);
@@ -65,6 +67,9 @@ export class App implements OnInit {
   ngOnInit(): void {
     this.initStatusBar();
     this.runSplash();
+    // PayMongo's return links reopen the APK (com.homelink.mobile://...), so they need a
+    // listener from the very first frame, including when one is what launched the app.
+    this.nativePayment.listenForAppLinks();
   }
 
   private initStatusBar(): void {

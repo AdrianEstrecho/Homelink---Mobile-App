@@ -1,7 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { Capacitor } from '@capacitor/core';
 import { LucideArrowRight, LucideCheck, LucideChevronLeft, LucideMailCheck, LucideUserPlus } from '@lucide/angular';
 
 import { ApiService } from '../../../core/api.service';
@@ -70,7 +69,7 @@ export class Register {
 
   protected readonly steps = STEPS;
   protected readonly codeLength = CODE_LENGTH;
-  protected readonly googleSupported = !Capacitor.isNativePlatform();
+  protected readonly googleError = signal('');
 
   protected readonly step = signal(0);
   protected readonly direction = signal<'forward' | 'back'>('forward');
@@ -263,20 +262,20 @@ export class Register {
   }
 
   async onGoogleCredential(credential: string): Promise<void> {
-    this.error.set('');
+    this.googleError.set('');
     this.loading.set(true);
     try {
       const result = await this.auth.loginWithGoogle(credential);
       if (result.requires2FA) {
         // This Google account matches an existing HomeLink account that has 2FA turned on —
         // send them to Login instead, which has the code-entry stage this page doesn't.
-        this.error.set('This Google account already has a HomeLink account with two-factor authentication on. Sign in from the Login page instead.');
+        this.googleError.set('This Google account already has a HomeLink account with two-factor authentication on. Sign in from the Login page instead.');
         this.loading.set(false);
         return;
       }
       this.router.navigateByUrl('/');
     } catch (err) {
-      this.error.set((err as Error).message || 'Google sign-up failed. Try again, or sign up with your email.');
+      this.googleError.set((err as Error).message || 'Google sign-up failed. Try again, or sign up with your email.');
       this.loading.set(false);
     }
   }
