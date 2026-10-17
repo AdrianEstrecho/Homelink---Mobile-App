@@ -101,12 +101,22 @@ export class GoogleSigninButton implements AfterViewInit {
   }
 }
 
+// The plugin's rejections (GoogleProvider.handleSignInError) are long developer-facing texts;
+// these map the ones a customer can act on, and keep Google's own reason for the rest.
 function nativeErrorMessage(raw: string): string {
   if (/no credentials|no account|NoCredential/i.test(raw)) {
     return 'No Google account is signed in on this phone. Add one in Settings, then try again.';
   }
-  if (/28444|developer console|not set up/i.test(raw)) {
-    return "Google sign-in isn't set up for this app build yet. Use your email and password for now.";
+  // Consent screen in Testing mode and this account isn't a test user (or the user turned
+  // off Sign in with Google for HomeLink in their Google account).
+  if (/Account reauth failed/i.test(raw)) {
+    return "Google didn't allow this account to sign in to HomeLink yet. If HomeLink's Google sign-in is still in Testing, this account must be added as a test user.";
   }
-  return 'Google sign-in failed. Please try again.';
+  // No Android OAuth client matching this APK's package + signing SHA-1 (or Google hasn't
+  // picked up a newly added one yet, which can take a while).
+  if (/28444|developer console|not configured|not set up|\b10:/i.test(raw)) {
+    return "Google sign-in isn't set up for this app build yet (it can take a few hours after setup). Use your email and password for now.";
+  }
+  const reason = raw.replace(/^Google Sign-In failed:\s*/i, '').split('. ')[0].slice(0, 140);
+  return reason ? `Google sign-in failed: ${reason}` : 'Google sign-in failed. Please try again.';
 }
