@@ -18,7 +18,7 @@
     (confirmed)="handleConfirmOrder()"
     (closed)="editOrder()"
   />
-} @else if (buySlug() && buyNowProduct() === null) {
+} @else if (buySlug() ? buyNowProduct() === null : !cartLoaded()) {
   <div class="px-4 py-24 text-center">
     <svg lucideLoaderCircle class="w-10 h-10 text-brand-teal mx-auto animate-spin"></svg>
   </div>
@@ -28,6 +28,13 @@
     <h2 class="font-display text-xl font-bold text-brand-ink mb-2">This product isn't available</h2>
     <p class="text-gray-500 mb-6">It may have sold out or been removed from the store.</p>
     <a routerLink="/products" class="btn-primary">Browse Products</a>
+  </div>
+} @else if (items().length === 0 && cartHasItems()) {
+  <div class="px-4 py-16 text-center">
+    <svg lucideShoppingBag class="w-16 h-16 text-gray-300 mx-auto mb-4"></svg>
+    <h2 class="font-display text-xl font-bold text-brand-ink mb-2">No items selected</h2>
+    <p class="text-gray-500 mb-6">Tick the items you want to buy in your cart, then check out.</p>
+    <a routerLink="/cart" class="btn-primary">Back to Cart</a>
   </div>
 } @else if (items().length === 0) {
   <div class="px-4 py-16 text-center">

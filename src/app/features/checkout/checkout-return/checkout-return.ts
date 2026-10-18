@@ -63,7 +63,8 @@ export class CheckoutReturn {
     }
     pollPaymentStatus(this.api, pcid).then((result) => {
       if (result.status === 'succeeded') {
-        if (!this.buySlug()) this.cart.clearCart();
+        // Only what this order bought leaves the cart — unticked items stay for later.
+        if (!this.buySlug()) this.cart.removeItems(result.order.items.map((i) => i.product_id));
         this.wishlist.refresh(); // the server drops ordered products from the wishlist
         this.order.set(result.order);
         this.state.set('succeeded');

@@ -94,16 +94,20 @@ export class Checkout {
       slug: p.slug,
       stock: p.stock,
       quantity: Math.min(this.buyQty(), p.stock),
+      selected: true,
     };
   });
 
+  // From the cart, only the items ticked on the cart page are ordered; the rest stay behind.
   protected readonly items = computed(() => {
-    if (!this.buySlug()) return this.cart.items();
+    if (!this.buySlug()) return this.cart.selectedItems();
     const item = this.buyNowItem();
     return item ? [item] : [];
   });
+  protected readonly cartLoaded = this.cart.loaded;
+  protected readonly cartHasItems = computed(() => this.cart.items().length > 0);
   protected readonly subtotal = computed(() => {
-    if (!this.buySlug()) return this.cart.total();
+    if (!this.buySlug()) return this.cart.selectedTotal();
     const item = this.buyNowItem();
     return item ? item.price * item.quantity : 0;
   });
@@ -231,7 +235,7 @@ export class Checkout {
           paymentMethod: pending.payment_method,
           promoCode: pending.promo_code || undefined,
         });
-        this.finishOrder();
+        this.finishOrder(order);
         this.confirmedOrder.set(order);
         return;
       }
@@ -272,7 +276,7 @@ export class Checkout {
     });
 
     if (outcome.status === 'succeeded') {
-      this.finishOrder();
+      this.finishOrder(outcome.result);
       this.confirmedOrder.set(outcome.result);
     } else if (outcome.status === 'failed') {
       this.error.set(outcome.error || 'Payment could not be completed. Please try again.');
@@ -281,9 +285,12 @@ export class Checkout {
     }
   }
 
-  /** A Buy Now order never included the cart, so only a cart checkout empties it. */
-  private finishOrder(): void {
-    if (!this.buySlug()) this.cart.clearCart();
+  /**
+   * A Buy Now order never included the cart, so only a cart checkout touches it — and then only
+   * what the order bought leaves; unticked items stay for later.
+   */
+  private finishOrder(order: Order): void {
+    if (!this.buySlug()) this.cart.removeItems(order.items.map((i) => i.product_id));
     this.wishlist.refresh(); // the server drops ordered products from the wishlist
     this.pendingOrder.set(null);
   }

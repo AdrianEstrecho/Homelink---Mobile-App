@@ -1,4 +1,8 @@
-@if (items().length === 0) {
+@if (!cart.loaded()) {
+  <div class="px-4 py-24 text-center">
+    <svg lucideLoaderCircle class="w-10 h-10 text-brand-teal mx-auto animate-spin"></svg>
+  </div>
+} @else if (items().length === 0) {
   <div appReveal class="px-4 py-16 text-center">
     <svg lucideShoppingBag class="w-16 h-16 text-gray-300 mx-auto mb-4"></svg>
     <h2 class="font-display text-xl font-bold text-brand-ink mb-2">Your cart is empty</h2>
@@ -14,18 +18,81 @@
       </button>
     </div>
 
+    @if (categories().length > 1) {
+      <div role="group" aria-label="Filter cart by category" class="flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 pb-1 mb-3">
+        <button
+          type="button"
+          [attr.aria-pressed]="!activeFilter()"
+          (click)="setFilter('')"
+          class="tap shrink-0 inline-flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-full border text-sm font-medium whitespace-nowrap transition outline-none focus-visible:ring-2 focus-visible:ring-brand-orange/40"
+          [class]="!activeFilter() ? 'bg-brand-orange border-brand-orange text-white shadow-sm shadow-brand-orange/30' : 'bg-white border-gray-200 text-gray-600'"
+        >
+          <svg lucideLayoutGrid class="w-4 h-4"></svg>
+          All
+          <span
+            class="min-w-[1.25rem] px-1.5 rounded-full text-xs font-semibold leading-5 text-center"
+            [class]="!activeFilter() ? 'bg-white/25 text-white' : 'bg-gray-100 text-gray-500'"
+          >{{ items().length }}</span>
+        </button>
+        @for (c of categories(); track c.slug) {
+          <button
+            type="button"
+            [attr.aria-pressed]="activeFilter() === c.slug"
+            (click)="setFilter(c.slug)"
+            class="tap shrink-0 inline-flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-full border text-sm font-medium whitespace-nowrap transition outline-none focus-visible:ring-2 focus-visible:ring-brand-orange/40"
+            [class]="activeFilter() === c.slug ? 'bg-brand-orange border-brand-orange text-white shadow-sm shadow-brand-orange/30' : 'bg-white border-gray-200 text-gray-600'"
+          >
+            <app-category-icon [slug]="c.slug" class="w-4 h-4" />
+            {{ c.name }}
+            <span
+              class="min-w-[1.25rem] px-1.5 rounded-full text-xs font-semibold leading-5 text-center"
+              [class]="activeFilter() === c.slug ? 'bg-white/25 text-white' : 'bg-gray-100 text-gray-500'"
+            >{{ c.count }}</span>
+          </button>
+        }
+      </div>
+    }
+
+    <div class="card px-4 py-3 mb-3 flex items-center justify-between gap-3">
+      <label class="flex items-center gap-3 text-sm font-medium text-brand-ink select-none -my-2 py-2">
+        <app-checkbox [checked]="allSelected()" [indeterminate]="someSelected()" (changed)="toggleAllVisible()" />
+        Select all ({{ visibleItems().length }})
+      </label>
+      <span class="text-xs text-gray-400 text-right">
+        {{ visibleSelected() }} of {{ visibleItems().length }} selected
+        @if (hiddenSelected() > 0) {
+          <span class="block">{{ hiddenSelected() }} more in other categories</span>
+        }
+      </span>
+    </div>
+
     <div class="space-y-3 mb-5">
-      @for (item of items(); track item.productId; let i = $index) {
-        <div appReveal [revealDelay]="(i > 5 ? 5 : i) * 60" class="card p-3">
+      @for (item of visibleItems(); track item.productId; let i = $index) {
+        <div
+          appReveal
+          [revealDelay]="(i > 5 ? 5 : i) * 60"
+          class="card p-3"
+          [class]="item.selected ? 'border-brand-orange/40 ring-1 ring-brand-orange/15' : ''"
+        >
           <div class="flex gap-3">
-            <a [routerLink]="['/products', item.slug]" class="shrink-0">
+            <label class="self-center shrink-0 p-2 -m-2">
+              <app-checkbox
+                [checked]="item.selected"
+                [label]="'Select ' + item.name + ' for checkout'"
+                (changed)="cart.toggleSelected(item.productId)"
+              />
+            </label>
+            <a [routerLink]="['/products', item.slug]" class="shrink-0 transition-opacity" [class.opacity-50]="!item.selected">
               <app-safe-image [src]="item.image" [alt]="item.name" class="w-20 h-20 object-cover rounded-lg bg-gray-100" />
             </a>
             <div class="flex-1 min-w-0 flex flex-col gap-2">
               <div class="flex items-start justify-between gap-2">
-                <a [routerLink]="['/products', item.slug]" class="font-semibold text-sm text-brand-ink line-clamp-2">
-                  {{ item.name }}
-                </a>
+                <div class="min-w-0">
+                  <p class="text-[11px] font-medium uppercase tracking-wide text-gray-400 mb-0.5 truncate">{{ categoryOf(item).name }}</p>
+                  <a [routerLink]="['/products', item.slug]" class="font-semibold text-sm text-brand-ink line-clamp-2">
+                    {{ item.name }}
+                  </a>
+                </div>
                 <button
                   type="button"
                   (click)="requestRemove(item)"
@@ -39,7 +106,7 @@
               @if (lowStock(item)) {
                 <p class="text-xs text-red-500 font-medium">Only {{ item.stock }} left in stock</p>
               }
-              <div class="flex items-center justify-between">
+              <div class="flex items-center justify-between gap-2">
                 <div class="flex items-center gap-1 border border-gray-200 rounded-lg shrink-0">
                   <button
                     type="button"
@@ -74,8 +141,8 @@
 
       <div class="space-y-2 text-sm">
         <div class="flex justify-between text-gray-500">
-          <span>Subtotal ({{ count() }} item{{ count() === 1 ? '' : 's' }})</span>
-          <span class="font-medium text-brand-ink">{{ total() | homelinkPrice }}</span>
+          <span>Subtotal ({{ selectedCount() }} item{{ selectedCount() === 1 ? '' : 's' }})</span>
+          <span class="font-medium text-brand-ink">{{ selectedTotal() | homelinkPrice }}</span>
         </div>
         <div class="flex justify-between text-gray-500">
           <span>Shipping</span>
@@ -85,10 +152,15 @@
 
       <div class="flex justify-between items-center font-bold text-lg mt-4 pt-4 border-t border-gray-100">
         <span class="text-brand-ink">Total</span>
-        <span class="text-brand-navy">{{ total() | homelinkPrice }}</span>
+        <span class="text-brand-navy">{{ selectedTotal() | homelinkPrice }}</span>
       </div>
 
-      <a routerLink="/checkout" class="btn-primary w-full text-center block py-3 mt-5">Proceed to Checkout</a>
+      @if (selectedItems().length > 0) {
+        <a routerLink="/checkout" class="btn-primary w-full text-center block py-3 mt-5">Checkout ({{ selectedItems().length }})</a>
+      } @else {
+        <button type="button" disabled class="btn-primary w-full py-3 mt-5 opacity-50 cursor-not-allowed">Proceed to Checkout</button>
+        <p class="text-center text-xs text-gray-400 mt-2">Select at least one item to check out.</p>
+      }
       <a routerLink="/products" class="tap block text-center text-sm text-brand-teal mt-3">Continue Shopping</a>
 
       <div class="grid grid-cols-3 gap-2 mt-5 pt-5 border-t border-gray-100 text-center">
