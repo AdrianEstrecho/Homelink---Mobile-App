@@ -1,5 +1,5 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, effect, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
@@ -18,7 +18,8 @@ import {
   LucideX,
 } from '@lucide/angular';
 
-import { TEAM, TeamMember, fullNameOf } from '../about.data';
+import { TEAMS, TeamMember, fullNameOf } from '../about.data';
+import { TeamChoiceService } from '../team-choice.service';
 import { DeliveryLane } from '../../../shared/delivery-lane/delivery-lane';
 import { LogoMark } from '../../../shared/logo-mark/logo-mark';
 import { RevealDirective } from '../../../shared/reveal.directive';
@@ -55,8 +56,8 @@ function barcodeFor(slug: string) {
  * Ported from the web's Team page (frontend/src/pages/Team.jsx): the HomeLink delivery truck
  * driving under the header, the developers as staff ID badges on lanyards, and each member's
  * profile in a sheet you can step through. The open profile lives in the URL
- * (?member=<slug>), so a teammate's profile can be linked to directly. The roster is TEAM in
- * about.data.ts.
+ * (?member=<slug>), so a teammate's profile can be linked to directly. The rosters are TEAMS in
+ * about.data.ts, and which one is showing is TeamChoiceService's, so it sticks between visits.
  */
 @Component({
   selector: 'app-developers',
@@ -87,25 +88,40 @@ function barcodeFor(slug: string) {
 export class Developers {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  protected readonly choice = inject(TeamChoiceService);
 
-  protected readonly team = TEAM;
+  protected readonly teams = TEAMS;
+  protected readonly team = this.choice.team;
   protected readonly built = BUILT;
   protected readonly stack = STACK;
-  protected readonly badges = TEAM.map((m, i) => ({ member: m, number: String(i + 1).padStart(2, '0'), code: barcodeFor(m.slug) }));
+  protected readonly badges = computed(() =>
+    this.team().map((m, i) => ({ member: m, number: String(i + 1).padStart(2, '0'), code: barcodeFor(m.slug) })),
+  );
   protected readonly fullNameOf = fullNameOf;
 
   private readonly query = toSignal(this.route.queryParamMap, { requireSync: true });
-  protected readonly active = computed(() => TEAM.find((m) => m.slug === this.query().get('member')) ?? null);
+  protected readonly active = computed(() => this.team().find((m) => m.slug === this.query().get('member')) ?? null);
   protected readonly position = computed(() => {
     const m = this.active();
     if (!m) return null;
-    const at = TEAM.indexOf(m);
+    const team = this.team();
+    const at = team.indexOf(m);
     return {
       at,
-      prev: TEAM[(at - 1 + TEAM.length) % TEAM.length],
-      next: TEAM[(at + 1) % TEAM.length],
+      prev: team[(at - 1 + team.length) % team.length],
+      next: team[(at + 1) % team.length],
     };
   });
+
+  constructor() {
+    // A link to someone on the other team switches to that team, so the profile still opens.
+    effect(() => {
+      const slug = this.query().get('member');
+      if (!slug || this.team().some((m) => m.slug === slug)) return;
+      const other = TEAMS.findIndex((t) => t.members.some((m) => m.slug === slug));
+      if (other >= 0) this.choice.index.set(other);
+    });
+  }
 
   // Replaced rather than pushed, so stepping through profiles doesn't leave a trail of history
   // entries for Back to wade through.

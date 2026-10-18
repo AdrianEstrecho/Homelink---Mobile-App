@@ -201,7 +201,7 @@
       </a>
     </div>
     <ul class="flex gap-3 overflow-x-auto snap-x snap-mandatory scroll-px-4 no-scrollbar px-4 pb-3">
-      @for (m of team; track m.slug; let i = $index) {
+      @for (m of team(); track m.slug; let i = $index) {
         <li appReveal [revealDelay]="i * 70" class="w-[42%] shrink-0 snap-start">
           <a
             [routerLink]="['/about/developers']"

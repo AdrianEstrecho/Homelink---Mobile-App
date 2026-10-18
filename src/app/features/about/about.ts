@@ -27,7 +27,8 @@ import {
   LucideWrench,
 } from '@lucide/angular';
 
-import { ABOUT_STATS, ABOUT_VALUES, TEAM } from './about.data';
+import { ABOUT_STATS, ABOUT_VALUES } from './about.data';
+import { TeamChoiceService } from './team-choice.service';
 import { ApiService } from '../../core/api.service';
 import { APP_TAGLINE } from '../../core/app-info';
 import { CategoryIcon } from '../../shared/category-icon/category-icon';
@@ -164,7 +165,8 @@ export class About {
   protected readonly orbit = ORBIT;
   protected readonly oldWay = OLD_WAY;
   protected readonly homelinkWay = HOMELINK_WAY;
-  protected readonly team = TEAM;
+  // Whichever team was last picked on the Developers page, so these tiles open profiles on it.
+  protected readonly team = inject(TeamChoiceService).team;
   protected readonly compareSides = [
     { value: false, label: 'The old way' },
     { value: true, label: 'With HomeLink' },

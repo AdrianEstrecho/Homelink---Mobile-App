@@ -249,12 +249,30 @@ export interface TeamMember {
 
 const noLinks = { github: '', linkedin: '', email: '' };
 
+// On both teams, so both rosters share this one entry.
+const ADRIAN: TeamMember = { slug: 'adrian-estrecho', firstName: 'Adrian', lastName: 'Estrecho', role: 'Developer', gradient: 'from-brand-orange to-amber-400', color: '#ff6b35', photo: '/team/adrian-estrecho.webp', bio: '', contributions: [], links: noLinks };
+
 export const TEAM: TeamMember[] = [
-  { slug: 'adrian-estrecho', firstName: 'Adrian', lastName: 'Estrecho', role: 'Developer', gradient: 'from-brand-orange to-amber-400', color: '#ff6b35', photo: '/team/adrian-estrecho.webp', bio: '', contributions: [], links: noLinks },
+  ADRIAN,
   { slug: 'bianca-galvez', firstName: 'Bianca', lastName: 'Galvez', role: 'Developer', gradient: 'from-brand-teal to-emerald-300', color: '#00a896', photo: '/team/bianca-galvez.webp', bio: '', contributions: [], links: noLinks },
   { slug: 'rhangel-mansilla', firstName: 'Rhangel', lastName: 'Mansilla', role: 'Developer', gradient: 'from-brand-blue to-sky-400', color: '#38bdf8', photo: '/team/rhangel-mansilla.webp', bio: '', contributions: [], links: noLinks },
   { slug: 'luigi-natal', firstName: 'Luigi', lastName: 'Natal', role: 'Developer', gradient: 'from-rose-500 to-brand-orange', color: '#f43f5e', photo: '/team/luigi-natal.webp', bio: '', contributions: [], links: noLinks },
   { slug: 'aldred-rapacon', firstName: 'Aldred', lastName: 'Rapacon', role: 'Developer', gradient: 'from-indigo-500 to-brand-teal', color: '#6366f1', photo: '/team/aldred-rapacon.webp', bio: '', contributions: [], links: noLinks },
+];
+
+// The second team. Mobile-only for now; the web's team.js has just the first.
+export const TEAM_2: TeamMember[] = [
+  ADRIAN,
+  { slug: 'jaina-estareja', firstName: 'Jaina', lastName: 'Estareja', role: 'Developer', gradient: 'from-brand-teal to-emerald-300', color: '#00a896', photo: '/team/jaina-estareja.webp', bio: '', contributions: [], links: noLinks },
+  { slug: 'bernadette-estorpe', firstName: 'Bernadette', lastName: 'Estorpe', role: 'Developer', gradient: 'from-brand-blue to-sky-400', color: '#38bdf8', photo: '/team/bernadette-estorpe.webp', bio: '', contributions: [], links: noLinks },
+  { slug: 'lanna-alexa-mercado', firstName: 'Lanna Alexa', lastName: 'Mercado', role: 'Developer', gradient: 'from-rose-500 to-brand-orange', color: '#f43f5e', photo: '/team/lanna-alexa-mercado.webp', bio: '', contributions: [], links: noLinks },
+  { slug: 'maleth-joy-omega', firstName: 'Maleth Joy', lastName: 'Omega', role: 'Developer', gradient: 'from-indigo-500 to-brand-teal', color: '#6366f1', photo: '/team/maleth-joy-omega.webp', bio: '', contributions: [], links: noLinks },
+];
+
+/** The teams the Developers page toggles between, in toggle order. */
+export const TEAMS: { label: string; members: TeamMember[] }[] = [
+  { label: 'Team 1', members: TEAM },
+  { label: 'Team 2', members: TEAM_2 },
 ];
 
 export const initialsOf = (m: TeamMember) => `${m.firstName[0]}${m.lastName[0]}`;
