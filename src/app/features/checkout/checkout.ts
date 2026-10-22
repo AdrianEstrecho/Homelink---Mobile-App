@@ -220,7 +220,8 @@ export class Checkout {
 
   async handleConfirmOrder(): Promise<void> {
     const pending = this.pendingOrder();
-    if (!pending) return;
+    // A second tap before the button disables itself would place a cash/bank order twice.
+    if (!pending || this.placingOrder()) return;
 
     this.placingOrder.set(true);
     this.error.set('');

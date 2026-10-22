@@ -176,6 +176,9 @@ export class Register {
   }
 
   async submitDetails(): Promise<void> {
+    // The button disables itself, but only once the view updates; a fast double tap lands first
+    // and would send a second code, invalidating the first.
+    if (this.sendingCode()) return;
     const f = this.form();
     const errs: FieldErrors = {};
     if (!f.firstName.trim()) errs.firstName = 'Enter your first name.';
@@ -198,7 +201,7 @@ export class Register {
     this.sendingCode.set(true);
     this.error.set('');
     try {
-      await this.api.post('/auth/send-verification-code', { email: f.email });
+      await this.api.post('/auth/send-verification-code', { email: normalizedEmail });
       this.codeSentTo.set(normalizedEmail);
       this.codeSentAt.set(Date.now());
       this.form.update((prev) => ({ ...prev, code: '' }));
@@ -248,7 +251,8 @@ export class Register {
       await this.auth.register({
         firstName: f.firstName,
         lastName: f.lastName,
-        email: f.email,
+        // The code was sent to the trimmed address (submitDetails).
+        email: f.email.trim().toLowerCase(),
         phone: f.phone,
         password: f.password,
         acceptedTerms: this.acceptedTerms(),

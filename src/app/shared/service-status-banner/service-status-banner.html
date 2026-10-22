@@ -1,0 +1,47 @@
+@if (variant(); as v) {
+  <div class="fixed inset-x-0 bottom-0 z-[1001] app-overlay-frame pointer-events-none">
+    <div
+      [attr.role]="v.role"
+      [attr.aria-live]="v.role === 'alert' ? 'assertive' : 'polite'"
+      class="status-banner pointer-events-auto"
+      [class.beside-mascot]="besideMascot()"
+      [class.over-bottom-bar]="overBottomBar()"
+    >
+      <!-- bg-white under modal-panel's see-through gradient: the page's own "Retry" links and
+           loading skeletons showed through it and read as part of the banner. -->
+      <div class="toast-in modal-panel bg-white p-3.5 flex items-start gap-3">
+        <div class="w-9 h-9 rounded-full flex items-center justify-center shrink-0" [class]="v.tone">
+          @switch (v.kind) {
+            @case ('offline') {
+              <svg lucideWifiOff class="w-[18px] h-[18px]" aria-hidden="true"></svg>
+            }
+            @case ('down') {
+              <svg lucideCloudOff class="w-[18px] h-[18px]" aria-hidden="true"></svg>
+            }
+            @case ('slow') {
+              <svg lucideLoaderCircle class="w-[18px] h-[18px] animate-spin motion-reduce:animate-none" aria-hidden="true"></svg>
+            }
+            @case ('recovered') {
+              <svg lucideCircleCheck class="w-[18px] h-[18px]" aria-hidden="true"></svg>
+            }
+          }
+        </div>
+        <div class="min-w-0 flex-1 pt-0.5">
+          <p class="text-sm font-semibold text-brand-ink">{{ v.title }}</p>
+          <p class="text-sm text-gray-500 mt-0.5">{{ v.body }}</p>
+          @if (v.kind === 'down') {
+            <button
+              type="button"
+              (click)="retry()"
+              [disabled]="retrying()"
+              class="tap mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-navy disabled:opacity-60"
+            >
+              <svg lucideRotateCw class="w-4 h-4" [class.animate-spin]="retrying()" aria-hidden="true"></svg>
+              {{ retrying() ? 'Checking…' : 'Try again' }}
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+}

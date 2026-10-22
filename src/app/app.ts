@@ -16,6 +16,7 @@ import { SiteSettingsService } from './core/site-settings.service';
 import { AssistantWidget } from './shared/assistant/assistant-widget';
 import { Navbar } from './shared/navbar/navbar';
 import { PageTransitionOverlay } from './shared/page-transition-overlay/page-transition-overlay';
+import { ServiceStatusBanner } from './shared/service-status-banner/service-status-banner';
 import { SideMenu } from './shared/side-menu/side-menu';
 import { SplashScreen } from './shared/splash-screen/splash-screen';
 import { ToastViewport } from './shared/toast-viewport/toast-viewport';
@@ -38,7 +39,7 @@ function prefersReducedMotion(): boolean {
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Navbar, SideMenu, SplashScreen, ToastViewport, AssistantWidget, PageTransitionOverlay, LucideAlertOctagon],
+  imports: [RouterOutlet, Navbar, SideMenu, SplashScreen, ToastViewport, AssistantWidget, PageTransitionOverlay, ServiceStatusBanner, LucideAlertOctagon],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })

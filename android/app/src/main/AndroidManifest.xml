@@ -40,4 +40,7 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Lets the WebView keep navigator.onLine and the online/offline events current, which the
+         server status banner's "You're offline" notice relies on (core/server-status.service.ts). -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 </manifest>

@@ -57,3 +57,9 @@ export function carriedShellState(router: Router): typeof DRILL_DOWN_STATE | und
 export function isChromelessRoute(url: string): boolean {
   return CHROMELESS_ROUTES.some((p) => url === p || url.startsWith(p + '/'));
 }
+
+/** Product and service detail pages pin a buy/book bar to the bottom edge; anything else floating
+ *  at the bottom (the assistant mascot, the server status banner) sits on top of it there. */
+export function hasBottomBar(url: string): boolean {
+  return /^\/(products|services)\/[^/]+$/.test(url);
+}

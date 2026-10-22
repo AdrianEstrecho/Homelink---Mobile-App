@@ -1,8 +1,11 @@
 import { Injectable, inject, signal } from '@angular/core';
 
-import { ApiService } from './api.service';
+import { ApiService, isTransientApiError } from './api.service';
 import { TokenStorageService } from './token-storage.service';
 import { User } from './user.model';
+
+/** Backoff for restoring a saved session the server couldn't confirm at launch (~3.5 min in all). */
+const SESSION_RETRY_DELAYS_MS = [5_000, 10_000, 20_000, 40_000, 60_000, 75_000];
 
 export interface RegisterForm {
   firstName: string;
@@ -64,15 +67,39 @@ export class AuthService {
     try {
       const user = await this.api.get<User>('/auth/me');
       this.user.set(user);
-    } catch {
-      await this.tokens.clear();
+    } catch (err) {
+      // Only a server that answered and turned the token away ends the session. A dropped
+      // connection, a server still waking up or a database too busy to answer says nothing about
+      // the token -- clearing it there signed a whole room out at once whenever the server
+      // struggled, and every one of them signing back in only added to the load.
+      if (isTransientApiError(err)) this.restoreSessionLater(token);
+      else await this.tokens.clear();
     } finally {
       this.loading.set(false);
     }
   }
 
+  /** Keeps retrying /auth/me in the background after a transient failure at launch, until it
+   *  answers either way or the stored token changes (signed in or out meanwhile). */
+  private async restoreSessionLater(token: string): Promise<void> {
+    for (const delay of SESSION_RETRY_DELAYS_MS) {
+      await new Promise((resolve) => setTimeout(resolve, delay));
+      if (this.user() || (await this.tokens.get()) !== token) return;
+      try {
+        const user = await this.api.get<User>('/auth/me');
+        if ((await this.tokens.get()) === token) this.user.set(user);
+        return;
+      } catch (err) {
+        if (isTransientApiError(err)) continue;
+        if ((await this.tokens.get()) === token) await this.tokens.clear();
+        return;
+      }
+    }
+  }
+
   async login(email: string, password: string): Promise<LoginResult> {
-    const data = await this.api.post<AuthResponse | Requires2FAResponse>('/auth/login', { email, password });
+    // Phone keyboards often leave a trailing space after autocompleting an address.
+    const data = await this.api.post<AuthResponse | Requires2FAResponse>('/auth/login', { email: email.trim(), password });
     if (isRequires2FA(data)) return { requires2FA: true, email: data.email };
     await this.tokens.set(data.token);
     this.user.set(data.user);

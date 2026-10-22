@@ -52,6 +52,8 @@ export class Login {
   }
 
   async onSubmit(): Promise<void> {
+    // The button disables itself, but only once the view updates; a fast double tap lands first.
+    if (this.loading()) return;
     this.loading.set(true);
     this.error.set('');
     try {
@@ -91,6 +93,7 @@ export class Login {
   }
 
   async verify2fa(): Promise<void> {
+    if (this.loading()) return;
     this.loading.set(true);
     this.error.set('');
     try {

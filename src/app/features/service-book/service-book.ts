@@ -118,6 +118,8 @@ export class ServiceBook {
   }
 
   async handleSubmit(): Promise<void> {
+    // A second tap before the button disables itself would book a bank-transfer slot twice.
+    if (this.loading()) return;
     if (!this.date() || !this.time()) {
       this.error.set('Please pick a date and time.');
       return;

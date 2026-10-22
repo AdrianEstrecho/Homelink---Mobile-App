@@ -30,4 +30,8 @@
   @if (splashVisible()) {
     <app-splash-screen [leaving]="splashLeaving()" />
   }
+
+  <!-- Everywhere, staff portal and launch splash included: an unreachable server breaks those
+       just the same, and a server waking from sleep is what holds the splash up. -->
+  <app-service-status-banner />
 </div>

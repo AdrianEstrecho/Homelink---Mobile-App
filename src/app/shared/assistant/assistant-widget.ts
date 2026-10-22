@@ -24,7 +24,7 @@ import { filter, map } from 'rxjs/operators';
 import { ApiService } from '../../core/api.service';
 import { AuthService } from '../../core/auth.service';
 import { PricePipe } from '../../core/price.pipe';
-import { isChromelessRoute } from '../../core/shell-route.util';
+import { hasBottomBar, isChromelessRoute } from '../../core/shell-route.util';
 import { SafeImage } from '../safe-image/safe-image';
 import { ChatMarkdown } from './chat-markdown';
 
@@ -66,9 +66,6 @@ const OPEN_DELAY_MS = 380;
 const INTRO_DELAY_MS = 3400;
 const INTRO_HINT_MS = 2600;
 const INTRO_HINTS_SHOWN = 3;
-
-/** Detail pages pin a buy/book bar to the bottom edge; the mascot stands on top of it there. */
-const BOTTOM_BAR_ROUTE = /^\/(products|services)\/[^/]+$/;
 
 export interface AssistantItem {
   type: 'product' | 'service';
@@ -160,7 +157,8 @@ export class AssistantWidget {
   /** Kept mounted (just hidden) on the auth screens, so a guest the assistant sends off to log in
    *  comes back to the same conversation. Also hidden in the staff portal, like the web. */
   protected readonly hidden = computed(() => isChromelessRoute(this.url()));
-  protected readonly overBottomBar = computed(() => BOTTOM_BAR_ROUTE.test(this.url()));
+  /** Detail pages pin a buy/book bar to the bottom edge; the mascot stands on top of it there. */
+  protected readonly overBottomBar = computed(() => hasBottomBar(this.url()));
 
   protected readonly isCustomer = computed(() => this.auth.user()?.role === 'customer');
   protected readonly suggestions = computed(() =>
@@ -277,9 +275,10 @@ export class AssistantWidget {
     this.loading.set(true);
     this.error.set(null);
     try {
+      // An AI reply routinely takes longer than the "taking longer than usual" banner waits.
       const { reply, items } = await this.api.post<{ reply: string; items?: AssistantItem[] }>('/assistant/chat', {
         messages: history.slice(-HISTORY_SENT).map(({ role, content }) => ({ role, content })),
-      });
+      }, { expectSlow: true });
       if (id === this.requestId) {
         this.messages.set([...history, { role: 'assistant', content: reply, items }]);
         this.answered.set(true);
