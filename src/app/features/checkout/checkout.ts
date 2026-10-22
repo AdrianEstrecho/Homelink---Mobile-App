@@ -15,7 +15,7 @@ import {
   LucideX,
 } from '@lucide/angular';
 
-import { ApiService } from '../../core/api.service';
+import { ApiError, ApiService } from '../../core/api.service';
 import { AuthService } from '../../core/auth.service';
 import { CartItem, CartService } from '../../core/cart.service';
 import { NativePaymentService } from '../../core/native-payment.service';
@@ -41,6 +41,8 @@ interface CheckoutStatusResponse {
   order?: Order;
   error?: string;
 }
+
+const STILL_PROCESSING_MESSAGE = "Payment wasn't completed. If you did pay, the order will show up in My Orders in a few minutes.";
 
 @Component({
   selector: 'app-checkout',
@@ -149,16 +151,30 @@ export class Checkout {
       const slug = this.buySlug();
       if (!slug) return;
       this.buyNowProduct.set(null);
-      this.api
-        .get<Product>(`/products/${encodeURIComponent(slug)}`)
-        .then((p) => this.buyNowProduct.set(p))
-        .catch(() => this.buyNowProduct.set(false));
+      this.loadBuyNowProduct(slug);
     });
 
     this.api
       .get<ActivePromos>('/promos/active')
       .then((data) => this.activePromos.set(data))
       .catch(() => this.activePromos.set({ holiday: null, vouchers: [] }));
+
+    // PayMongo's cancel link lands here as ?pcid=<checkout>. In the APK that only happens when
+    // Android closed the app while PayMongo was open; otherwise openCheckoutSession handles it.
+    const cancelledId = this.queryParamMap().get('pcid');
+    if (cancelledId) {
+      this.router.navigate([], { relativeTo: this.route, queryParams: { pcid: null }, queryParamsHandling: 'merge', replaceUrl: true });
+      this.endUnpaidCheckout(cancelledId).then((res) => {
+        if (res?.status === 'processing') this.error.set(STILL_PROCESSING_MESSAGE);
+      });
+    }
+  }
+
+  private loadBuyNowProduct(slug: string): void {
+    this.api
+      .get<Product>(`/products/${encodeURIComponent(slug)}`)
+      .then((p) => this.buyNowProduct.set(p))
+      .catch(() => this.buyNowProduct.set(false));
   }
 
   onPromoInput(value: string): void {
@@ -257,9 +273,36 @@ export class Checkout {
       await this.openCheckoutSession(checkoutUrl, pendingCheckoutId);
     } catch (err) {
       this.error.set((err as Error).message);
+      // Another customer confirmed first and got the stock: bring this page's counts up to date.
+      if (err instanceof ApiError && err.code === 'insufficient_stock') this.reloadStock();
     } finally {
       this.placingOrder.set(false);
     }
+  }
+
+  private reloadStock(): void {
+    const slug = this.buySlug();
+    if (slug) this.loadBuyNowProduct(slug);
+    else this.cart.refresh();
+  }
+
+  /**
+   * The customer is back from PayMongo without a confirmed payment. Ending the checkout puts the
+   * stock it was holding back on sale now, not when the hold runs out. The server asks PayMongo
+   * first, so a payment that did land still turns into the order here.
+   */
+  private async endUnpaidCheckout(pendingCheckoutId: string): Promise<CheckoutStatusResponse | null> {
+    let res: CheckoutStatusResponse;
+    try {
+      res = await this.api.post<CheckoutStatusResponse>(`/payments/cancel/${pendingCheckoutId}`, {});
+    } catch {
+      return null; // the hold runs out on its own
+    }
+    if (res.status === 'succeeded' && res.order) {
+      this.finishOrder(res.order);
+      this.confirmedOrder.set(res.order);
+    }
+    return res;
   }
 
   private async openCheckoutSession(checkoutUrl: string, pendingCheckoutId: string): Promise<void> {
@@ -282,7 +325,9 @@ export class Checkout {
     } else if (outcome.status === 'failed') {
       this.error.set(outcome.error || 'Payment could not be completed. Please try again.');
     } else {
-      this.error.set("Payment wasn't completed. If you did pay, the order will show up in My Orders in a few minutes.");
+      const res = await this.endUnpaidCheckout(pendingCheckoutId);
+      if (res?.status === 'failed') this.error.set(res.error || "Payment wasn't completed, so nothing was charged.");
+      else if (res?.status !== 'succeeded') this.error.set(STILL_PROCESSING_MESSAGE);
     }
   }
 
