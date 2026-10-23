@@ -24,7 +24,7 @@ import { filter, map } from 'rxjs/operators';
 import { ApiService } from '../../core/api.service';
 import { AuthService } from '../../core/auth.service';
 import { PricePipe } from '../../core/price.pipe';
-import { hasBottomBar, isChromelessRoute } from '../../core/shell-route.util';
+import { showsAssistant } from '../../core/shell-route.util';
 import { SafeImage } from '../safe-image/safe-image';
 import { ChatMarkdown } from './chat-markdown';
 
@@ -154,11 +154,9 @@ export class AssistantWidget {
     { initialValue: this.router.url.split(/[?#]/)[0] },
   );
 
-  /** Kept mounted (just hidden) on the auth screens, so a guest the assistant sends off to log in
-   *  comes back to the same conversation. Also hidden in the staff portal, like the web. */
-  protected readonly hidden = computed(() => isChromelessRoute(this.url()));
-  /** Detail pages pin a buy/book bar to the bottom edge; the mascot stands on top of it there. */
-  protected readonly overBottomBar = computed(() => hasBottomBar(this.url()));
+  /** Only shown on Home, but kept mounted (just hidden) everywhere else, so a guest the assistant
+   *  sends off to log in or to a product comes back to the same conversation. */
+  protected readonly hidden = computed(() => !showsAssistant(this.url()));
 
   protected readonly isCustomer = computed(() => this.auth.user()?.role === 'customer');
   protected readonly suggestions = computed(() =>
@@ -202,6 +200,15 @@ export class AssistantWidget {
 
     effect(() => {
       if (this.enabled() && !this.hidden() && !this.introPlayed) untracked(() => this.scheduleIntro());
+    });
+
+    // Leaving Home some other way than a link in the chat (the back button, say) closes it too,
+    // so coming back shows him standing there rather than the chat already open.
+    effect(() => {
+      if (this.hidden()) untracked(() => {
+        clearTimeout(this.openTimer);
+        this.close();
+      });
     });
 
     // A new reply is brought in from its first line, so a long answer with cards under it isn't

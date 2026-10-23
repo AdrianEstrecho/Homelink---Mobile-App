@@ -5,7 +5,7 @@ import { LucideCircleCheck, LucideCloudOff, LucideLoaderCircle, LucideRotateCw, 
 import { filter, map } from 'rxjs/operators';
 
 import { ServerStatusService, ServerStatusKind } from '../../core/server-status.service';
-import { hasBottomBar, isChromelessRoute } from '../../core/shell-route.util';
+import { hasBottomBar, showsAssistant } from '../../core/shell-route.util';
 
 interface Variant {
   tone: string;
@@ -45,7 +45,7 @@ const VARIANTS: Record<ServerStatusKind, Variant> = {
  * Ported from frontend/src/components/ServiceStatusBanner.jsx: the app-wide notice for when
  * HomeLink's server can't be reached or is slow to answer (see core/server-status.service.ts).
  * Pinned to the bottom, clear of the toasts at the top; it stops short of the assistant mascot
- * and, on detail pages, sits on top of the buy/book bar the way the mascot does. Layered above
+ * on Home and, on detail pages, sits on top of the buy/book bar. Layered above
  * the launch splash too, since a cold server is exactly what keeps the splash up.
  */
 @Component({
@@ -72,8 +72,8 @@ export class ServiceStatusBanner {
     { initialValue: this.router.url.split(/[?#]/)[0] },
   );
 
-  /** The mascot stands in the bottom-right corner everywhere but the auth screens and staff portal. */
-  protected readonly besideMascot = computed(() => !isChromelessRoute(this.url()));
+  /** The mascot stands in Home's bottom-right corner, and nowhere else. */
+  protected readonly besideMascot = computed(() => showsAssistant(this.url()));
   protected readonly overBottomBar = computed(() => hasBottomBar(this.url()));
 
   async retry(): Promise<void> {

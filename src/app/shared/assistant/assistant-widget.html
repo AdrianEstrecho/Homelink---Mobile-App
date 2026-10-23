@@ -175,8 +175,8 @@
     </div>
   }
 
-  <!-- The launcher: the mascot himself, standing on the bottom-right corner (or on top of a
-       detail page's buy bar). Tucked away while the full-screen chat is open. -->
+  <!-- The launcher: the mascot himself, standing on Home's bottom-right corner. Tucked away
+       while the full-screen chat is open. -->
   @if (!open()) {
     <div class="fixed bottom-0 inset-x-0 z-[45] app-overlay-frame pointer-events-none flex justify-end">
       <button
@@ -185,7 +185,6 @@
         aria-label="Open HomeLink Assistant"
         [attr.aria-expanded]="open()"
         class="assistant-launcher relative pointer-events-auto mr-3 flex items-end"
-        [class.over-bottom-bar]="overBottomBar()"
       >
         <!-- His speech bubble, level with his face so the label reads as him talking. With no
              hover on a phone it slides out once by itself shortly after launch. -->

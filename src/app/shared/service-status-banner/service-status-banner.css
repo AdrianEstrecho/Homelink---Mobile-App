@@ -2,11 +2,11 @@
   margin: 0 0.75rem calc(0.75rem + env(safe-area-inset-bottom));
   transition: margin-bottom 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
-/* Stops short of the mascot (76px tall, ~59px wide, 0.75rem off the edge; see assistant-widget). */
+/* Stops short of Home's mascot (76px tall, ~59px wide, 0.75rem off the edge; see assistant-widget). */
 .status-banner.beside-mascot {
   margin-right: 5.25rem;
 }
-/* Level with the mascot standing on a detail page's buy/book bar (.assistant-launcher.over-bottom-bar). */
+/* On top of a detail page's buy/book bar (py-3 around a 44px button, plus its border). */
 .status-banner.over-bottom-bar {
   margin-bottom: calc(4.9rem + env(safe-area-inset-bottom));
 }
